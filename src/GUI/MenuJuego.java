@@ -72,6 +72,13 @@ public class MenuJuego extends JPanel {
             boton.setMaximumSize(tamBoton);
         }
         
+        btnCancion1.addActionListener(e -> {
+        	JFrame ventana = (JFrame) this.getTopLevelAncestor();
+            ventana.setContentPane(new CancionBase(resolucion));
+            ventana.revalidate();
+            ventana.repaint();
+        });
+        
         btnVolver.addActionListener(e -> {
             JFrame ventana = (JFrame) this.getTopLevelAncestor();
             MenuInicio menu = new MenuInicio(resolucion);
