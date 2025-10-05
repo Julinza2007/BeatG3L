@@ -83,13 +83,20 @@ public class MenuInicio extends JPanel {
 
         ImageIcon btnBase = new ImageIcon(getClass().getResource("/GUI/img/fondo/btnEscalado.png"));
 
-        JButton btnJugar = crearBotonConImagen("Jugar", btnBase);
-        JButton btnOpciones = crearBotonConImagen("Opciones", btnBase);
-        JButton btnCreditos = crearBotonConImagen("Créditos", btnBase);
-        JButton btnSalir = crearBotonConImagen("Salir", btnBase);
+        JButton btnJugar = Componentes.crearBotonConImagen("Jugar", btnBase, resolucion);
+        JButton btnOpciones = Componentes.crearBotonConImagen("Opciones", btnBase, resolucion);
+        JButton btnCreditos = Componentes.crearBotonConImagen("Créditos", btnBase, resolucion);
+        JButton btnSalir = Componentes.crearBotonConImagen("Salir", btnBase, resolucion);
 
         btnJugar.addActionListener(e -> {
             System.out.println("Hola. Que divertido, estás jugando...");
+            if (animacionLogo != null && animacionLogo.isRunning()) {
+                animacionLogo.stop();
+            }
+            JFrame ventana = (JFrame) this.getTopLevelAncestor();
+            ventana.setContentPane(new MenuJuego(resolucion));
+            ventana.revalidate();
+            ventana.repaint();
         });
 
         btnOpciones.addActionListener(e -> {
@@ -120,8 +127,8 @@ public class MenuInicio extends JPanel {
         contentPane.add(contenedorBotones, BorderLayout.CENTER);
     }
 
-
-    private JButton crearBotonConImagen(String texto, ImageIcon icono) {
+/*
+    public JButton crearBotonConImagen(String texto, ImageIcon icono) {
         JButton boton = new JButton(texto, icono);
 
         boton.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -162,6 +169,6 @@ public class MenuInicio extends JPanel {
 
         return boton;
     }
-
+*/
     
 }
