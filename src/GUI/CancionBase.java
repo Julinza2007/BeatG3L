@@ -14,7 +14,11 @@ import javax.swing.SwingUtilities;
 
 public abstract class CancionBase extends JPanel {
     
-    protected JPanel notaD;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected JPanel notaD;
     protected JPanel notaF;
     protected JPanel notaJ;
     protected JPanel notaK;

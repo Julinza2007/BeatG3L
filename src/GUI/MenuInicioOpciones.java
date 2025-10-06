@@ -4,128 +4,141 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 public class MenuInicioOpciones extends JPanel {
-
     private static final long serialVersionUID = 1L;
 
     public MenuInicioOpciones(ResolucionManager resolucion) {
         setLayout(new BorderLayout());
 
-        // Fondo del menú de opciones
-        Fondo contentPane = new Fondo(resolucion.getFondoOpciones());
-        contentPane.setLayout(new BorderLayout(10, 10));
-        add(contentPane);
+        Fondo contentPane = new Fondo(resolucion.getFondoOpciones()); // Se pone el fondo del menú de opciones
+        contentPane.setLayout(new BorderLayout(10, 10)); 	// Se usa BorderLayout con espacios de 10 pixeles entre componentes
+        add(contentPane, BorderLayout.CENTER);
 
-        // Panel superior con título
-        JLabel titulo = new JLabel("Opciones", SwingConstants.CENTER);
-        titulo.setFont(new Font("Arial", Font.BOLD, resolucion.escalarY(36)));
-        titulo.setForeground(Color.WHITE);
-        contentPane.add(titulo, BorderLayout.NORTH);
+        JPanel centro = new JPanel();
+        centro.setOpaque(false);
+        centro.setLayout(new BoxLayout(centro, BoxLayout.Y_AXIS));
+        contentPane.add(centro, BorderLayout.CENTER);
 
-        // Panel central con slider de volumen
-        JPanel panelCentral = new JPanel();
-        panelCentral.setOpaque(false);
-        panelCentral.setLayout(new BoxLayout(panelCentral, BoxLayout.Y_AXIS));
+        JLabel lblResol = new JLabel("Resolución");
+        lblResol.setAlignmentX(CENTER_ALIGNMENT);
+        lblResol.setForeground(Color.WHITE);
+        lblResol.setFont(new Font("Arial", Font.BOLD, resolucion.escalarY(24)));
 
-        JLabel lblVolumen = new JLabel("Volumen", SwingConstants.CENTER);
-        lblVolumen.setFont(new Font("Arial", Font.BOLD, resolucion.escalarY(24)));
-        lblVolumen.setForeground(Color.WHITE);
-        lblVolumen.setAlignmentX(CENTER_ALIGNMENT);
-
-//      JSlider sliderVolumen = new JSlider(0, 100, 100); // min, max, inicial
-        JSlider sliderVolumen = new JSlider(0, 100, Math.round(Sonido.getVolume() * 100f));
+        String[] opcionesResol = {
+            "800 x 600",
+            "1280 x 720",
+            "1366 x 768",
+            "1600 x 900",
+            "1920 x 1080"
+        };
         
-        sliderVolumen.addChangeListener(e -> {
-            float v = sliderVolumen.getValue() / 100f;
-            Sonido.setVolume(v);
+        JComboBox<String> comboResol = new JComboBox<>(opcionesResol);
+        comboResol.setAlignmentX(CENTER_ALIGNMENT);
+
+        String etiquetaElegida = resolucion.getAncho() + " x " + resolucion.getAlto();
+        comboResol.setSelectedItem(etiquetaElegida);
+
+        Dimension tamanioCombo = new Dimension((int)(resolucion.getAncho() * 0.40), resolucion.escalarY(40));
+        comboResol.setMaximumSize(tamanioCombo);
+        comboResol.setPreferredSize(tamanioCombo);
+
+        JLabel lblVol = new JLabel("Volumen");
+        lblVol.setAlignmentX(CENTER_ALIGNMENT);
+        lblVol.setForeground(Color.WHITE);
+        lblVol.setFont(new Font("Arial", Font.BOLD, resolucion.escalarY(24)));
+
+        int volInicial = Math.round(Sonido.getVolume() * 100f); // 0..100
+        JSlider sliderVol = new JSlider(0, 100, volInicial);
+        sliderVol.setAlignmentX(CENTER_ALIGNMENT);
+        sliderVol.setOpaque(false);
+        sliderVol.setMajorTickSpacing(25);
+        sliderVol.setMinorTickSpacing(5);
+        sliderVol.setPaintTicks(true);
+        sliderVol.setPaintLabels(true);
+        sliderVol.setForeground(Color.WHITE);
+        sliderVol.setFont(new Font("Arial", Font.BOLD, 14));
+
+        int anchoSlider = (int)(resolucion.getAncho() * 0.40);
+        int altoSlider  = resolucion.escalarY(80);
+        sliderVol.setMaximumSize(new Dimension(anchoSlider, altoSlider));
+        sliderVol.setPreferredSize(new Dimension(anchoSlider, altoSlider));
+
+        // Se aplica volumen en tiempo real
+        sliderVol.addChangeListener(e -> {
+            float vol = sliderVol.getValue() / 100f;
+            Sonido.setVolume(vol);
         });
 
-        
-        sliderVolumen.setMajorTickSpacing(25);
-        sliderVolumen.setMinorTickSpacing(5);
-        sliderVolumen.setPaintTicks(true);
-        sliderVolumen.setPaintLabels(true);
-        sliderVolumen.setAlignmentX(CENTER_ALIGNMENT);
-        sliderVolumen.setOpaque(false);
-        sliderVolumen.setBackground(new Color(0,0,0,0)); // fondo transparente
-        sliderVolumen.setForeground(Color.WHITE);         // color de los ticks y labels
-        sliderVolumen.setFont(new Font("Arial", Font.BOLD, 14));
-
-        // Ajuste proporcional al ancho de la pantalla
-        int anchoSlider = (int) (resolucion.getAncho() * 0.40); // 40% del ancho
-        int altoSlider = resolucion.escalarY(60);
-        sliderVolumen.setPreferredSize(new Dimension(anchoSlider, altoSlider));
-        sliderVolumen.setMaximumSize(new Dimension(anchoSlider, altoSlider));
-        sliderVolumen.setMinimumSize(new Dimension(anchoSlider, altoSlider));
-
-
-        panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
-        panelCentral.add(lblVolumen);
-        panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(15))));
-        panelCentral.add(sliderVolumen);
-        panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(50))));
-
-        contentPane.add(panelCentral, BorderLayout.CENTER);
-
-        // Panel inferior con botones
         JPanel panelBotones = new JPanel();
         panelBotones.setOpaque(false);
         panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.X_AXIS));
 
         JButton btnAplicar = new JButton("Aplicar");
-        JButton btnReset = new JButton("Restablecer");
-        JButton btnVolver = new JButton("Volver");
-
-        Font fuenteBotones = new Font("Arial", Font.BOLD, resolucion.escalarY(22));
-        Dimension tamBoton = new Dimension(resolucion.escalarX(200), resolucion.escalarY(60));
-
-        for (JButton boton : new JButton[]{btnAplicar, btnReset, btnVolver}) {
-            boton.setFont(fuenteBotones);
-            boton.setForeground(Color.WHITE);
-            boton.setFocusPainted(false);
-            boton.setContentAreaFilled(false);
-            boton.setOpaque(false);
-            boton.setPreferredSize(tamBoton);
-            boton.setMaximumSize(tamBoton);
+        JButton btnVolver  = new JButton("Volver");
+        Font fuentebtn = new Font("Arial", Font.BOLD, resolucion.escalarY(22));
+        Dimension tamanioBtn = new Dimension(resolucion.escalarX(200), resolucion.escalarY(60));
+        for (JButton b : new JButton[]{btnAplicar, btnVolver}) {
+            b.setFont(fuentebtn);
+            b.setForeground(Color.WHITE);
+            b.setContentAreaFilled(false);
+            b.setFocusPainted(false);
+            b.setPreferredSize(tamanioBtn);
+            b.setMaximumSize(tamanioBtn);
         }
-
         panelBotones.add(Box.createHorizontalGlue());
         panelBotones.add(btnAplicar);
         panelBotones.add(Box.createRigidArea(new Dimension(resolucion.escalarX(20), 0)));
-        panelBotones.add(btnReset);
-        panelBotones.add(Box.createRigidArea(new Dimension(resolucion.escalarX(20), 0)));
         panelBotones.add(btnVolver);
         panelBotones.add(Box.createHorizontalGlue());
-
+        panelBotones.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(600))));
         contentPane.add(panelBotones, BorderLayout.SOUTH);
 
-        // Eventos (decorativos por ahora)
-        btnAplicar.addActionListener(e -> {
-            int volumen = sliderVolumen.getValue();
-            System.out.println("Volumen aplicado: " + volumen);
-        });
+        centro.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(200))));
+        centro.add(lblVol);
+        centro.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(10))));
+        centro.add(sliderVol);
+        centro.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(50))));
+        centro.add(lblResol);
+        centro.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(10))));
+        centro.add(comboResol);
 
-        btnReset.addActionListener(e -> {
-            sliderVolumen.setValue(50);
-            System.out.println("Volumen restablecido.");
+
+        centro.add(Box.createVerticalGlue());
+
+        btnAplicar.addActionListener(e -> {
+            String txt = (String) comboResol.getSelectedItem(); // trae el texto seleccionado.            
+            String[] p = txt.replace(" ", "").split("x"); // saca los espacios y separa por segun la x para así luego usarlo.
+            int w = Integer.parseInt(p[0]); // se convierten a int los valores de ancho y alto
+            int h = Integer.parseInt(p[1]); // donde p[0] sería el ancho y p[1] el alto.
+            
+            ResolucionManager nueva = new ResolucionManager(w, h); // se crea una nueva resolución con los valores obtenidos.
+
+            JFrame ventana = (JFrame) SwingUtilities.getWindowAncestor(this); // se obtiene la ventana padre.
+            if (ventana instanceof BeatG3L juego) { // si la ventana es una instancia de BeatG3L o sea la ventana principal del juego.
+                juego.setearResolucion(nueva); // se usa el método para setear a la nueva resolución.
+            }
+
+            ventana.setContentPane(new MenuInicioOpciones(nueva)); // Se recreaa este mismo panel pero con la nueva resolución.
+            ventana.revalidate();
+            ventana.repaint();
         });
 
         btnVolver.addActionListener(e -> {
-            JFrame ventana = (JFrame) this.getTopLevelAncestor();
-            MenuInicio menu = new MenuInicio(resolucion);
-            ventana.setContentPane(menu);
+            JFrame ventana = (JFrame) SwingUtilities.getWindowAncestor(this);
+            ventana.setContentPane(new MenuInicio(resolucion));
             ventana.revalidate();
             ventana.repaint();
         });
     }
-
 }

@@ -62,21 +62,20 @@ public class Sonido {
     public static synchronized void setVolume(float v) {
         volume = Math.max(0f, Math.min(1f, v));
         // Reaplicar al vuelo si hay clips activos
-        applyVolume(musicaFondo);
-        applyVolume(efecto);
+        aplicarVolumen(musicaFondo);
+        aplicarVolumen(efecto);
     }
 
     public static synchronized float getVolume() {
         return volume;
     }
 
-    private static void applyVolume(Clip clip) {
+    private static void aplicarVolumen(Clip clip) {
         if (clip == null) return;
 
-        // 1) Intentar MASTER_GAIN en dB (lo ideal)
         try {
             FloatControl gain = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-            float min = gain.getMinimum(); // ej. -80 dB
+            float min = gain.getMinimum();
             // Mapear 0..1 a (-80..0] dB en forma logarítmica
             float dB = (volume <= 0f) ? min : (float) (20.0 * Math.log10(volume));
             if (dB > 0f) dB = 0f;                 // nunca amplificar
@@ -85,7 +84,6 @@ public class Sonido {
             return;
         } catch (Exception ignored) {}
 
-        // 2) Fallback: controles de volumen lineal (si existieran)
         try {
             FloatControl vol = (FloatControl) clip.getControl(FloatControl.Type.VOLUME);
             vol.setValue(Math.max(0f, Math.min(1f, volume)));
@@ -104,7 +102,7 @@ public class Sonido {
             );
             musicaFondo = AudioSystem.getClip();
             musicaFondo.open(in);
-            applyVolume(musicaFondo);              // ← aplicar volumen actual
+            aplicarVolumen(musicaFondo);              // ← aplicar volumen actual
             musicaFondo.loop(Clip.LOOP_CONTINUOUSLY);
         } catch (Exception e) {
             e.printStackTrace();
@@ -126,7 +124,7 @@ public class Sonido {
             );
             efecto = AudioSystem.getClip();
             efecto.open(in);
-            applyVolume(efecto);                   // ← aplicar volumen actual
+            aplicarVolumen(efecto);                   // ← aplicar volumen actual
             efecto.start();
         } catch (Exception e) {
             e.printStackTrace();

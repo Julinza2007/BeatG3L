@@ -46,6 +46,10 @@ public class BeatG3L extends JFrame {
         setContentPane(new PantallaInicio(resolucion));
         setVisible(true);
     }
+    
+    public void setearResolucion(ResolucionManager nueva) {
+        this.resolucion = nueva; // solo guardamos, sin cambiar el content pane
+    }
 
     public ResolucionManager getResolucion() {
         return resolucion;

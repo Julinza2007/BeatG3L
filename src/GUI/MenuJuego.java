@@ -2,7 +2,6 @@ package GUI;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 
@@ -16,7 +15,12 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 public class MenuJuego extends JPanel {
-    public MenuJuego(ResolucionManager resolucion) {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public MenuJuego(ResolucionManager resolucion) {
     	ImageIcon btnBase = new ImageIcon(getClass().getResource("/GUI/img/fondo/btnEscalado.png"));
     	
     	setLayout(new BorderLayout());

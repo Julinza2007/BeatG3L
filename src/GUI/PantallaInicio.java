@@ -25,7 +25,7 @@ public class PantallaInicio extends JPanel {
 
       
         // Timer para cambiar a MenuInicio
-        new Timer(4000, new ActionListener() {
+        new Timer(1, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFrame ventana = (JFrame) getTopLevelAncestor();

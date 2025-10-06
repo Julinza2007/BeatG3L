@@ -9,6 +9,11 @@ public class Nota extends JPanel {
 	
 	
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public Nota (int posX, int posY, Color color, ResolucionManager resolucion) {
 		int ancho = resolucion.escalarX(50);
 	    int alto = resolucion.escalarY(50);

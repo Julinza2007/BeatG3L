@@ -1,6 +1,5 @@
 package GUI;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -11,7 +10,11 @@ import javax.swing.Timer;
 
 public class Cancion1 extends CancionBase {
 
-    private Nota nota;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private Nota nota;
 
     public Cancion1(ResolucionManager resolucion) {
         super(resolucion); // Llama al constructor de CancionBase

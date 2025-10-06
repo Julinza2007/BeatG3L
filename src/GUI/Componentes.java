@@ -1,25 +1,21 @@
 package GUI;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.Timer;
-import javax.swing.JFrame;
 
 
 
 public class Componentes extends JButton{
 	
-    private ResolucionManager resolucion;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private ResolucionManager resolucion;
 	
 	 public static JButton crearBotonConImagen(String texto, ImageIcon icono, ResolucionManager resolucion) {
 	        JButton boton = new JButton(texto, icono);

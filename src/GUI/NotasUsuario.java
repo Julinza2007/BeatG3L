@@ -6,7 +6,11 @@ import java.awt.event.*;
 
 public class NotasUsuario extends JFrame {
 
-    private boolean dPressed = false;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private boolean dPressed = false;
     private boolean fPressed = false;
     private boolean jPressed = false;
     private boolean kPressed = false;
