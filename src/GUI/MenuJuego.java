@@ -48,6 +48,7 @@ public class MenuJuego extends JPanel {
         
         
         
+        
         JPanel panelBotones = new JPanel();
         panelBotones.setOpaque(false);
         panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.X_AXIS));
@@ -73,10 +74,16 @@ public class MenuJuego extends JPanel {
         }
         
         btnCancion1.addActionListener(e -> {
-        	JFrame ventana = (JFrame) this.getTopLevelAncestor();
-            ventana.setContentPane(new CancionBase(resolucion));
+            JFrame ventana = (JFrame) this.getTopLevelAncestor();
+            CancionBase cancion = new CancionBase(resolucion);
+            ventana.setContentPane(cancion);
             ventana.revalidate();
             ventana.repaint();
+
+            // 🔥 Asegura el foco al nuevo panel después de ser visible
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                cancion.requestFocusInWindow();
+            });
         });
         
         btnVolver.addActionListener(e -> {
