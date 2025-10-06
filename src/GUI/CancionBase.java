@@ -12,28 +12,40 @@ import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-public class CancionBase extends JPanel {
+public abstract class CancionBase extends JPanel {
     
-    private JPanel notaD;
-    private JPanel notaF;
-    private JPanel notaJ;
-    private JPanel notaK;
+    protected JPanel notaD;
+    protected JPanel notaF;
+    protected JPanel notaJ;
+    protected JPanel notaK;
     
     private boolean dPressed = false;
     private boolean fPressed = false;
     private boolean jPressed = false;
     private boolean kPressed = false;
     private boolean nivelSuperado = false;
+    
+    protected JPanel panelJuego;
 
     private Fondo contentPane;
+    
+    protected abstract void construirCancion(ResolucionManager resolucion); // cada nivel define sus notas y ritmo
 
     public CancionBase(ResolucionManager resolucion) {
+    	
+    	setLayout(new BorderLayout());
+    	
         // Fondo principal
         contentPane = new Fondo(resolucion.getFondoOpciones());
         contentPane.setLayout(new BorderLayout(10, 10));
         contentPane.setOpaque(true);
 
-        setLayout(new BorderLayout());
+        panelJuego = new JPanel(null); // layout nulo para posicionamiento absoluto
+        panelJuego.setOpaque(false);
+
+
+        contentPane.add(panelJuego, BorderLayout.CENTER);
+        
         add(contentPane, BorderLayout.CENTER);
 
         // El panel principal recibe eventos de teclado
@@ -114,8 +126,8 @@ public class CancionBase extends JPanel {
         panelSur.setLayout(new BoxLayout(panelSur, BoxLayout.X_AXIS));
         contentPane.add(panelSur, BorderLayout.SOUTH);
 
-        int ancho = resolucion.escalarX(30);
-        int alto = resolucion.escalarY(30);
+        int ancho = resolucion.escalarX(50);
+        int alto = resolucion.escalarY(50);
 
         notaD = new JPanel();
         notaD.setPreferredSize(new Dimension(ancho, alto));
@@ -140,13 +152,18 @@ public class CancionBase extends JPanel {
         // Separaciones y orden
         panelSur.add(Box.createHorizontalGlue());
         panelSur.add(notaD);
-        panelSur.add(Box.createRigidArea(new Dimension(10, 0)));
+        panelSur.add(Box.createRigidArea(new Dimension(40, 0)));
         panelSur.add(notaF);
-        panelSur.add(Box.createRigidArea(new Dimension(10, 0)));
+        panelSur.add(Box.createRigidArea(new Dimension(40, 0)));
         panelSur.add(notaJ);
-        panelSur.add(Box.createRigidArea(new Dimension(10, 0)));
+        panelSur.add(Box.createRigidArea(new Dimension(40, 0)));
         panelSur.add(notaK);
         panelSur.add(Box.createHorizontalGlue());
         panelSur.add(Box.createRigidArea(new Dimension(0, 250)));
     }
+    
+    protected Fondo getContentPaneFondo() {
+        return contentPane;
+    }
+    
 }

@@ -75,7 +75,7 @@ public class MenuJuego extends JPanel {
         
         btnCancion1.addActionListener(e -> {
             JFrame ventana = (JFrame) this.getTopLevelAncestor();
-            CancionBase cancion = new CancionBase(resolucion);
+            Cancion1 cancion = new Cancion1(resolucion);
             ventana.setContentPane(cancion);
             ventana.revalidate();
             ventana.repaint();
