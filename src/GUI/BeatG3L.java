@@ -5,12 +5,12 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import javax.swing.JFrame;
 
-public class G3Ldance extends JFrame {
+public class BeatG3L extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private ResolucionManager resolucion;
 
-    public G3Ldance() {
+    public BeatG3L() {
         // === DETECCIÓN AUTOMÁTICA DE LA RESOLUCIÓN DEL MONITOR ===
 
         // Obtener entorno gráfico del sistema
@@ -38,12 +38,12 @@ public class G3Ldance extends JFrame {
             resolucion = new ResolucionManager(800, 600);
         }
 
-        setTitle("G3Lbeat");
+        setTitle("BeatG3L");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setUndecorated(true); // Se sacan los bordes y barra del sistema
         setExtendedState(JFrame.MAXIMIZED_BOTH); // Se pone en pantalla completa
 
-        setContentPane(new MenuInicio(resolucion));
+        setContentPane(new PantallaInicio(resolucion));
         setVisible(true);
     }
 

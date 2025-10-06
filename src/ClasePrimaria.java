@@ -1,4 +1,4 @@
-import GUI.G3Ldance;
+import GUI.BeatG3L;
 
 public class ClasePrimaria {
 
@@ -6,7 +6,7 @@ public class ClasePrimaria {
 		mostrarJuego();
 	}
 	public static void mostrarJuego() {
-		G3Ldance juego = new G3Ldance();
+		BeatG3L juego = new BeatG3L();
 		juego.setVisible(true);
 	}
 
