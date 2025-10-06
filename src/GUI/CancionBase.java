@@ -1,12 +1,10 @@
 package GUI;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
@@ -63,23 +61,19 @@ public abstract class CancionBase extends JPanel {
 
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_D:
-                        notaD.setBackground(Color.WHITE);
-                        notaD.setBorder(BorderFactory.createLineBorder(Color.RED, 3));
+                        ((NotasUsuario) notaD).presionar();
                         dPressed = true;
                         break;
                     case KeyEvent.VK_F:
-                        notaF.setBackground(Color.WHITE);
-                        notaF.setBorder(BorderFactory.createLineBorder(Color.YELLOW, 3));
+                        ((NotasUsuario) notaF).presionar();
                         fPressed = true;
                         break;
                     case KeyEvent.VK_J:
-                        notaJ.setBackground(Color.WHITE);
-                        notaJ.setBorder(BorderFactory.createLineBorder(Color.MAGENTA, 3));
+                        ((NotasUsuario) notaJ).presionar();
                         jPressed = true;
                         break;
                     case KeyEvent.VK_K:
-                        notaK.setBackground(Color.WHITE);
-                        notaK.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
+                        ((NotasUsuario) notaK).presionar();
                         kPressed = true;
                         break;
                 }
@@ -91,23 +85,19 @@ public abstract class CancionBase extends JPanel {
 
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_D:
-                        notaD.setBackground(Color.RED);
-                        notaD.setBorder(null);
+                        ((NotasUsuario) notaD).soltar();
                         dPressed = false;
                         break;
                     case KeyEvent.VK_F:
-                        notaF.setBackground(Color.YELLOW);
-                        notaF.setBorder(null);
+                        ((NotasUsuario) notaF).soltar();
                         fPressed = false;
                         break;
                     case KeyEvent.VK_J:
-                        notaJ.setBackground(Color.MAGENTA);
-                        notaJ.setBorder(null);
+                        ((NotasUsuario) notaJ).soltar();
                         jPressed = false;
                         break;
                     case KeyEvent.VK_K:
-                        notaK.setBackground(Color.GREEN);
-                        notaK.setBorder(null);
+                        ((NotasUsuario) notaK).soltar();
                         kPressed = false;
                         break;
                 }
@@ -123,48 +113,52 @@ public abstract class CancionBase extends JPanel {
         });
     }
 
-    // --- Panel inferior con las notas ---
+   
     private void notasJugador(ResolucionManager resolucion) {
         JPanel panelSur = new JPanel();
         panelSur.setOpaque(false);
         panelSur.setLayout(new BoxLayout(panelSur, BoxLayout.X_AXIS));
         contentPane.add(panelSur, BorderLayout.SOUTH);
 
-        int ancho = resolucion.escalarX(50);
-        int alto = resolucion.escalarY(50);
+        int separacion = resolucion.escalarX(0);
 
-        notaD = new JPanel();
-        notaD.setPreferredSize(new Dimension(ancho, alto));
-        notaD.setMaximumSize(new Dimension(ancho, alto));
-        notaD.setBackground(Color.RED);
+        // === Crear las 4 notas fijas con tus imágenes ===
+        notaD = new NotasUsuario(
+            "/GUI/img/notas/notasUsuario/izquierda.png",
+            "/GUI/img/notas/notasUsuario/izquierdaPresion.png",
+            0, 0, resolucion
+        );
+        notaF = new NotasUsuario(
+            "/GUI/img/notas/notasUsuario/abajo.png",
+            "/GUI/img/notas/notasUsuario/abajoPresion.png",
+            0, 0, resolucion
+        );
+        notaJ = new NotasUsuario(
+            "/GUI/img/notas/notasUsuario/arriba.png",
+            "/GUI/img/notas/notasUsuario/arribaPresion.png",
+            0, 0, resolucion
+        );
+        notaK = new NotasUsuario(
+            "/GUI/img/notas/notasUsuario/derecha.png",
+            "/GUI/img/notas/notasUsuario/derechaPresion.png",
+            0, 0, resolucion
+        );
 
-        notaF = new JPanel();
-        notaF.setPreferredSize(new Dimension(ancho, alto));
-        notaF.setMaximumSize(new Dimension(ancho, alto));
-        notaF.setBackground(Color.YELLOW);
-
-        notaJ = new JPanel();
-        notaJ.setPreferredSize(new Dimension(ancho, alto));
-        notaJ.setMaximumSize(new Dimension(ancho, alto));
-        notaJ.setBackground(Color.MAGENTA);
-
-        notaK = new JPanel();
-        notaK.setPreferredSize(new Dimension(ancho, alto));
-        notaK.setMaximumSize(new Dimension(ancho, alto));
-        notaK.setBackground(Color.GREEN);
-
-        // Separaciones y orden
+        // Añadir con separaciones
         panelSur.add(Box.createHorizontalGlue());
         panelSur.add(notaD);
-        panelSur.add(Box.createRigidArea(new Dimension(40, 0)));
+        panelSur.add(Box.createRigidArea(new Dimension(separacion, 0)));
         panelSur.add(notaF);
-        panelSur.add(Box.createRigidArea(new Dimension(40, 0)));
+        panelSur.add(Box.createRigidArea(new Dimension(separacion, 0)));
         panelSur.add(notaJ);
-        panelSur.add(Box.createRigidArea(new Dimension(40, 0)));
+        panelSur.add(Box.createRigidArea(new Dimension(separacion, 0)));
         panelSur.add(notaK);
         panelSur.add(Box.createHorizontalGlue());
-        panelSur.add(Box.createRigidArea(new Dimension(0, 250)));
+
+        // Espacio inferior (altura donde se ubican las flechas)
+        panelSur.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(250))));
     }
+
     
     protected Fondo getContentPaneFondo() {
         return contentPane;

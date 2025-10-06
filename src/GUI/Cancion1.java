@@ -28,7 +28,7 @@ public class Cancion1 extends CancionBase {
     	int posX = puntoD.x;
     	
         // Crear una nota y agregarla al contentPane
-        nota = new Nota(notaD.getX(), 100, Color.CYAN, resolucion); // posición inicial y color
+        nota = new Nota(notaD.getX(), 100, Color.RED, resolucion); // posición inicial y color
         panelJuego.add(nota); // Agrega la nota al fondo
 
         // Timer para mover la nota

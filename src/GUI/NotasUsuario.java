@@ -1,73 +1,48 @@
 package GUI;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Graphics;
+import java.awt.Image;
+import javax.swing.ImageIcon;
+import javax.swing.JPanel;
 
-public class NotasUsuario extends JFrame {
+public class NotasUsuario extends JPanel {
 
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private boolean dPressed = false;
-    private boolean fPressed = false;
-    private boolean jPressed = false;
-    private boolean kPressed = false;
-    private boolean nivelSuperado = false;
+    private static final long serialVersionUID = 1L;
 
-    private Fondo contentPane;
+    private Image imgNormal;
+    private Image imgPresion;
+    private Image actual;
+    private int ancho;
+    private int alto;
 
-    public NotasUsuario(ResolucionManager resolucion) {
-        this.setTitle("Juego");
-        this.setSize(800, 600);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    public NotasUsuario(String rutaNormal, String rutaPresion, int x, int y, ResolucionManager resolucion) {
+        setOpaque(false);
 
-        contentPane = new Fondo(resolucion.getFondoOpciones());
-        contentPane.setLayout(new BorderLayout(10, 10));
-        contentPane.setFocusable(true);
-        this.setContentPane(contentPane);
+        imgNormal = new ImageIcon(getClass().getResource(rutaNormal)).getImage();
+        imgPresion = new ImageIcon(getClass().getResource(rutaPresion)).getImage();
+        actual = imgNormal;
 
-        configurarNotas();
-        
-        JPanel notaD = new JPanel();
-        notaD.setLayout(getLayout());
+        ancho = resolucion.escalarX(80);
+        alto = resolucion.escalarY(80);
 
-        this.setVisible(true);
+        setBounds(resolucion.escalarX(x), resolucion.escalarY(y), ancho, alto);
     }
 
-    private void configurarNotas() {
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowOpened(WindowEvent e) {
-                contentPane.requestFocusInWindow();
-            }
-        });
+    public void presionar() {
+        actual = imgPresion;
+        repaint();
+    }
 
-        contentPane.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (nivelSuperado) return;
+    public void soltar() {
+        actual = imgNormal;
+        repaint();
+    }
 
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_D -> dPressed = true;
-                    case KeyEvent.VK_F -> fPressed = true;
-                    case KeyEvent.VK_J -> jPressed = true;
-                    case KeyEvent.VK_K -> kPressed = true;
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (nivelSuperado) return;
-
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_D -> dPressed = false;
-                    case KeyEvent.VK_F -> fPressed = false;
-                    case KeyEvent.VK_J -> jPressed = false;
-                    case KeyEvent.VK_K -> kPressed = false;
-                }
-            }
-        });
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (actual != null) {
+            g.drawImage(actual, 0, 0, ancho, alto, this);
+        }
     }
 }
