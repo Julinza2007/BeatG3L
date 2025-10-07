@@ -34,7 +34,6 @@ public abstract class CancionBase extends JPanel {
     protected abstract void construirCancion(ResolucionManager resolucion); // cada nivel define sus notas y ritmo
 
     public CancionBase(ResolucionManager resolucion) {
-    	
     	setLayout(new BorderLayout());
     	
         // Fondo principal
@@ -44,11 +43,14 @@ public abstract class CancionBase extends JPanel {
 
         panelJuego = new JPanel(null); // layout nulo para posicionamiento absoluto
         panelJuego.setOpaque(false);
-
-
+        
         contentPane.add(panelJuego, BorderLayout.CENTER);
         
+        notasJugador(resolucion);
+        
         add(contentPane, BorderLayout.CENTER);
+        
+        
 
         // El panel principal recibe eventos de teclado
         setFocusable(true);
@@ -105,7 +107,7 @@ public abstract class CancionBase extends JPanel {
         });
 
         // Configurar las notas del jugador (los paneles de colores)
-        notasJugador(resolucion);
+
 
         // --- Asegurar que el foco llegue correctamente ---
         SwingUtilities.invokeLater(() -> {
@@ -118,7 +120,9 @@ public abstract class CancionBase extends JPanel {
         JPanel panelSur = new JPanel();
         panelSur.setOpaque(false);
         panelSur.setLayout(new BoxLayout(panelSur, BoxLayout.X_AXIS));
-        contentPane.add(panelSur, BorderLayout.SOUTH);
+        panelJuego.add(panelSur);
+        
+        
 
         int separacion = resolucion.escalarX(0);
 
@@ -157,11 +161,31 @@ public abstract class CancionBase extends JPanel {
 
         // Espacio inferior (altura donde se ubican las flechas)
         panelSur.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(250))));
+        
+        int altoNotaUsuario = resolucion.escalarY(80) + resolucion.escalarY(250); 
+        // Los 80px del componente NotasUsuario + los 250px del Box.createRigidArea
+        
+        SwingUtilities.invokeLater(() -> {
+            int anchoJuego = panelJuego.getWidth();
+            int altoJuego = panelJuego.getHeight();
+            
+            // Y donde panelSur debe empezar (casi al final de panelJuego)
+            int posY = altoJuego - altoNotaUsuario; 
+            int posX = 0;
+            
+            panelSur.setBounds(posX, posY, anchoJuego, altoNotaUsuario);
+            
+            panelJuego.revalidate();
+            panelJuego.repaint();
+        });
     }
+    
 
     
     protected Fondo getContentPaneFondo() {
         return contentPane;
     }
+    
+    
     
 }
