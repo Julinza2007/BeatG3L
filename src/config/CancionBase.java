@@ -1,4 +1,4 @@
-package GUI;
+package config;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -9,6 +9,9 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+
+import GUI.Fondo;
+import GUI.NotasUsuario;
 
 public abstract class CancionBase extends JPanel {
     
@@ -51,7 +54,6 @@ public abstract class CancionBase extends JPanel {
         add(contentPane, BorderLayout.CENTER);
         
         
-
         // El panel principal recibe eventos de teclado
         setFocusable(true);
 
@@ -128,23 +130,23 @@ public abstract class CancionBase extends JPanel {
 
         // === Crear las 4 notas fijas con tus imágenes ===
         notaD = new NotasUsuario(
-            "/GUI/img/notas/notasUsuario/izquierda.png",
-            "/GUI/img/notas/notasUsuario/izquierdaPresion.png",
+            "/img/notas/notasUsuario/izquierda.png",
+            "/img/notas/notasUsuario/izquierdaPresion.png",
             0, 0, resolucion
         );
         notaF = new NotasUsuario(
-            "/GUI/img/notas/notasUsuario/abajo.png",
-            "/GUI/img/notas/notasUsuario/abajoPresion.png",
+            "/img/notas/notasUsuario/abajo.png",
+            "/img/notas/notasUsuario/abajoPresion.png",
             0, 0, resolucion
         );
         notaJ = new NotasUsuario(
-            "/GUI/img/notas/notasUsuario/arriba.png",
-            "/GUI/img/notas/notasUsuario/arribaPresion.png",
+            "/img/notas/notasUsuario/arriba.png",
+            "/img/notas/notasUsuario/arribaPresion.png",
             0, 0, resolucion
         );
         notaK = new NotasUsuario(
-            "/GUI/img/notas/notasUsuario/derecha.png",
-            "/GUI/img/notas/notasUsuario/derechaPresion.png",
+            "/img/notas/notasUsuario/derecha.png",
+            "/img/notas/notasUsuario/derechaPresion.png",
             0, 0, resolucion
         );
 

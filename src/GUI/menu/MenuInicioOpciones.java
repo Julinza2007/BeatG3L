@@ -1,4 +1,4 @@
-package GUI;
+package GUI.menu;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -14,6 +14,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
+
+import GUI.BeatG3L;
+import GUI.Fondo;
+import config.ResolucionManager;
+import config.Sonido;
 
 public class MenuInicioOpciones extends JPanel {
     private static final long serialVersionUID = 1L;

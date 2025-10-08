@@ -5,6 +5,9 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import javax.swing.JFrame;
 
+import GUI.menu.PantallaInicio;
+import config.ResolucionManager;
+
 public class BeatG3L extends JFrame {
 
     private static final long serialVersionUID = 1L;

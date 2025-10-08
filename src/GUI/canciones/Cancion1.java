@@ -1,4 +1,4 @@
-package GUI;
+package GUI.canciones;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -8,6 +8,10 @@ import java.util.ArrayList;
 
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+
+import GUI.Nota;
+import config.CancionBase;
+import config.ResolucionManager;
 
 public class Cancion1 extends CancionBase {
 

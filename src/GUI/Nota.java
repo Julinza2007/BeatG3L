@@ -7,6 +7,8 @@ import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
+import config.ResolucionManager;
+
 public class Nota extends JPanel {
 
     private static final long serialVersionUID = 1L;
@@ -32,13 +34,13 @@ public class Nota extends JPanel {
 
         // --- Asignar la imagen según el color de la nota ---
         if (color.equals(Color.RED)) {
-            imagenNota = new ImageIcon(getClass().getResource("/GUI/img/notas/izquierda.png")).getImage();
+            imagenNota = new ImageIcon(getClass().getResource("/img/notas/izquierda.png")).getImage();
         } else if (color.equals(Color.YELLOW)) {
-            imagenNota = new ImageIcon(getClass().getResource("/GUI/img/notas/abajo.png")).getImage();
+            imagenNota = new ImageIcon(getClass().getResource("/img/notas/abajo.png")).getImage();
         } else if (color.equals(Color.MAGENTA)) {
-            imagenNota = new ImageIcon(getClass().getResource("/GUI/img/notas/arriba.png")).getImage();
+            imagenNota = new ImageIcon(getClass().getResource("/img/notas/arriba.png")).getImage();
         } else if (color.equals(Color.GREEN)) {
-            imagenNota = new ImageIcon(getClass().getResource("/GUI/img/notas/derecha.png")).getImage();
+            imagenNota = new ImageIcon(getClass().getResource("/img/notas/derecha.png")).getImage();
         } else {
             imagenNota = null; // por si se usa otro color más adelante
         }

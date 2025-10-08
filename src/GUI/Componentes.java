@@ -7,6 +7,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
 
+import config.ResolucionManager;
+import config.Sonido;
+
 
 
 public class Componentes extends JButton{
@@ -15,9 +18,7 @@ public class Componentes extends JButton{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private ResolucionManager resolucion;
-	
-	 public static JButton crearBotonConImagen(String texto, ImageIcon icono, ResolucionManager resolucion) {
+	public static JButton crearBotonConImagen(String texto, ImageIcon icono, ResolucionManager resolucion) {
 	        JButton boton = new JButton(texto, icono);
 
 	        boton.setHorizontalTextPosition(SwingConstants.CENTER);
@@ -47,12 +48,12 @@ public class Componentes extends JButton{
 
 	        boton.addMouseListener(new java.awt.event.MouseAdapter() {
 	            @Override public void mouseEntered(java.awt.event.MouseEvent e) {
-	                Sonido.reproducirEfecto("GUI/sonidos/pickOpcion.wav");
+	                Sonido.reproducirEfecto("sonidos/pickOpcion.wav");
 	            }
 	        });
 	        boton.addFocusListener(new java.awt.event.FocusAdapter() {
 	            @Override public void focusGained(java.awt.event.FocusEvent e) {
-	                Sonido.reproducirEfecto("GUI/sonidos/pickOpcion.wav");
+	                Sonido.reproducirEfecto("sonidos/pickOpcion.wav");
 	            }
 	        });
 

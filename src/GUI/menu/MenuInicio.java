@@ -1,4 +1,4 @@
-package GUI;
+package GUI.menu;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -11,20 +11,24 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
+
+import GUI.Animaciones;
+import GUI.Componentes;
+import GUI.Fondo;
+import config.ResolucionManager;
+import config.Sonido;
+
 import javax.swing.JFrame;
 
 public class MenuInicio extends JPanel {
 
     private static final long serialVersionUID = 1L;
-    private ResolucionManager resolucion;
     private JLabel logoLabel;
     private Timer animacionLogo;
     private ImageIcon logoBase;
 
     public MenuInicio(ResolucionManager resolucion) {
-        this.resolucion = resolucion;
-
-        Sonido.reproducirMusicaLoop("GUI/sonidos/inicio.wav");
+        Sonido.reproducirMusicaLoop("sonidos/inicio.wav");
 
         setLayout(new BorderLayout(10, 10));
 
@@ -40,7 +44,7 @@ public class MenuInicio extends JPanel {
         panelSuperior.setPreferredSize(new Dimension(0, alturaLogo));
 
         // 1) Cargar el PNG original
-        logoBase = new ImageIcon(getClass().getResource("/GUI/img/fondo/logoG3L.png"));
+        logoBase = new ImageIcon(getClass().getResource("/img/fondo/logoG3L.png"));
 
         // 2) Calcular el tamaño máximo que puede ocupar el logo dentro del panel superior
         int anchoMaxLogo = resolucion.escalarX(700);                 // ajustá a gusto
@@ -78,7 +82,7 @@ public class MenuInicio extends JPanel {
         panelBotones.setOpaque(false);
         panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.Y_AXIS));
 
-        ImageIcon btnBase = new ImageIcon(getClass().getResource("/GUI/img/fondo/btnEscalado.png"));
+        ImageIcon btnBase = new ImageIcon(getClass().getResource("/img/fondo/btnEscalado.png"));
 
         JButton btnJugar = Componentes.crearBotonConImagen("Jugar", btnBase, resolucion);
         JButton btnOpciones = Componentes.crearBotonConImagen("Opciones", btnBase, resolucion);

@@ -1,7 +1,10 @@
-package GUI;
+package GUI.menu;
 
 import java.awt.*;
 import javax.swing.*;
+
+import config.ResolucionManager;
+
 import java.awt.event.*;
 
 public class PantallaInicio extends JPanel {
@@ -19,13 +22,13 @@ public class PantallaInicio extends JPanel {
         
         
         // Logo centrado
-        ImageIcon logo = new ImageIcon(getClass().getResource("/GUI/img/G3LgroupMasChico.png"));
+        ImageIcon logo = new ImageIcon(getClass().getResource("/img/G3LgroupMasChico.png"));
         JLabel labelLogo = new JLabel(logo, SwingConstants.CENTER);
         add(labelLogo, BorderLayout.CENTER);
 
       
         // Timer para cambiar a MenuInicio
-        new Timer(1, new ActionListener() {
+        new Timer(4000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFrame ventana = (JFrame) getTopLevelAncestor();

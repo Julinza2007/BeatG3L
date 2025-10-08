@@ -1,4 +1,4 @@
-package GUI;
+package GUI.menu;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -13,6 +13,10 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import GUI.canciones.Cancion1;
+import GUI.Componentes;
+import GUI.Fondo;
+import config.ResolucionManager;
 
 public class MenuJuego extends JPanel {
     /**
@@ -21,7 +25,7 @@ public class MenuJuego extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	public MenuJuego(ResolucionManager resolucion) {
-    	ImageIcon btnBase = new ImageIcon(getClass().getResource("/GUI/img/fondo/btnEscalado.png"));
+    	ImageIcon btnBase = new ImageIcon(getClass().getResource("/img/fondo/btnEscalado.png"));
     	
     	setLayout(new BorderLayout());
 
