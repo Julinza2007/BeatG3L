@@ -24,8 +24,8 @@ public class NotasUsuario extends JPanel {
         imgPresion = new ImageIcon(getClass().getResource(rutaPresion)).getImage();
         actual = imgNormal;
 
-        ancho = resolucion.escalarX(80);
-        alto = resolucion.escalarY(80);
+        ancho = resolucion.escalarX(62);
+        alto = resolucion.escalarY(85);
 
         setBounds(resolucion.escalarX(x), resolucion.escalarY(y), ancho, alto);
     }
