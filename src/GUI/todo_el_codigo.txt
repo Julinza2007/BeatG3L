@@ -1,6 +1,6 @@
 ============================================================
   TODO EL CÓDIGO - Proyecto bajo: /d/Repositorios/workSpaceJava/BeatG3L/src
-  Generado: 2025-10-10 11:10:52
+  Generado: 2025-10-10 16:18:06
 ============================================================
 
 ========== INICIO: ClasePrimaria.java ==========
@@ -18,6 +18,531 @@ public class ClasePrimaria {
 
 }
 ========== FIN: ClasePrimaria.java ==========
+
+========== INICIO: config/CancionBase.java ==========
+package config;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+
+import GUI.Fondo;
+import GUI.Nota;
+import GUI.NotasUsuario;
+
+public abstract class CancionBase extends JPanel {
+    
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	protected JPanel notaD;
+    protected JPanel notaF;
+    protected JPanel notaJ;
+    protected JPanel notaK;
+    
+    private Timer timerNotas;
+    private boolean dPressed = false;
+    private boolean fPressed = false;
+    private boolean jPressed = false;
+    private boolean kPressed = false;
+    private boolean nivelSuperado = false;
+    public int BORDE_SUPERIOR_USUARIO;
+    public int BORDE_INFERIOR_USUARIO;
+    public int POSICION_GLOBAL_X_USUARIO;
+    
+    protected JPanel panelJuego;
+
+    private Fondo contentPane;
+    
+    protected List<Nota> notasActivas = new ArrayList<>();
+    
+    protected ResolucionManager resolucion;
+    
+    protected abstract void construirCancion(ResolucionManager resolucion); // cada nivel define sus notas y ritmo
+
+    public CancionBase(ResolucionManager resolucion) {
+    	setLayout(new BorderLayout());
+    	
+    	this.resolucion = resolucion;
+    	
+        // Fondo principal
+        contentPane = new Fondo(resolucion.getFondoOpciones());
+        contentPane.setLayout(new BorderLayout(10, 10));
+        contentPane.setOpaque(true);
+
+        panelJuego = new JPanel(null); // layout nulo para posicionamiento absoluto
+        panelJuego.setOpaque(false);
+        
+        
+        /*
+     // Obtén el punto (0, 0) de la notaUsuario
+        Point topLeft = new Point(0, 0);
+
+        // Convierte el punto (0, 0) de notaUsuario para que sea relativo a panelJuego
+        Point ubicacionRelativaAJuego = SwingUtilities.convertPoint(
+            notaUsuario, // El componente a ubicar
+            topLeft,     // El punto dentro del componente (aquí, la esquina superior izquierda)
+            panelJuego   // El sistema de coordenadas de destino
+        );
+        */
+        
+        contentPane.add(panelJuego, BorderLayout.CENTER);
+        
+        notasJugador(resolucion);
+        
+        
+
+        
+        add(contentPane, BorderLayout.CENTER);
+        /*
+        eliminarNotasPasadas(notaD);
+        eliminarNotasPasadas(notaF);
+        eliminarNotasPasadas(notaJ);
+        eliminarNotasPasadas(notaK);
+        */
+        
+        // El panel principal recibe eventos de teclado
+        setFocusable(true);
+
+        // --- KeyListener para detectar las teclas D, F, J, K ---
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (nivelSuperado) return;
+
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_D:
+                        ((NotasUsuario) notaD).presionar();
+                        dPressed = true;
+                        verificarColision(notaD); 
+                        break;
+                    case KeyEvent.VK_F:
+                        ((NotasUsuario) notaF).presionar();
+                        fPressed = true;
+                        verificarColision(notaF); 
+                        break;
+                    case KeyEvent.VK_J:
+                        ((NotasUsuario) notaJ).presionar();
+                        jPressed = true;
+                        verificarColision(notaJ); 
+                        break;
+                    case KeyEvent.VK_K:
+                        ((NotasUsuario) notaK).presionar();
+                        kPressed = true;
+                        verificarColision(notaK); 
+                        break;
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (nivelSuperado) return;
+
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_D:
+                        ((NotasUsuario) notaD).soltar();
+                        dPressed = false;
+                        break;
+                    case KeyEvent.VK_F:
+                        ((NotasUsuario) notaF).soltar();
+                        fPressed = false;
+                        break;
+                    case KeyEvent.VK_J:
+                        ((NotasUsuario) notaJ).soltar();
+                        jPressed = false;
+                        break;
+                    case KeyEvent.VK_K:
+                        ((NotasUsuario) notaK).soltar();
+                        kPressed = false;
+                        break;
+                }
+            }
+        });
+
+        // Configurar las notas del jugador (los paneles de colores)
+
+
+        // --- Asegurar que el foco llegue correctamente ---
+        SwingUtilities.invokeLater(() -> {
+            calcularBordesUsuario();
+            requestFocusInWindow();
+        });
+    }
+
+ 
+    
+    public void agregarNota(Nota nota) {
+        panelJuego.add(nota);
+        notasActivas.add(nota); // Agrega la nota a tu lista de rastreo
+        // Asegúrate de que las notas se muevan en un hilo o temporizador separado.
+        for (Nota notaActiva : notasActivas){
+        	System.out.println("Se agrego la nota" + notasActivas);
+        }
+    }
+    
+    private void calcularBordesUsuario() {
+        // Si la notaD aún no se ha creado (aunque debería estarlo después de notasJugador), sal.
+        if (notaD == null || panelJuego == null) return; 
+
+        // Solo necesitamos calcular la posición de UNA de las notas (ej. notaD),
+        // ya que todas están a la misma altura.
+        
+        Point ubicacionAbsoluta = SwingUtilities.convertPoint(
+            notaD.getParent(), 
+            notaD.getLocation(), 
+            panelJuego
+        );
+        
+        // Almacena los valores en las variables de instancia
+        this.BORDE_SUPERIOR_USUARIO = ubicacionAbsoluta.y;
+        this.BORDE_INFERIOR_USUARIO = ubicacionAbsoluta.y + notaD.getHeight();
+        this.POSICION_GLOBAL_X_USUARIO = ubicacionAbsoluta.x;
+        
+        // Nota: ¡Este cálculo solo será preciso si se llama DESPUÉS de que panelJuego haya sido dibujado!
+        // Lo manejaremos con SwingUtilities.invokeLater.
+    }
+    
+ // En CancionBase.java
+    private void verificarColision(JPanel notaUsuario) {
+       
+        // 2. Definir una TOLERANCIA mínima (necesaria para la velocidad del juego).
+        // Si quieres máxima precisión, 15px-20px es un rango estricto.
+        final int RANGO_TOLERANCIA_Y = 100;
+
+        // 3. Bucle Inverso
+        for (int i = notasActivas.size() - 1; i >= 0; i--) {
+            Nota notaCayendo = notasActivas.get(i);
+            
+            // 4. FILTRO HORIZONTAL (CARRIL)
+            // Se mantiene para asegurar el carril correcto
+            final int TOLERANCIA_BASE_X = 10; 
+            int toleranciaXEscalada = resolucion.escalarX(TOLERANCIA_BASE_X); // ✅ Escalar
+            
+            if (Math.abs(notaCayendo.getX() - notaUsuario.getX()) > toleranciaXEscalada) {
+            	System.out.println("NO ESTA ALINEADA");
+                continue; 
+            }
+            
+            
+            // 5. Coordenadas de la NOTA QUE CAE
+            int bordeInferiorCayendo = notaCayendo.getY() + notaCayendo.getHeight();
+            
+            System.out.println("el borde superior de la nota es" + notaCayendo.getY());
+            System.out.println("el borde inferior de la nota es" + bordeInferiorCayendo);
+            
+            // 6. CHEQUEO DE GOLPE (HIT CHECK)
+            // Condición: La parte inferior de la nota cayendo debe estar DENTRO del área de golpe del jugador.
+            
+            // La nota debe haber pasado el BORDE SUPERIOR del jugador.
+            boolean yaPasoBordeSuperior = (notaCayendo.getY() + notaCayendo.getHeight()) >= (BORDE_SUPERIOR_USUARIO - RANGO_TOLERANCIA_Y);
+            
+            // La nota no debe haber pasado el BORDE INFERIOR del jugador (o se considera perdida).
+            boolean noPasoBordeInferior = notaCayendo.getY() <= (BORDE_INFERIOR_USUARIO + RANGO_TOLERANCIA_Y);
+
+            // Si ambas condiciones se cumplen, la nota está en el área donde se debe golpear.
+            if (yaPasoBordeSuperior && noPasoBordeInferior) {
+                
+            	System.out.println("Se puede golpear la nota");
+                // *** ¡GOLPE VÁLIDO! 🎉 ***
+                // La nota se elimina justo cuando "toca" o "cruza" la notaUsuario.
+                
+                panelJuego.remove(notaCayendo); 
+                notasActivas.remove(i);       
+                panelJuego.repaint();         
+                
+                return; // Solo procesamos el golpe más cercano
+            }
+            /*
+            // 7. LÓGICA DE NOTAS PERDIDAS
+            // Si la nota ha caído completamente más allá del área de golpe sin ser tocada.
+            if (notaCayendo.getY() > BORDE_INFERIOR_USUARIO + RANGO_TOLERANCIA_Y) { 
+            	
+            	System.out.println("se borro la nota");
+                // ... [Lógica de nota perdida]
+                panelJuego.remove(notaCayendo);
+                notasActivas.remove(i);
+                panelJuego.repaint();
+           }
+            */
+            
+        }
+    }
+    
+    public void eliminarNotasPasadas(Nota notaCayendo) {
+// 1. Definir el ÁREA DE GOLPE (hitbox) del jugador.
+    	
+    	//        System.out.println("el borde superior del usuario es" + BORDE_SUPERIOR_USUARIO);
+//        System.out.println("el borde inferior del usuario es" + BORDE_INFERIOR_USUARIO);
+
+        // 2. Definir una TOLERANCIA mínima (necesaria para la velocidad del juego).
+        // Si quieres máxima precisión, 15px-20px es un rango estricto.
+        final int RANGO_TOLERANCIA_Y = 100;
+
+         
+            
+            // 5. Coordenadas de la NOTA QUE CAE
+            int bordeInferiorCayendo = notaCayendo.getY() + notaCayendo.getHeight();
+            
+            
+            // 7. LÓGICA DE NOTAS PERDIDAS
+            // Si la nota ha caído completamente más allá del área de golpe sin ser tocada.
+            if (notaCayendo.getY() > BORDE_INFERIOR_USUARIO + RANGO_TOLERANCIA_Y) { 
+            	
+            	System.out.println("se borro la nota");
+                // ... [Lógica de nota perdida]
+                panelJuego.remove(notaCayendo);
+                panelJuego.repaint();
+           }
+            
+            
+        
+    }
+
+   
+    private void notasJugador(ResolucionManager resolucion) {
+        panelJuego.setLayout(null);
+
+        // Tamaños base en la resolución original (1920x1080)
+        int baseAncho = 125 / 2; // mitad de su tamaño real
+        int baseAlto  = 175 / 2;
+
+        int ancho = resolucion.escalarY(baseAncho);
+        int alto  = resolucion.escalarY(baseAlto);
+
+        int baseX = 700; // coordenadas base 1080p
+        int separacion = 120;
+        int baseY = 850;
+
+        notaD = new NotasUsuario("/img/notas/notasUsuario/izquierda.png",
+                                 "/img/notas/notasUsuario/izquierdaPresion.png",
+                                 resolucion.escalarX(baseX),
+                                 resolucion.escalarY(baseY),
+                                 ancho, alto);
+
+        notaF = new NotasUsuario("/img/notas/notasUsuario/abajo.png",
+                                 "/img/notas/notasUsuario/abajoPresion.png",
+                                 resolucion.escalarX(baseX + separacion),
+                                 resolucion.escalarY(baseY),
+                                 ancho, alto);
+
+        notaJ = new NotasUsuario("/img/notas/notasUsuario/arriba.png",
+                                 "/img/notas/notasUsuario/arribaPresion.png",
+                                 resolucion.escalarX(baseX + separacion * 2),
+                                 resolucion.escalarY(baseY),
+                                 ancho, alto);
+
+        notaK = new NotasUsuario("/img/notas/notasUsuario/derecha.png",
+                                 "/img/notas/notasUsuario/derechaPresion.png",
+                                 resolucion.escalarX(baseX + separacion * 3),
+                                 resolucion.escalarY(baseY),
+                                 ancho, alto);
+
+        panelJuego.add(notaD);
+        panelJuego.add(notaF);
+        panelJuego.add(notaJ);
+        panelJuego.add(notaK);
+    }
+    
+
+    protected void iniciarMovimientoNotas() {
+        int velocidad = resolucion.escalarY(5); // velocidad base adaptada a la resolución
+
+        timerNotas = new Timer(10, e -> {
+            for (int i = notasActivas.size() - 1; i >= 0; i--) {
+                Nota nota = notasActivas.get(i);
+                nota.setLocation(nota.getX(), nota.getY() + velocidad);
+                eliminarNotasPasadas(nota);
+            }
+            panelJuego.repaint();
+        });
+        timerNotas.start();
+    }
+
+    protected void detenerMovimientoNotas() {
+        if (timerNotas != null && timerNotas.isRunning()) {
+            timerNotas.stop();
+        }
+    }
+
+
+
+
+    
+
+    
+    protected Fondo getContentPaneFondo() {
+        return contentPane;
+    }
+    
+    
+    
+}
+
+========== FIN: config/CancionBase.java ==========
+
+========== INICIO: config/ResolucionManager.java ==========
+package config;
+
+public class ResolucionManager {
+
+    // Resolución base (para escalado)
+    private static final int BASE_WIDTH = 1920;
+    private static final int BASE_HEIGHT = 1080;
+
+    private int ancho;
+    private int alto;
+    private double scaleX;
+    private double scaleY;
+
+    public ResolucionManager(int ancho, int alto) {
+        this.ancho = ancho;
+        this.alto = alto;
+
+        // Factores de escala en relación a la base
+        this.scaleX = (double) ancho / BASE_WIDTH;
+        this.scaleY = (double) alto / BASE_HEIGHT;
+    }
+
+    // Devuelve ruta del fondo según resolución
+    public String getFondoMenuInicio() {
+        if (ancho == 800 && alto == 600) return "/img/fondo/1_800x600.jpg";
+        if (ancho == 1280 && alto == 720) return "/img/fondo/1_1280x720.jpg";
+        if (ancho == 1366 && alto == 768) return "/img/fondo/1_1366x768.jpg";
+        if (ancho == 1600 && alto == 900) return "/img/fondo/1_1600x900.jpg";
+        if (ancho == 1920 && alto == 1080) return "/img/fondo/1_1920x1080_mejorada.jpg";
+
+        // Por defecto, usar la de mayor calidad
+        return "/GUI/img/fondo/1_1920x1080_mejorada.jpg";
+    }
+    
+    public String getFondoOpciones() {
+        if (ancho == 800 && alto == 600) return "/img/fondo/2_800x600.png";
+        if (ancho == 1280 && alto == 720) return "/img/fondo/2_1280x720.png";
+        if (ancho == 1366 && alto == 768) return "/img/fondo/2_1366x768.png";
+        if (ancho == 1600 && alto == 900) return "/img/fondo/2_1600x900.png";
+        if (ancho == 1920 && alto == 1080) return "/img/fondo/2_1920x1080.png";
+
+        // Por defecto, usar la de mayor calidad
+        return "/GUI/img/fondo/2_1920x1080.png";
+    }
+
+    // Escalar ancho en relación a la resolución actual
+    public int escalarX(int valor) {
+        return (int) (valor * scaleX);
+    }
+
+    // Escalar alto en relación a la resolución actual
+    public int escalarY(int valor) {
+        return (int) (valor * scaleY);
+    }
+
+    // Getters
+    public int getAncho() { return ancho; }
+    public int getAlto() { return alto; }
+    public double getScaleX() { return scaleX; }
+    public double getScaleY() { return scaleY; }
+}
+
+========== FIN: config/ResolucionManager.java ==========
+
+========== INICIO: config/Sonido.java ==========
+package config;
+
+import javax.sound.sampled.*;
+
+public class Sonido {
+    private static Clip musicaFondo;
+    private static Clip efecto;
+
+    // Volumen global 0.0–1.0 (50% por defecto)
+    private static float volume = 0.5f;
+
+    public static synchronized void setVolume(float v) {
+        volume = Math.max(0f, Math.min(1f, v));
+        // Reaplicar al vuelo si hay clips activos
+        aplicarVolumen(musicaFondo);
+        aplicarVolumen(efecto);
+    }
+
+    public static synchronized float getVolume() {
+        return volume;
+    }
+
+    private static void aplicarVolumen(Clip clip) {
+        if (clip == null) return;
+
+        try {
+            FloatControl gain = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            float min = gain.getMinimum();
+            // Mapear 0..1 a (-80..0] dB en forma logarítmica
+            float dB = (volume <= 0f) ? min : (float) (20.0 * Math.log10(volume));
+            if (dB > 0f) dB = 0f;                 // nunca amplificar
+            if (dB < min) dB = min;               // respetar mínimo del control
+            gain.setValue(dB);
+            return;
+        } catch (Exception ignored) {}
+
+        try {
+            FloatControl vol = (FloatControl) clip.getControl(FloatControl.Type.VOLUME);
+            vol.setValue(Math.max(0f, Math.min(1f, volume)));
+            return;
+        } catch (Exception ignored) {}
+
+    }
+
+    public static void reproducirMusicaLoop(String rutaClasspath) {
+        try {
+            if (musicaFondo != null && musicaFondo.isRunning()) return;
+
+            detenerMusica();
+            AudioInputStream in = AudioSystem.getAudioInputStream(
+                Sonido.class.getResource("/" + rutaClasspath)
+            );
+            musicaFondo = AudioSystem.getClip();
+            musicaFondo.open(in);
+            aplicarVolumen(musicaFondo);              // ← aplicar volumen actual
+            musicaFondo.loop(Clip.LOOP_CONTINUOUSLY);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void detenerMusica() {
+        if (musicaFondo != null) {
+            musicaFondo.stop();
+            musicaFondo.close();
+            musicaFondo = null;
+        }
+    }
+
+    public static void reproducirEfecto(String rutaClasspath) {
+        try {
+            AudioInputStream in = AudioSystem.getAudioInputStream(
+                Sonido.class.getResource("/" + rutaClasspath)
+            );
+            efecto = AudioSystem.getClip();
+            efecto.open(in);
+            aplicarVolumen(efecto);                   // ← aplicar volumen actual
+            efecto.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+========== FIN: config/Sonido.java ==========
 
 ========== INICIO: GUI/Animaciones.java ==========
 package GUI;
@@ -134,6 +659,99 @@ public class BeatG3L extends JFrame {
 
 ========== FIN: GUI/BeatG3L.java ==========
 
+========== INICIO: GUI/canciones/Cancion1.java ==========
+package GUI.canciones;
+
+import java.awt.Color;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+
+import GUI.Nota;
+import config.CancionBase;
+import config.ResolucionManager;
+
+public class Cancion1 extends CancionBase {
+
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private ArrayList<Nota> notas;
+
+    public Cancion1(ResolucionManager resolucion) {
+        super(resolucion); // Llama al constructor de CancionBase
+        construirCancion(resolucion); // Invoca la lógica específica de esta canción
+    }
+
+    @Override
+    protected void construirCancion(ResolucionManager resolucion) {
+    	
+    	// 1. Aplica un retraso hasta que el componente esté dibujado y las coordenadas sean válidas.
+
+    	SwingUtilities.invokeLater(() -> {
+    		SwingUtilities.invokeLater(() -> {
+    			this.notas = new ArrayList<>();
+    			
+    			int anchoNotaJugador = notaD.getWidth(); // Obtenemos el ancho escalado, e.g., 62 * factor.
+                
+                // 2. Definir el ancho escalado de la nota que cae (W_cae)
+                // NOTA: Asumo que el ancho base de la Nota que cae es 50px.
+                // Si el ancho base de tu nota que cae es diferente, reemplaza 50 con el valor correcto.
+                final int ANCHO_BASE_NOTA_CAIDA = 62; 
+                int anchoNotaCaida = resolucion.escalarX(ANCHO_BASE_NOTA_CAIDA);
+                
+                // 3. Calcular el desplazamiento necesario para centrar la nota que cae.
+                // Si W_jugador > W_cae, el ajuste es positivo. Si W_jugador < W_cae, el ajuste es negativo.
+                int ajusteCentrado = (anchoNotaJugador / 2) - (anchoNotaCaida / 2);
+
+             // === Crear notas móviles centradas sobre las del usuario ===
+
+             // Calcula las posiciones X centradas según las notas del usuario
+             int posX_D = notaD.getX() + (notaD.getWidth() - resolucion.escalarY(157 / 2)) / 2;
+             int posX_F = notaF.getX() + (notaF.getWidth() - resolucion.escalarY(157 / 2)) / 2;
+             int posX_J = notaJ.getX() + (notaJ.getWidth() - resolucion.escalarY(157 / 2)) / 2;
+             int posX_K = notaK.getX() + (notaK.getWidth() - resolucion.escalarY(157 / 2)) / 2;
+
+             // Crear notas móviles (no escales dos veces las Y)
+             Nota nota1 = new Nota(posX_D, -100, Color.RED, resolucion);
+             panelJuego.add(nota1);
+             this.notas.add(nota1);
+             super.agregarNota(nota1);
+
+             Nota nota2 = new Nota(posX_F, -300, Color.YELLOW, resolucion);
+             panelJuego.add(nota2);
+             this.notas.add(nota2);
+             super.agregarNota(nota2);
+
+             Nota nota3 = new Nota(posX_J, -500, Color.MAGENTA, resolucion);
+             panelJuego.add(nota3);
+             this.notas.add(nota3);
+             super.agregarNota(nota3);
+
+             Nota nota4 = new Nota(posX_K, -700, Color.GREEN, resolucion);
+             panelJuego.add(nota4);
+             this.notas.add(nota4);
+             super.agregarNota(nota4);
+
+
+    			panelJuego.revalidate(); // Necesario para redibujar la nota
+    			panelJuego.repaint();
+
+    			iniciarMovimientoNotas();
+
+    		});
+    	});
+    }
+}
+
+========== FIN: GUI/canciones/Cancion1.java ==========
+
 ========== INICIO: GUI/Componentes.java ==========
 package GUI;
 
@@ -225,308 +843,6 @@ public class Fondo extends JPanel {
 }
 
 ========== FIN: GUI/Fondo.java ==========
-
-========== INICIO: GUI/Nota.java ==========
-package GUI;
-
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
-import javax.swing.ImageIcon;
-import javax.swing.JPanel;
-
-import config.ResolucionManager;
-
-public class Nota extends JPanel {
-
-    private static final long serialVersionUID = 1L;
-
-    private Image imagenNota;  // imagen visual de la nota
-    private Color color;
-    private int ancho;
-    private int alto;
-
-    public Nota(int posX, int posY, Color color, ResolucionManager resolucion) {
-        this.color = color;
-
-        ancho = resolucion.escalarX(50);
-        alto = resolucion.escalarY(50);
-        int posXEscalado = resolucion.escalarX(posX);
-        int posYEscalado = resolucion.escalarY(posY);
-
-        setBackground(color); // conserva el color original (por compatibilidad)
-        setPreferredSize(new Dimension(ancho, alto));
-        setMaximumSize(new Dimension(ancho, alto));
-        setSize(ancho, alto);
-        setLocation(posXEscalado, posYEscalado);
-
-        // --- Asignar la imagen según el color de la nota ---
-        if (color.equals(Color.RED)) {
-            imagenNota = new ImageIcon(getClass().getResource("/img/notas/izquierda.png")).getImage();
-        } else if (color.equals(Color.YELLOW)) {
-            imagenNota = new ImageIcon(getClass().getResource("/img/notas/abajo.png")).getImage();
-        } else if (color.equals(Color.MAGENTA)) {
-            imagenNota = new ImageIcon(getClass().getResource("/img/notas/arriba.png")).getImage();
-        } else if (color.equals(Color.GREEN)) {
-            imagenNota = new ImageIcon(getClass().getResource("/img/notas/derecha.png")).getImage();
-        } else {
-            imagenNota = null; // por si se usa otro color más adelante
-        }
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        // Dibujar la imagen si existe
-        if (imagenNota != null) {
-            g.drawImage(imagenNota, 0, 0, ancho, alto, this);
-        } else {
-            // En caso de que no haya imagen, mantiene el color sólido
-            g.setColor(color);
-            g.fillRect(0, 0, ancho, alto);
-        }
-    }
-}
-
-========== FIN: GUI/Nota.java ==========
-
-========== INICIO: GUI/NotasUsuario.java ==========
-package GUI;
-
-import java.awt.Graphics;
-import java.awt.Image;
-import javax.swing.ImageIcon;
-import javax.swing.JPanel;
-
-import config.ResolucionManager;
-
-public class NotasUsuario extends JPanel {
-
-    private static final long serialVersionUID = 1L;
-
-    private Image imgNormal;
-    private Image imgPresion;
-    private Image actual;
-    private int ancho;
-    private int alto;
-
-    public NotasUsuario(String rutaNormal, String rutaPresion, int x, int y, ResolucionManager resolucion) {
-        setOpaque(false);
-
-        imgNormal = new ImageIcon(getClass().getResource(rutaNormal)).getImage();
-        imgPresion = new ImageIcon(getClass().getResource(rutaPresion)).getImage();
-        actual = imgNormal;
-
-        ancho = resolucion.escalarX(62);
-        alto = resolucion.escalarY(85);
-
-        setBounds(resolucion.escalarX(x), resolucion.escalarY(y), ancho, alto);
-    }
-
-    public void presionar() {
-        actual = imgPresion;
-        repaint();
-    }
-
-    public void soltar() {
-        actual = imgNormal;
-        repaint();
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        if (actual != null) {
-            g.drawImage(actual, 0, 0, ancho, alto, this);
-        }
-    }
-}
-
-========== FIN: GUI/NotasUsuario.java ==========
-
-========== INICIO: GUI/PrecisionPuntaje.java ==========
-	package GUI;
-	
-	import javax.swing.*;
-	import java.awt.*;
-	
-	public class PrecisionPuntaje extends JLabel {
-	
-		private static final long serialVersionUID = 1L;
-		
-		private int puntos;
-		private int combo;
-		private int multiplicador;
-		private int maxCombo;
-		private int aciertos;
-		private int totalNotas;
-		private String estado;
-		
-		
-		public PrecisionPuntaje(int puntosIniciales) {
-			
-			this.puntos = puntosIniciales;
-			this.combo = 0;
-			this.multiplicador = 1;
-			this.maxCombo = 0;
-			this.estado = "";
-		
-		
-			setFont(new Font("SansSerif", Font.PLAIN, 16));
-			setForeground(Color.WHITE);
-			setHorizontalAlignment(SwingConstants.LEFT);
-			actualizarTexto();
-		}
-			
-			private void actualizarTexto() {
-				setText(String.format(
-						"Score: %d | Combo: %d | x%d %s | %f", puntos, combo, multiplicador, estado, precision()));
-			}
-		
-		
-			public void Perfect() {
-				combo++;
-				aciertos++;
-				totalNotas++;
-				if(combo > maxCombo) maxCombo = combo;
-				if(combo % 10 == 0) multiplicador++;
-				puntos += 100 * multiplicador;
-				estado = "PERFECT";
-				actualizarTexto();
-				
-			}
-			
-			public void Good() {
-				combo++;
-				aciertos++;
-				totalNotas++;
-				if (combo > maxCombo) maxCombo = combo;
-				if(combo % 10 == 0) multiplicador++;
-				puntos += 50 * multiplicador;
-				estado = "GOOD";
-				actualizarTexto();
-			}
-			
-			public void Miss() {
-				combo = 0;
-				multiplicador = 1;
-				totalNotas++;
-				estado = "MISS";
-				actualizarTexto();
-			}
-			
-			public double precision() {
-				if (totalNotas == 0) return 0.0;
-				return (aciertos * 100.0) / totalNotas;
-			}
-			
-			
-			public void reiniciarCancion() {
-				puntos = 0;
-				combo = 0;
-				multiplicador = 1;
-				maxCombo  = 0;
-				aciertos = 0;
-				totalNotas = 0;
-				estado = "";
-				actualizarTexto();
-			}
-			
-			
-			
-			
-	
-		
-		
-		
-		
-		
-		public int getPuntos() {
-			return puntos;
-		}
-		
-		public int getCombo() {
-			return combo;
-		}
-		
-		public int getMultiplicador() {
-			return multiplicador;
-		}
-		
-		public int getMaxCombo() {
-			return maxCombo;
-		}
-		
-		public String getEstado() {
-		 return estado; 
-		 }
-		
-		
-	}
-
-========== FIN: GUI/PrecisionPuntaje.java ==========
-
-========== INICIO: GUI/canciones/Cancion1.java ==========
-package GUI.canciones;
-
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import javax.swing.Timer;
-import GUI.Nota;
-import config.CancionBase;
-import config.ResolucionManager;
-
-public class Cancion1 extends CancionBase {
-
-    private static final long serialVersionUID = 1L;
-    private ArrayList<Nota> notas = new ArrayList<>();
-
-    public Cancion1(ResolucionManager resolucion) {
-        super(resolucion);
-        construirCancion(resolucion);
-    }
-
-    @Override
-    protected void construirCancion(ResolucionManager resolucion) {
-
-        for (int i = 0; i < carrilesX.length; i++) {
-            Color color;
-            switch (i) {
-                case 0 -> color = Color.RED;
-                case 1 -> color = Color.YELLOW;
-                case 2 -> color = Color.MAGENTA;
-                default -> color = Color.GREEN;
-            }
-
-            Nota nota = new Nota(carrilesX[i], 0, color, resolucion);
-            agregarNota(nota);
-            notas.add(nota);
-        }
-
-        int velocidad = resolucion.escalarY(5);
-        Timer timer = new Timer(10, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                for (int i = notasActivas.size() - 1; i >= 0; i--) {
-                    Nota nota = notasActivas.get(i);
-                    nota.setLocation(nota.getX(), nota.getY() + velocidad);
-
-                    if (nota.getY() > resolucion.getAlto()) {
-                        panelJuego.remove(nota);
-                        notasActivas.remove(i);
-                    }
-                }
-                panelJuego.repaint();
-            }
-        });
-        timer.start();
-    }
-}
-
-========== FIN: GUI/canciones/Cancion1.java ==========
 
 ========== INICIO: GUI/menu/MenuInicio.java ==========
 package GUI.menu;
@@ -1023,307 +1339,244 @@ public class PantallaInicio extends JPanel {
 
 ========== FIN: GUI/menu/PantallaInicio.java ==========
 
-========== INICIO: config/CancionBase.java ==========
-package config;
+========== INICIO: GUI/Nota.java ==========
+package GUI;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.*;
-import GUI.Fondo;
-import GUI.Nota;
-import GUI.NotasUsuario;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import javax.swing.ImageIcon;
+import javax.swing.JPanel;
 
-public abstract class CancionBase extends JPanel {
+import config.ResolucionManager;
+
+public class Nota extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    protected NotasUsuario notaD;
-    protected NotasUsuario notaF;
-    protected NotasUsuario notaJ;
-    protected NotasUsuario notaK;
-
-    protected JPanel panelJuego;
-    protected List<Nota> notasActivas = new ArrayList<>();
-    protected boolean nivelSuperado = false;
-
-    // === CARRILES FIJOS (coordenadas horizontales de cada tecla) ===
-    protected int[] carrilesX;
-
-    public CancionBase(ResolucionManager resolucion) {
-        setLayout(new BorderLayout());
-        setFocusable(true);
-
-        Fondo fondo = new Fondo(resolucion.getFondoOpciones());
-        fondo.setLayout(new BorderLayout());
-        add(fondo, BorderLayout.CENTER);
-
-        panelJuego = new JPanel(null);
-        panelJuego.setOpaque(false);
-        fondo.add(panelJuego, BorderLayout.CENTER);
-
-        // Crear carriles base según resolución
-        crearCarriles(resolucion);
-
-        // Crear notas del jugador en la parte inferior
-        crearNotasJugador(resolucion);
-
-        // Listener de teclado
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (nivelSuperado) return;
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_D -> presionar(notaD);
-                    case KeyEvent.VK_F -> presionar(notaF);
-                    case KeyEvent.VK_J -> presionar(notaJ);
-                    case KeyEvent.VK_K -> presionar(notaK);
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (nivelSuperado) return;
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_D -> soltar(notaD);
-                    case KeyEvent.VK_F -> soltar(notaF);
-                    case KeyEvent.VK_J -> soltar(notaJ);
-                    case KeyEvent.VK_K -> soltar(notaK);
-                }
-            }
-        });
-
-        SwingUtilities.invokeLater(this::requestFocusInWindow);
-    }
-
-    // Carriles horizontales
-    private void crearCarriles(ResolucionManager resolucion) {
-        int base = resolucion.escalarX(700); // posición base del primer carril
-        int separacion = resolucion.escalarX(120); // distancia entre carriles
-        carrilesX = new int[] { base, base + separacion, base + separacion * 2, base + separacion * 3 };
-    }
-
-    // Crea las 4 notas del jugador alineadas
-    private void crearNotasJugador(ResolucionManager resolucion) {
-        int yJugador = resolucion.escalarY(850);
-
-        notaD = new NotasUsuario("/img/notas/notasUsuario/izquierda.png",
-                                 "/img/notas/notasUsuario/izquierdaPresion.png",
-                                 carrilesX[0], yJugador, resolucion);
-        notaF = new NotasUsuario("/img/notas/notasUsuario/abajo.png",
-                                 "/img/notas/notasUsuario/abajoPresion.png",
-                                 carrilesX[1], yJugador, resolucion);
-        notaJ = new NotasUsuario("/img/notas/notasUsuario/arriba.png",
-                                 "/img/notas/notasUsuario/arribaPresion.png",
-                                 carrilesX[2], yJugador, resolucion);
-        notaK = new NotasUsuario("/img/notas/notasUsuario/derecha.png",
-                                 "/img/notas/notasUsuario/derechaPresion.png",
-                                 carrilesX[3], yJugador, resolucion);
-
-        panelJuego.add(notaD);
-        panelJuego.add(notaF);
-        panelJuego.add(notaJ);
-        panelJuego.add(notaK);
-    }
-
-    // Presionar y verificar colisión
-    private void presionar(NotasUsuario notaUsuario) {
-        notaUsuario.presionar();
-        verificarColision(notaUsuario);
-    }
-
-    private void soltar(NotasUsuario notaUsuario) {
-        notaUsuario.soltar();
-    }
-
-    private void verificarColision(JPanel notaUsuario) {
-        for (int i = notasActivas.size() - 1; i >= 0; i--) {
-            Nota nota = notasActivas.get(i);
-
-            // Coincidencia horizontal (mismo carril)
-            if (Math.abs(nota.getX() - notaUsuario.getX()) < 40) {
-
-                // Obtenemos los rectángulos exactos de cada componente
-                Rectangle rectNota = nota.getBounds();
-                Rectangle rectJugador = notaUsuario.getBounds();
-
-                // Verificar si se superponen visualmente
-                if (rectNota.intersects(rectJugador)) {
-                    panelJuego.remove(nota);
-                    notasActivas.remove(i);
-                    panelJuego.repaint();
-                    System.out.println("le pegaste");
-                    return;
-                }
-            }
-        }
-    }
-
-
-    // Método usado por las subclases (Cancion1, etc.)
-    public void agregarNota(Nota nota) {
-        panelJuego.add(nota);
-        notasActivas.add(nota);
-        panelJuego.setComponentZOrder(nota, 0);
-    }
-
-    // Método abstracto que define el patrón de notas
-    protected abstract void construirCancion(ResolucionManager resolucion);
-}
-
-========== FIN: config/CancionBase.java ==========
-
-========== INICIO: config/ResolucionManager.java ==========
-package config;
-
-public class ResolucionManager {
-
-    // Resolución base (para escalado)
-    private static final int BASE_WIDTH = 1920;
-    private static final int BASE_HEIGHT = 1080;
-
+    private Image imagenNota;  // imagen visual de la nota
+    private Color color;
     private int ancho;
     private int alto;
-    private double scaleX;
-    private double scaleY;
 
-    public ResolucionManager(int ancho, int alto) {
+    public Nota(int posX, int posY, Color color, ResolucionManager resolucion) {
+        this.color = color;
+
+        int baseTam = 157 / 2;
+        ancho = resolucion.escalarY(baseTam);
+        alto  = resolucion.escalarY(baseTam);
+
+        int posXEscalado = posX; // ❗ Ya está escalado afuera (no lo vuelvas a escalar)
+        int posYEscalado = resolucion.escalarY(posY);
+
+        setOpaque(false);
+        setSize(ancho, alto);
+        setLocation(posXEscalado, posYEscalado);
+
+        // Carga de imagen
+        if (color.equals(Color.RED)) {
+            imagenNota = new ImageIcon(getClass().getResource("/img/notas/izquierda.png")).getImage();
+        } else if (color.equals(Color.YELLOW)) {
+            imagenNota = new ImageIcon(getClass().getResource("/img/notas/abajo.png")).getImage();
+        } else if (color.equals(Color.MAGENTA)) {
+            imagenNota = new ImageIcon(getClass().getResource("/img/notas/arriba.png")).getImage();
+        } else if (color.equals(Color.GREEN)) {
+            imagenNota = new ImageIcon(getClass().getResource("/img/notas/derecha.png")).getImage();
+        } else {
+            imagenNota = null;
+        }
+    }
+
+
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        // Dibujar la imagen si existe
+        if (imagenNota != null) {
+            g.drawImage(imagenNota, 0, 0, ancho, alto, this);
+        } else {
+            // En caso de que no haya imagen, mantiene el color sólido
+            g.setColor(color);
+            g.fillRect(0, 0, ancho, alto);
+        }
+    }
+}
+
+========== FIN: GUI/Nota.java ==========
+
+========== INICIO: GUI/NotasUsuario.java ==========
+package GUI;
+
+import java.awt.Graphics;
+import java.awt.Image;
+import javax.swing.ImageIcon;
+import javax.swing.JPanel;
+
+import config.ResolucionManager;
+
+public class NotasUsuario extends JPanel {
+
+    private static final long serialVersionUID = 1L;
+
+    private Image imgNormal;
+    private Image imgPresion;
+    private Image actual;
+    private int ancho;
+    private int alto;
+
+    public NotasUsuario(String rutaNormal, String rutaPresion, int x, int y, int ancho, int alto) {
+        setOpaque(false);
+        imgNormal = new ImageIcon(getClass().getResource(rutaNormal)).getImage();
+        imgPresion = new ImageIcon(getClass().getResource(rutaPresion)).getImage();
+        actual = imgNormal;
         this.ancho = ancho;
         this.alto = alto;
-
-        // Factores de escala en relación a la base
-        this.scaleX = (double) ancho / BASE_WIDTH;
-        this.scaleY = (double) alto / BASE_HEIGHT;
+        setBounds(x, y, ancho, alto);
     }
 
-    // Devuelve ruta del fondo según resolución
-    public String getFondoMenuInicio() {
-        if (ancho == 800 && alto == 600) return "/img/fondo/1_800x600.jpg";
-        if (ancho == 1280 && alto == 720) return "/img/fondo/1_1280x720.jpg";
-        if (ancho == 1366 && alto == 768) return "/img/fondo/1_1366x768.jpg";
-        if (ancho == 1600 && alto == 900) return "/img/fondo/1_1600x900.jpg";
-        if (ancho == 1920 && alto == 1080) return "/img/fondo/1_1920x1080_mejorada.jpg";
-
-        // Por defecto, usar la de mayor calidad
-        return "/GUI/img/fondo/1_1920x1080_mejorada.jpg";
-    }
-    
-    public String getFondoOpciones() {
-        if (ancho == 800 && alto == 600) return "/img/fondo/2_800x600.png";
-        if (ancho == 1280 && alto == 720) return "/img/fondo/2_1280x720.png";
-        if (ancho == 1366 && alto == 768) return "/img/fondo/2_1366x768.png";
-        if (ancho == 1600 && alto == 900) return "/img/fondo/2_1600x900.png";
-        if (ancho == 1920 && alto == 1080) return "/img/fondo/2_1920x1080.png";
-
-        // Por defecto, usar la de mayor calidad
-        return "/GUI/img/fondo/2_1920x1080.png";
+    public void presionar() {
+        actual = imgPresion;
+        repaint();
     }
 
-    // Escalar ancho en relación a la resolución actual
-    public int escalarX(int valor) {
-        return (int) (valor * scaleX);
+    public void soltar() {
+        actual = imgNormal;
+        repaint();
     }
 
-    // Escalar alto en relación a la resolución actual
-    public int escalarY(int valor) {
-        return (int) (valor * scaleY);
-    }
-
-    // Getters
-    public int getAncho() { return ancho; }
-    public int getAlto() { return alto; }
-    public double getScaleX() { return scaleX; }
-    public double getScaleY() { return scaleY; }
-}
-
-========== FIN: config/ResolucionManager.java ==========
-
-========== INICIO: config/Sonido.java ==========
-package config;
-
-import javax.sound.sampled.*;
-
-public class Sonido {
-    private static Clip musicaFondo;
-    private static Clip efecto;
-
-    // Volumen global 0.0–1.0 (50% por defecto)
-    private static float volume = 0.5f;
-
-    public static synchronized void setVolume(float v) {
-        volume = Math.max(0f, Math.min(1f, v));
-        // Reaplicar al vuelo si hay clips activos
-        aplicarVolumen(musicaFondo);
-        aplicarVolumen(efecto);
-    }
-
-    public static synchronized float getVolume() {
-        return volume;
-    }
-
-    private static void aplicarVolumen(Clip clip) {
-        if (clip == null) return;
-
-        try {
-            FloatControl gain = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-            float min = gain.getMinimum();
-            // Mapear 0..1 a (-80..0] dB en forma logarítmica
-            float dB = (volume <= 0f) ? min : (float) (20.0 * Math.log10(volume));
-            if (dB > 0f) dB = 0f;                 // nunca amplificar
-            if (dB < min) dB = min;               // respetar mínimo del control
-            gain.setValue(dB);
-            return;
-        } catch (Exception ignored) {}
-
-        try {
-            FloatControl vol = (FloatControl) clip.getControl(FloatControl.Type.VOLUME);
-            vol.setValue(Math.max(0f, Math.min(1f, volume)));
-            return;
-        } catch (Exception ignored) {}
-
-    }
-
-    public static void reproducirMusicaLoop(String rutaClasspath) {
-        try {
-            if (musicaFondo != null && musicaFondo.isRunning()) return;
-
-            detenerMusica();
-            AudioInputStream in = AudioSystem.getAudioInputStream(
-                Sonido.class.getResource("/" + rutaClasspath)
-            );
-            musicaFondo = AudioSystem.getClip();
-            musicaFondo.open(in);
-            aplicarVolumen(musicaFondo);              // ← aplicar volumen actual
-            musicaFondo.loop(Clip.LOOP_CONTINUOUSLY);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void detenerMusica() {
-        if (musicaFondo != null) {
-            musicaFondo.stop();
-            musicaFondo.close();
-            musicaFondo = null;
-        }
-    }
-
-    public static void reproducirEfecto(String rutaClasspath) {
-        try {
-            AudioInputStream in = AudioSystem.getAudioInputStream(
-                Sonido.class.getResource("/" + rutaClasspath)
-            );
-            efecto = AudioSystem.getClip();
-            efecto.open(in);
-            aplicarVolumen(efecto);                   // ← aplicar volumen actual
-            efecto.start();
-        } catch (Exception e) {
-            e.printStackTrace();
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (actual != null) {
+            g.drawImage(actual, 0, 0, ancho, alto, this);
         }
     }
 }
 
+========== FIN: GUI/NotasUsuario.java ==========
 
-========== FIN: config/Sonido.java ==========
+========== INICIO: GUI/PrecisionPuntaje.java ==========
+	package GUI;
+	
+	import javax.swing.*;
+	import java.awt.*;
+	
+	public class PrecisionPuntaje extends JLabel {
+	
+		private static final long serialVersionUID = 1L;
+		
+		private int puntos;
+		private int combo;
+		private int multiplicador;
+		private int maxCombo;
+		private int aciertos;
+		private int totalNotas;
+		private String estado;
+		
+		
+		public PrecisionPuntaje(int puntosIniciales) {
+			
+			this.puntos = puntosIniciales;
+			this.combo = 0;
+			this.multiplicador = 1;
+			this.maxCombo = 0;
+			this.estado = "";
+		
+		
+			setFont(new Font("SansSerif", Font.PLAIN, 16));
+			setForeground(Color.WHITE);
+			setHorizontalAlignment(SwingConstants.LEFT);
+			actualizarTexto();
+		}
+			
+			private void actualizarTexto() {
+				setText(String.format(
+						"Score: %d | Combo: %d | x%d %s | %f", puntos, combo, multiplicador, estado, precision()));
+			}
+		
+		
+			public void Perfect() {
+				combo++;
+				aciertos++;
+				totalNotas++;
+				if(combo > maxCombo) maxCombo = combo;
+				if(combo % 10 == 0) multiplicador++;
+				puntos += 100 * multiplicador;
+				estado = "PERFECT";
+				actualizarTexto();
+				
+			}
+			
+			public void Good() {
+				combo++;
+				aciertos++;
+				totalNotas++;
+				if (combo > maxCombo) maxCombo = combo;
+				if(combo % 10 == 0) multiplicador++;
+				puntos += 50 * multiplicador;
+				estado = "GOOD";
+				actualizarTexto();
+			}
+			
+			public void Miss() {
+				combo = 0;
+				multiplicador = 1;
+				totalNotas++;
+				estado = "MISS";
+				actualizarTexto();
+			}
+			
+			public double precision() {
+				if (totalNotas == 0) return 0.0;
+				return (aciertos * 100.0) / totalNotas;
+			}
+			
+			
+			public void reiniciarCancion() {
+				puntos = 0;
+				combo = 0;
+				multiplicador = 1;
+				maxCombo  = 0;
+				aciertos = 0;
+				totalNotas = 0;
+				estado = "";
+				actualizarTexto();
+			}
+			
+			
+			
+			
+	
+		
+		
+		
+		
+		
+		public int getPuntos() {
+			return puntos;
+		}
+		
+		public int getCombo() {
+			return combo;
+		}
+		
+		public int getMultiplicador() {
+			return multiplicador;
+		}
+		
+		public int getMaxCombo() {
+			return maxCombo;
+		}
+		
+		public String getEstado() {
+		 return estado; 
+		 }
+		
+		
+	}
+
+========== FIN: GUI/PrecisionPuntaje.java ==========
 

@@ -1,368 +1,163 @@
 package config;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
+import javax.swing.*;
 import GUI.Fondo;
 import GUI.Nota;
 import GUI.NotasUsuario;
 
 public abstract class CancionBase extends JPanel {
-    
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	protected JPanel notaD;
-    protected JPanel notaF;
-    protected JPanel notaJ;
-    protected JPanel notaK;
-    
-    private boolean dPressed = false;
-    private boolean fPressed = false;
-    private boolean jPressed = false;
-    private boolean kPressed = false;
-    private boolean nivelSuperado = false;
-    public int BORDE_SUPERIOR_USUARIO;
-    public int BORDE_INFERIOR_USUARIO;
-    public int POSICION_GLOBAL_X_USUARIO;
-    
-    protected JPanel panelJuego;
 
-    private Fondo contentPane;
-    
+    private static final long serialVersionUID = 1L;
+
+    protected NotasUsuario notaD, notaF, notaJ, notaK;
+    protected JPanel panelJuego;
     protected List<Nota> notasActivas = new ArrayList<>();
-    
+    protected boolean nivelSuperado = false;
     protected ResolucionManager resolucion;
-    
-    protected abstract void construirCancion(ResolucionManager resolucion); // cada nivel define sus notas y ritmo
+    private Timer timerNotas;
 
     public CancionBase(ResolucionManager resolucion) {
-    	setLayout(new BorderLayout());
-    	
-    	this.resolucion = resolucion;
-    	
-        // Fondo principal
-        contentPane = new Fondo(resolucion.getFondoOpciones());
-        contentPane.setLayout(new BorderLayout(10, 10));
-        contentPane.setOpaque(true);
-
-        panelJuego = new JPanel(null); // layout nulo para posicionamiento absoluto
-        panelJuego.setOpaque(false);
-        
-        
-        /*
-     // Obtén el punto (0, 0) de la notaUsuario
-        Point topLeft = new Point(0, 0);
-
-        // Convierte el punto (0, 0) de notaUsuario para que sea relativo a panelJuego
-        Point ubicacionRelativaAJuego = SwingUtilities.convertPoint(
-            notaUsuario, // El componente a ubicar
-            topLeft,     // El punto dentro del componente (aquí, la esquina superior izquierda)
-            panelJuego   // El sistema de coordenadas de destino
-        );
-        */
-        
-        contentPane.add(panelJuego, BorderLayout.CENTER);
-        
-        notasJugador(resolucion);
-        
-        
-
-        
-        add(contentPane, BorderLayout.CENTER);
-        /*
-        eliminarNotasPasadas(notaD);
-        eliminarNotasPasadas(notaF);
-        eliminarNotasPasadas(notaJ);
-        eliminarNotasPasadas(notaK);
-        */
-        
-        // El panel principal recibe eventos de teclado
+        this.resolucion = resolucion;
+        setLayout(new BorderLayout());
         setFocusable(true);
 
-        // --- KeyListener para detectar las teclas D, F, J, K ---
+        Fondo fondo = new Fondo(resolucion.getFondoOpciones());
+        fondo.setLayout(new BorderLayout());
+        add(fondo, BorderLayout.CENTER);
+
+        panelJuego = new JPanel(null);
+        panelJuego.setOpaque(false);
+        fondo.add(panelJuego, BorderLayout.CENTER);
+
+        notasJugador(resolucion);
+
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (nivelSuperado) return;
-
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_D:
-                        ((NotasUsuario) notaD).presionar();
-                        dPressed = true;
-                        verificarColision(notaD); 
-                        break;
-                    case KeyEvent.VK_F:
-                        ((NotasUsuario) notaF).presionar();
-                        fPressed = true;
-                        verificarColision(notaF); 
-                        break;
-                    case KeyEvent.VK_J:
-                        ((NotasUsuario) notaJ).presionar();
-                        jPressed = true;
-                        verificarColision(notaJ); 
-                        break;
-                    case KeyEvent.VK_K:
-                        ((NotasUsuario) notaK).presionar();
-                        kPressed = true;
-                        verificarColision(notaK); 
-                        break;
+                    case KeyEvent.VK_D -> presionar(notaD);
+                    case KeyEvent.VK_F -> presionar(notaF);
+                    case KeyEvent.VK_J -> presionar(notaJ);
+                    case KeyEvent.VK_K -> presionar(notaK);
                 }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
                 if (nivelSuperado) return;
-
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_D:
-                        ((NotasUsuario) notaD).soltar();
-                        dPressed = false;
-                        break;
-                    case KeyEvent.VK_F:
-                        ((NotasUsuario) notaF).soltar();
-                        fPressed = false;
-                        break;
-                    case KeyEvent.VK_J:
-                        ((NotasUsuario) notaJ).soltar();
-                        jPressed = false;
-                        break;
-                    case KeyEvent.VK_K:
-                        ((NotasUsuario) notaK).soltar();
-                        kPressed = false;
-                        break;
+                    case KeyEvent.VK_D -> soltar(notaD);
+                    case KeyEvent.VK_F -> soltar(notaF);
+                    case KeyEvent.VK_J -> soltar(notaJ);
+                    case KeyEvent.VK_K -> soltar(notaK);
                 }
             }
         });
 
-        // Configurar las notas del jugador (los paneles de colores)
-
-
-        // --- Asegurar que el foco llegue correctamente ---
-        SwingUtilities.invokeLater(() -> {
-            calcularBordesUsuario();
-            requestFocusInWindow();
-        });
+        SwingUtilities.invokeLater(this::requestFocusInWindow);
     }
 
- 
-    
-    public void agregarNota(Nota nota) {
-        panelJuego.add(nota);
-        notasActivas.add(nota); // Agrega la nota a tu lista de rastreo
-        // Asegúrate de que las notas se muevan en un hilo o temporizador separado.
-        for (Nota notaActiva : notasActivas){
-        	System.out.println("Se agrego la nota" + notasActivas);
-        }
-    }
-    
-    private void calcularBordesUsuario() {
-        // Si la notaD aún no se ha creado (aunque debería estarlo después de notasJugador), sal.
-        if (notaD == null || panelJuego == null) return; 
+    private void notasJugador(ResolucionManager resolucion) {
+        panelJuego.setLayout(null);
 
-        // Solo necesitamos calcular la posición de UNA de las notas (ej. notaD),
-        // ya que todas están a la misma altura.
-        
-        Point ubicacionAbsoluta = SwingUtilities.convertPoint(
-            notaD.getParent(), 
-            notaD.getLocation(), 
-            panelJuego
-        );
-        
-        // Almacena los valores en las variables de instancia
-        this.BORDE_SUPERIOR_USUARIO = ubicacionAbsoluta.y;
-        this.BORDE_INFERIOR_USUARIO = ubicacionAbsoluta.y + notaD.getHeight();
-        this.POSICION_GLOBAL_X_USUARIO = ubicacionAbsoluta.x;
-        
-        // Nota: ¡Este cálculo solo será preciso si se llama DESPUÉS de que panelJuego haya sido dibujado!
-        // Lo manejaremos con SwingUtilities.invokeLater.
+        int baseAncho = 125 / 2;
+        int baseAlto  = 175 / 2;
+        int ancho = resolucion.escalarY(baseAncho);
+        int alto  = resolucion.escalarY(baseAlto);
+        int baseX = 700;
+        int separacion = 120;
+        int baseY = 850;
+
+        notaD = new NotasUsuario("/img/notas/notasUsuario/izquierda.png",
+                "/img/notas/notasUsuario/izquierdaPresion.png",
+                resolucion.escalarX(baseX), resolucion.escalarY(baseY), ancho, alto);
+        notaF = new NotasUsuario("/img/notas/notasUsuario/abajo.png",
+                "/img/notas/notasUsuario/abajoPresion.png",
+                resolucion.escalarX(baseX + separacion), resolucion.escalarY(baseY), ancho, alto);
+        notaJ = new NotasUsuario("/img/notas/notasUsuario/arriba.png",
+                "/img/notas/notasUsuario/arribaPresion.png",
+                resolucion.escalarX(baseX + separacion * 2), resolucion.escalarY(baseY), ancho, alto);
+        notaK = new NotasUsuario("/img/notas/notasUsuario/derecha.png",
+                "/img/notas/notasUsuario/derechaPresion.png",
+                resolucion.escalarX(baseX + separacion * 3), resolucion.escalarY(baseY), ancho, alto);
+
+        panelJuego.add(notaD);
+        panelJuego.add(notaF);
+        panelJuego.add(notaJ);
+        panelJuego.add(notaK);
     }
-    
- // En CancionBase.java
+
+    private void presionar(NotasUsuario notaUsuario) {
+        notaUsuario.presionar();
+        verificarColision(notaUsuario);
+    }
+
+    private void soltar(NotasUsuario notaUsuario) {
+        notaUsuario.soltar();
+    }
+
+    // --- Nueva colisión mejorada ---
     private void verificarColision(JPanel notaUsuario) {
-       
-        // 2. Definir una TOLERANCIA mínima (necesaria para la velocidad del juego).
-        // Si quieres máxima precisión, 15px-20px es un rango estricto.
-        final int RANGO_TOLERANCIA_Y = 100;
+        Rectangle hitUsuario = notaUsuario.getBounds();
+        int tolX = Math.max(1, resolucion.escalarX(10)); // tolerancia lateral
 
-        // 3. Bucle Inverso
         for (int i = notasActivas.size() - 1; i >= 0; i--) {
-            Nota notaCayendo = notasActivas.get(i);
-            
-            // 4. FILTRO HORIZONTAL (CARRIL)
-            // Se mantiene para asegurar el carril correcto
-            final int TOLERANCIA_BASE_X = 10; 
-            int toleranciaXEscalada = resolucion.escalarX(TOLERANCIA_BASE_X); // ✅ Escalar
-            
-            if (Math.abs(notaCayendo.getX() - notaUsuario.getX()) > toleranciaXEscalada) {
-            	System.out.println("NO ESTA ALINEADA");
-                continue; 
-            }
-            
-            
-            // 5. Coordenadas de la NOTA QUE CAE
-            int bordeInferiorCayendo = notaCayendo.getY() + notaCayendo.getHeight();
-            
-            System.out.println("el borde superior de la nota es" + notaCayendo.getY());
-            System.out.println("el borde inferior de la nota es" + bordeInferiorCayendo);
-            
-            // 6. CHEQUEO DE GOLPE (HIT CHECK)
-            // Condición: La parte inferior de la nota cayendo debe estar DENTRO del área de golpe del jugador.
-            
-            // La nota debe haber pasado el BORDE SUPERIOR del jugador.
-            boolean yaPasoBordeSuperior = (notaCayendo.getY() + notaCayendo.getHeight()) >= (BORDE_SUPERIOR_USUARIO - RANGO_TOLERANCIA_Y);
-            
-            // La nota no debe haber pasado el BORDE INFERIOR del jugador (o se considera perdida).
-            boolean noPasoBordeInferior = notaCayendo.getY() <= (BORDE_INFERIOR_USUARIO + RANGO_TOLERANCIA_Y);
+            Nota n = notasActivas.get(i);
 
-            // Si ambas condiciones se cumplen, la nota está en el área donde se debe golpear.
-            if (yaPasoBordeSuperior && noPasoBordeInferior) {
-                
-            	System.out.println("Se puede golpear la nota");
-                // *** ¡GOLPE VÁLIDO! 🎉 ***
-                // La nota se elimina justo cuando "toca" o "cruza" la notaUsuario.
-                
-                panelJuego.remove(notaCayendo); 
-                notasActivas.remove(i);       
-                panelJuego.repaint();         
-                
-                return; // Solo procesamos el golpe más cercano
-            }
-            /*
-            // 7. LÓGICA DE NOTAS PERDIDAS
-            // Si la nota ha caído completamente más allá del área de golpe sin ser tocada.
-            if (notaCayendo.getY() > BORDE_INFERIOR_USUARIO + RANGO_TOLERANCIA_Y) { 
-            	
-            	System.out.println("se borro la nota");
-                // ... [Lógica de nota perdida]
-                panelJuego.remove(notaCayendo);
+            int centroUsuario = hitUsuario.x + hitUsuario.width / 2;
+            int centroNota = n.getX() + n.getWidth() / 2;
+
+            if (Math.abs(centroUsuario - centroNota) > tolX) continue;
+
+            if (n.getBounds().intersects(hitUsuario)) {
+                panelJuego.remove(n);
                 notasActivas.remove(i);
                 panelJuego.repaint();
-           }
-            */
-            
+                System.out.println("le pegaste");
+                return;
+            }
         }
     }
-    
-    public void eliminarNotasPasadas(Nota notaCayendo) {
-// 1. Definir el ÁREA DE GOLPE (hitbox) del jugador.
-    	
-    	//        System.out.println("el borde superior del usuario es" + BORDE_SUPERIOR_USUARIO);
-//        System.out.println("el borde inferior del usuario es" + BORDE_INFERIOR_USUARIO);
 
-        // 2. Definir una TOLERANCIA mínima (necesaria para la velocidad del juego).
-        // Si quieres máxima precisión, 15px-20px es un rango estricto.
-        final int RANGO_TOLERANCIA_Y = 100;
+    protected void iniciarMovimientoNotas() {
+        int velocidad = resolucion.escalarY(5);
 
-         
-            
-            // 5. Coordenadas de la NOTA QUE CAE
-            int bordeInferiorCayendo = notaCayendo.getY() + notaCayendo.getHeight();
-            
-            
-            // 7. LÓGICA DE NOTAS PERDIDAS
-            // Si la nota ha caído completamente más allá del área de golpe sin ser tocada.
-            if (notaCayendo.getY() > BORDE_INFERIOR_USUARIO + RANGO_TOLERANCIA_Y) { 
-            	
-            	System.out.println("se borro la nota");
-                // ... [Lógica de nota perdida]
-                panelJuego.remove(notaCayendo);
-                panelJuego.repaint();
-           }
-            
-            
-        
-    }
-
-   
-    private void notasJugador(ResolucionManager resolucion) {
-        JPanel panelSur = new JPanel();
-        panelSur.setOpaque(false);
-        panelSur.setLayout(new BoxLayout(panelSur, BoxLayout.X_AXIS));
-        panelJuego.add(panelSur);
-        
-        
-
-        int separacion = resolucion.escalarX(0);
-
-        // === Crear las 4 notas fijas con tus imágenes ===
-        notaD = new NotasUsuario(
-            "/img/notas/notasUsuario/izquierda.png",
-            "/img/notas/notasUsuario/izquierdaPresion.png",
-            0, 0, resolucion
-        );
-        notaF = new NotasUsuario(
-            "/img/notas/notasUsuario/abajo.png",
-            "/img/notas/notasUsuario/abajoPresion.png",
-            0, 0, resolucion
-        );
-        notaJ = new NotasUsuario(
-            "/img/notas/notasUsuario/arriba.png",
-            "/img/notas/notasUsuario/arribaPresion.png",
-            0, 0, resolucion
-        );
-        notaK = new NotasUsuario(
-            "/img/notas/notasUsuario/derecha.png",
-            "/img/notas/notasUsuario/derechaPresion.png",
-            0, 0, resolucion
-        );
-
-        // Añadir con separaciones
-        panelSur.add(Box.createHorizontalGlue());
-        panelSur.add(notaD);
-        System.out.println("la posicion en X de notaD es: " + notaD.getX());
-        panelSur.add(Box.createRigidArea(new Dimension(separacion, 0)));
-        panelSur.add(notaF);
-        System.out.println("la posicion en X de notaF es: " + notaF.getX());
-        panelSur.add(Box.createRigidArea(new Dimension(separacion, 0)));
-        panelSur.add(notaJ);
-        System.out.println("la posicion en X de notaJ es: " + notaJ.getX());
-        panelSur.add(Box.createRigidArea(new Dimension(separacion, 0)));
-        panelSur.add(notaK);
-        System.out.println("la posicion en X de notaK es: " + notaK.getX());
-        panelSur.add(Box.createHorizontalGlue());
-
-        // Espacio inferior (altura donde se ubican las flechas)
-        panelSur.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(250))));
-        
-        int altoNotaUsuario = resolucion.escalarY(80) + resolucion.escalarY(250); 
-        // Los 80px del componente NotasUsuario + los 250px del Box.createRigidArea
-        
-        final int ANCHO_BASE_CARRILES = 1200; // Define un ancho base para tus 4 notas
-        int anchoCarrilesEscalado = resolucion.escalarX(ANCHO_BASE_CARRILES);
-        
-        SwingUtilities.invokeLater(() -> {
-            int anchoJuego = panelJuego.getWidth();
-            int altoJuego = panelJuego.getHeight();
-            
-            // Y donde panelSur debe empezar (casi al final de panelJuego)
-            int posY = altoJuego - altoNotaUsuario; 
-            int posX = (anchoJuego - anchoCarrilesEscalado) / 2; // Calcula el margen izquierdo;
-            
-            panelSur.setBounds(posX, posY, anchoCarrilesEscalado, altoNotaUsuario);
-            
-            panelJuego.revalidate();
+        timerNotas = new Timer(10, e -> {
+            for (int i = notasActivas.size() - 1; i >= 0; i--) {
+                Nota n = notasActivas.get(i);
+                n.setLocation(n.getX(), n.getY() + velocidad);
+                eliminarNotasPasadas(n);
+            }
             panelJuego.repaint();
         });
+        timerNotas.start();
     }
-    
 
-    
-    protected Fondo getContentPaneFondo() {
-        return contentPane;
+    protected void detenerMovimientoNotas() {
+        if (timerNotas != null && timerNotas.isRunning()) {
+            timerNotas.stop();
+        }
     }
-    
-    
-    
+
+    private void eliminarNotasPasadas(Nota n) {
+        int margen = Math.max(1, resolucion.escalarY(n.getHeight() / 2));
+        int bordeInferior = resolucion.escalarY(1080);
+        if (n.getY() > bordeInferior + margen) {
+            panelJuego.remove(n);
+            panelJuego.repaint();
+        }
+    }
+
+    public void agregarNota(Nota nota) {
+        panelJuego.add(nota);
+        notasActivas.add(nota);
+        panelJuego.setComponentZOrder(nota, 0);
+    }
+
+    protected abstract void construirCancion(ResolucionManager resolucion);
 }
