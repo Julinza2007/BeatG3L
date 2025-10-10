@@ -43,10 +43,14 @@ public abstract class CancionBase extends JPanel {
     
     protected List<Nota> notasActivas = new ArrayList<>();
     
+    protected ResolucionManager resolucion;
+    
     protected abstract void construirCancion(ResolucionManager resolucion); // cada nivel define sus notas y ritmo
 
     public CancionBase(ResolucionManager resolucion) {
     	setLayout(new BorderLayout());
+    	
+    	this.resolucion = resolucion;
     	
         // Fondo principal
         contentPane = new Fondo(resolucion.getFondoOpciones());
@@ -72,6 +76,7 @@ public abstract class CancionBase extends JPanel {
         contentPane.add(panelJuego, BorderLayout.CENTER);
         
         notasJugador(resolucion);
+        
         
 
         
@@ -197,8 +202,10 @@ public abstract class CancionBase extends JPanel {
             
             // 4. FILTRO HORIZONTAL (CARRIL)
             // Se mantiene para asegurar el carril correcto
+            final int TOLERANCIA_BASE_X = 10; 
+            int toleranciaXEscalada = resolucion.escalarX(TOLERANCIA_BASE_X); // ✅ Escalar
             
-            if (Math.abs(notaCayendo.getX() - notaUsuario.getX()) > 50) {
+            if (Math.abs(notaCayendo.getX() - notaUsuario.getX()) > toleranciaXEscalada) {
             	System.out.println("NO ESTA ALINEADA");
                 continue; 
             }
@@ -314,12 +321,16 @@ public abstract class CancionBase extends JPanel {
         // Añadir con separaciones
         panelSur.add(Box.createHorizontalGlue());
         panelSur.add(notaD);
+        System.out.println("la posicion en X de notaD es: " + notaD.getX());
         panelSur.add(Box.createRigidArea(new Dimension(separacion, 0)));
         panelSur.add(notaF);
+        System.out.println("la posicion en X de notaF es: " + notaF.getX());
         panelSur.add(Box.createRigidArea(new Dimension(separacion, 0)));
         panelSur.add(notaJ);
+        System.out.println("la posicion en X de notaJ es: " + notaJ.getX());
         panelSur.add(Box.createRigidArea(new Dimension(separacion, 0)));
         panelSur.add(notaK);
+        System.out.println("la posicion en X de notaK es: " + notaK.getX());
         panelSur.add(Box.createHorizontalGlue());
 
         // Espacio inferior (altura donde se ubican las flechas)
@@ -328,15 +339,18 @@ public abstract class CancionBase extends JPanel {
         int altoNotaUsuario = resolucion.escalarY(80) + resolucion.escalarY(250); 
         // Los 80px del componente NotasUsuario + los 250px del Box.createRigidArea
         
+        final int ANCHO_BASE_CARRILES = 1200; // Define un ancho base para tus 4 notas
+        int anchoCarrilesEscalado = resolucion.escalarX(ANCHO_BASE_CARRILES);
+        
         SwingUtilities.invokeLater(() -> {
             int anchoJuego = panelJuego.getWidth();
             int altoJuego = panelJuego.getHeight();
             
             // Y donde panelSur debe empezar (casi al final de panelJuego)
             int posY = altoJuego - altoNotaUsuario; 
-            int posX = 0;
+            int posX = (anchoJuego - anchoCarrilesEscalado) / 2; // Calcula el margen izquierdo;
             
-            panelSur.setBounds(posX, posY, anchoJuego, altoNotaUsuario);
+            panelSur.setBounds(posX, posY, anchoCarrilesEscalado, altoNotaUsuario);
             
             panelJuego.revalidate();
             panelJuego.repaint();
