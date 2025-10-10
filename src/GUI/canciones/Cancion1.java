@@ -50,21 +50,25 @@ public class Cancion1 extends CancionBase {
     			int posX_K = puntoK.x;
 
     			// Crear una nota y agregarla al contentPane
-    			Nota nota1 = new Nota(posX_D, 100, Color.RED, resolucion); // posición inicial y color
+    			Nota nota1 = new Nota(posX_D, resolucion.escalarY(100), Color.RED, resolucion); // posición inicial y color
     			panelJuego.add(nota1); // Agrega la nota al fondo
     			this.notas.add(nota1);
+    			super.agregarNota(nota1);
     			
-    			Nota nota2 = new Nota(posX_F, 100, Color.YELLOW, resolucion); // posición inicial y color
+    			Nota nota2 = new Nota(posX_F, resolucion.escalarY(-200), Color.YELLOW, resolucion); // posición inicial y color
     			panelJuego.add(nota2); // Agrega la nota al fondo
     			this.notas.add(nota2);
+    			super.agregarNota(nota2);
     			
-    			Nota nota3 = new Nota(posX_J, 100, Color.MAGENTA, resolucion); // posición inicial y color
+    			Nota nota3 = new Nota(posX_J, resolucion.escalarY(-100), Color.MAGENTA, resolucion); // posición inicial y color
     			panelJuego.add(nota3); // Agrega la nota al fondo
     			this.notas.add(nota3);
+    			super.agregarNota(nota3);
     			
-    			Nota nota4 = new Nota(posX_K, 100, Color.GREEN, resolucion); // posición inicial y color
+    			Nota nota4 = new Nota(posX_K, resolucion.escalarY(150), Color.GREEN, resolucion); // posición inicial y color
     			panelJuego.add(nota4); // Agrega la nota al fondo
     			this.notas.add(nota4);
+    			super.agregarNota(nota4);
     			
     			panelJuego.revalidate(); // Necesario para redibujar la nota
 
@@ -73,8 +77,9 @@ public class Cancion1 extends CancionBase {
     			int velocidad = resolucion.escalarY(5); // ajusta el valor base según lo que se vea fluido
     			Timer timer = new Timer(10, new ActionListener() {
     				public void actionPerformed(ActionEvent e) {
-    					for (Nota nota : notas) {
+    					for (Nota nota : notasActivas) { //notasActivas pertenece a cancionBase
     					nota.setLocation(nota.getX(), nota.getY() + velocidad); // velocidad de caída
+    					eliminarNotasPasadas(nota);
     					}
     				}
 
