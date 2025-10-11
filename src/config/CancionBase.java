@@ -33,7 +33,10 @@ public abstract class CancionBase extends JPanel {
         panelJuego.setOpaque(false);
         fondo.add(panelJuego, BorderLayout.CENTER);
 
-        notasJugador(resolucion);
+        SwingUtilities.invokeLater(() -> {
+            notasJugador(resolucion);
+            construirCancion(resolucion); // ← ¡llamada directa aquí!
+        });
 
         addKeyListener(new KeyAdapter() {
             @Override
@@ -62,29 +65,61 @@ public abstract class CancionBase extends JPanel {
         SwingUtilities.invokeLater(this::requestFocusInWindow);
     }
 
+
     private void notasJugador(ResolucionManager resolucion) {
         panelJuego.setLayout(null);
 
+        System.out.println("Ancho panelJuego: " + panelJuego.getWidth());
+        System.out.println("Ancho pantalla: " + resolucion.getAncho());
+        
+        // Dimensiones base
         int baseAncho = 125 / 2;
-        int baseAlto  = 175 / 2;
-        int ancho = resolucion.escalarY(baseAncho);
-        int alto  = resolucion.escalarY(baseAlto);
-        int baseX = 700;
-        int separacion = 120;
+        int baseAlto = 175 / 2;
+        int separacionBase = 120; // Separación base (120)
         int baseY = 850;
 
+        // Dimensiones de la nota: escaladas por Y
+        int ancho = resolucion.escalarX(baseAncho); 
+        int alto = resolucion.escalarY(baseAlto);   
+        int yPos = resolucion.escalarY(baseY); 
+        
+        // Separación horizontal: escalada por X para centrado horizontal
+        int separacionEscalada = resolucion.escalarX(separacionBase);
+
+        // --- CÁLCULO DE CENTRADO HORIZONTAL USANDO ESCALA X ---
+        
+        // 1. Ancho total del bloque de notas (en píxeles base)
+        // Ancho Total Base = (Ancho_Nota * 4) + (Separacion * 3)
+        int anchoTotalBloqueBase = (baseAncho * 4) + (separacionBase * 3);
+        
+        // 2. Escalar el ancho total del bloque usando el factor X
+        int anchoTotalEscalado = resolucion.escalarX(anchoTotalBloqueBase); 
+        
+        // 3. Obtener el ancho del contenedor (ancho de la ventana/panel)
+        int anchoPantalla = panelJuego.getWidth();
+        
+        // 4. Calcular la nueva baseX (posición inicial X para la nota D):
+        // baseX_centrada = (Ancho_Pantalla - Ancho_Total_Bloque_Escalado) / 2
+        int baseX = (anchoPantalla - anchoTotalEscalado) / 2;
+        // ----------------------------------------------------
+        
+        // Se crean las NotasUsuario usando las posiciones X centradas
+        // Posición X para D: baseX
         notaD = new NotasUsuario("/img/notas/notasUsuario/izquierda.png",
                 "/img/notas/notasUsuario/izquierdaPresion.png",
-                resolucion.escalarX(baseX), resolucion.escalarY(baseY), ancho, alto);
+                baseX, yPos, ancho, alto);
+        // Posición X para F: baseX + 1 * SeparacionEscalada
         notaF = new NotasUsuario("/img/notas/notasUsuario/abajo.png",
                 "/img/notas/notasUsuario/abajoPresion.png",
-                resolucion.escalarX(baseX + separacion), resolucion.escalarY(baseY), ancho, alto);
+                baseX + separacionEscalada, yPos, ancho, alto);
+        // Posición X para J: baseX + 2 * SeparacionEscalada
         notaJ = new NotasUsuario("/img/notas/notasUsuario/arriba.png",
                 "/img/notas/notasUsuario/arribaPresion.png",
-                resolucion.escalarX(baseX + separacion * 2), resolucion.escalarY(baseY), ancho, alto);
+                baseX + separacionEscalada * 2, yPos, ancho, alto);
+        // Posición X para K: baseX + 3 * SeparacionEscalada
         notaK = new NotasUsuario("/img/notas/notasUsuario/derecha.png",
                 "/img/notas/notasUsuario/derechaPresion.png",
-                resolucion.escalarX(baseX + separacion * 3), resolucion.escalarY(baseY), ancho, alto);
+                baseX + separacionEscalada * 3, yPos, ancho, alto);
 
         panelJuego.add(notaD);
         panelJuego.add(notaF);
