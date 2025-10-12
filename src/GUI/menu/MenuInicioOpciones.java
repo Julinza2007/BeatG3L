@@ -38,7 +38,7 @@ public class MenuInicioOpciones extends JPanel {
         JLabel lblResol = new JLabel("Resolución");
         lblResol.setAlignmentX(CENTER_ALIGNMENT);
         lblResol.setForeground(Color.WHITE);
-        lblResol.setFont(new Font("Arial", Font.BOLD, resolucion.escalarY(24)));
+        lblResol.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(24), 16)));
 
         String[] opcionesResol = {
             "800 x 600",
@@ -61,7 +61,7 @@ public class MenuInicioOpciones extends JPanel {
         JLabel lblVol = new JLabel("Volumen");
         lblVol.setAlignmentX(CENTER_ALIGNMENT);
         lblVol.setForeground(Color.WHITE);
-        lblVol.setFont(new Font("Arial", Font.BOLD, resolucion.escalarY(24)));
+        lblVol.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(24), 16)));
 
         int volInicial = Math.round(Sonido.getVolume() * 100f); // 0..100
         JSlider sliderVol = new JSlider(0, 100, volInicial);

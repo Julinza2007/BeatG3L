@@ -72,15 +72,13 @@ public abstract class CancionBase extends JPanel {
         System.out.println("Ancho panelJuego: " + panelJuego.getWidth());
         System.out.println("Ancho pantalla: " + resolucion.getAncho());
         
-        // Dimensiones base
-        int baseAncho = 125 / 2;
-        int baseAlto = 175 / 2;
         int separacionBase = 120; // Separación base (120)
         int baseY = 850;
+        int baseAncho = 125 / 2;
+        int baseAlto = 175 / 2;
 
-        // Dimensiones de la nota: escaladas por Y
-        int ancho = resolucion.escalarX(baseAncho); 
-        int alto = resolucion.escalarY(baseAlto);   
+        int ancho = resolucion.escalarXMin(baseAncho, 90);
+        int alto  = resolucion.escalarYMin(baseAlto, 110);  
         int yPos = resolucion.escalarY(baseY); 
         
         // Separación horizontal: escalada por X para centrado horizontal

@@ -4,9 +4,6 @@ import java.awt.Graphics;
 import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-
-import config.ResolucionManager;
-
 public class NotasUsuario extends JPanel {
 
     private static final long serialVersionUID = 1L;

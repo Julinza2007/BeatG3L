@@ -1,7 +1,10 @@
 	package GUI;
 	
 	import javax.swing.*;
-	import java.awt.*;
+
+import config.ResolucionManager;
+
+import java.awt.*;
 	
 	public class PrecisionPuntaje extends JLabel {
 	
@@ -14,6 +17,7 @@
 		private int aciertos;
 		private int totalNotas;
 		private String estado;
+		private ResolucionManager resolucion;
 		
 		
 		public PrecisionPuntaje(int puntosIniciales) {
@@ -25,7 +29,7 @@
 			this.estado = "";
 		
 		
-			setFont(new Font("SansSerif", Font.PLAIN, 16));
+			setFont(new Font("SansSerif", Font.PLAIN, Math.max(resolucion.escalarY(20), 14)));
 			setForeground(Color.WHITE);
 			setHorizontalAlignment(SwingConstants.LEFT);
 			actualizarTexto();
@@ -84,15 +88,7 @@
 				estado = "";
 				actualizarTexto();
 			}
-			
-			
-			
-			
-	
-		
-		
-		
-		
+				
 		
 		public int getPuntos() {
 			return puntos;

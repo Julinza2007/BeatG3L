@@ -15,8 +15,8 @@ public class Nota extends JPanel {
         this.color = color;
 
         int baseTam = 157 / 2;
-        int ancho = resolucion.escalarY(baseTam);
-        int alto  = resolucion.escalarY(baseTam);
+        int ancho = resolucion.escalarYMin(baseTam, 80);
+        int alto  = resolucion.escalarYMin(baseTam, 80);
 
         int posXEscalado = posX; // ya viene ajustado
         int posYEscalado = resolucion.escalarY(posY);

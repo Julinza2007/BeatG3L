@@ -36,7 +36,7 @@ public class MenuJuego extends JPanel {
         
         // Panel superior con título
         JLabel titulo = new JLabel("Canciones", SwingConstants.CENTER);
-        titulo.setFont(new Font("Arial", Font.BOLD, resolucion.escalarY(36)));
+        titulo.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(36), 20)));
         titulo.setForeground(Color.WHITE);
         contentPane.add(titulo, BorderLayout.NORTH);
         
