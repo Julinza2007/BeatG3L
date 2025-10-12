@@ -10,18 +10,17 @@ import java.awt.*;
 	
 		private static final long serialVersionUID = 1L;
 		
-		private int puntos;
-		private int combo;
-		private int multiplicador;
+		protected int puntos;
+		protected int combo;
+		protected int multiplicador;
 		private int maxCombo;
 		private int aciertos;
 		private int totalNotas;
 		private String estado;
 		private ResolucionManager resolucion;
 		
-		
-		public PrecisionPuntaje(int puntosIniciales) {
-			
+		public PrecisionPuntaje(int puntosIniciales, ResolucionManager resolucion) {
+			this.resolucion = resolucion;
 			this.puntos = puntosIniciales;
 			this.combo = 0;
 			this.multiplicador = 1;
@@ -29,15 +28,15 @@ import java.awt.*;
 			this.estado = "";
 		
 		
-			setFont(new Font("SansSerif", Font.PLAIN, Math.max(resolucion.escalarY(20), 14)));
+			setFont(new Font("SansSerif", Font.PLAIN, Math.max(resolucion.escalarY(20), resolucion.escalarX(14))));
 			setForeground(Color.WHITE);
 			setHorizontalAlignment(SwingConstants.LEFT);
 			actualizarTexto();
 		}
 			
-			private void actualizarTexto() {
+			public void actualizarTexto() {
 				setText(String.format(
-						"Score: %d | Combo: %d | x%d %s | %f", puntos, combo, multiplicador, estado, precision()));
+						"Score: %d | Combo: %d | x%d %s | precision %.2f%%", puntos, combo, multiplicador, estado, precision()));
 			}
 		
 		

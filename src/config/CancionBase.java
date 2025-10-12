@@ -8,6 +8,7 @@ import javax.swing.*;
 import GUI.Fondo;
 import GUI.Nota;
 import GUI.NotasUsuario;
+import GUI.PrecisionPuntaje;
 
 public abstract class CancionBase extends JPanel {
 
@@ -19,6 +20,7 @@ public abstract class CancionBase extends JPanel {
     protected boolean nivelSuperado = false;
     protected ResolucionManager resolucion;
     private Timer timerNotas;
+    protected PrecisionPuntaje precision;
 
     public CancionBase(ResolucionManager resolucion) {
         this.resolucion = resolucion;
@@ -32,6 +34,10 @@ public abstract class CancionBase extends JPanel {
         panelJuego = new JPanel(null);
         panelJuego.setOpaque(false);
         fondo.add(panelJuego, BorderLayout.CENTER);
+
+        this.precision = new PrecisionPuntaje(0, resolucion);
+        precision.setBounds(resolucion.escalarX(1300), resolucion.escalarY(500), 600, 30); // x, y, ancho, alto
+        panelJuego.add(precision);
 
         SwingUtilities.invokeLater(() -> {
             notasJugador(resolucion);
@@ -141,13 +147,28 @@ public abstract class CancionBase extends JPanel {
 
         for (int i = notasActivas.size() - 1; i >= 0; i--) {
             Nota n = notasActivas.get(i);
-
+            
+            int centroUsuarioY = hitUsuario.y + hitUsuario.height / 2;
+            int centroNotaY = n.getY() + n.getHeight() / 2;
+            int diferencia = Math.abs(centroUsuarioY - centroNotaY);
+            
             int centroUsuario = hitUsuario.x + hitUsuario.width / 2;
             int centroNota = n.getX() + n.getWidth() / 2;
+            
 
             if (Math.abs(centroUsuario - centroNota) > tolX) continue;
 
             if (n.getBounds().intersects(hitUsuario)) {
+            	if (diferencia > 30) {
+            		precision.Good();
+            		precision.setForeground(Color.GREEN);
+            		System.out.println("La diferencia es: " + diferencia);
+            	}
+            	else if (diferencia < 30) {
+            		precision.Perfect();
+            		precision.setForeground(Color.YELLOW);
+            		System.out.println("La diferencia es: " + diferencia);
+            	}
                 panelJuego.remove(n);
                 notasActivas.remove(i);
                 panelJuego.repaint();
@@ -181,8 +202,13 @@ public abstract class CancionBase extends JPanel {
         int margen = Math.max(1, resolucion.escalarY(n.getHeight() / 2));
         int bordeInferior = resolucion.escalarY(1080);
         if (n.getY() > bordeInferior + margen) {
+        	System.out.println("se borro una nota pasada");
+        	precision.Miss();
+        	precision.setForeground(Color.RED);
             panelJuego.remove(n);
+            notasActivas.remove(n);
             panelJuego.repaint();
+            return;
         }
     }
 
