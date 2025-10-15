@@ -14,9 +14,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import GUI.canciones.Cancion1;
 import GUI.Componentes;
 import GUI.Fondo;
+import GUI.canciones.Cancion1.Cancion1;
 import config.ResolucionManager;
 
 public class MenuJuego extends JPanel {

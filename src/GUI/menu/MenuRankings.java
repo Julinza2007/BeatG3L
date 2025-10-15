@@ -1,7 +1,9 @@
 package GUI.menu;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -12,7 +14,7 @@ import javax.swing.JPanel;
 
 import GUI.Componentes;
 import GUI.Fondo;
-import GUI.canciones.Cancion1;
+import GUI.canciones.Cancion1.Cancion1;
 import config.ResolucionManager;
 
 public class MenuRankings extends JPanel {
@@ -52,7 +54,18 @@ public class MenuRankings extends JPanel {
 				panelBotones.add(btnVolver);
 				panelBotones.add(Box.createHorizontalGlue());
 				
-				
+				Font fuenteBotones = new Font("Arial", Font.BOLD, resolucion.escalarY(22));
+				Dimension tamBoton = new Dimension(resolucion.escalarX(200), resolucion.escalarY(60));
+
+				for (JButton boton : new JButton[] { btnVolver, btnCancion1 }) {
+					boton.setFont(fuenteBotones);
+					boton.setForeground(Color.WHITE);
+					boton.setFocusPainted(false);
+					boton.setContentAreaFilled(false);
+					boton.setOpaque(false);
+					boton.setPreferredSize(tamBoton);
+					boton.setMaximumSize(tamBoton);
+				}
 				
 				btnCancion1.addActionListener(e -> {
 					JFrame ventana = (JFrame) this.getTopLevelAncestor();
@@ -69,7 +82,7 @@ public class MenuRankings extends JPanel {
 				
 				btnVolver.addActionListener(e -> {
 					JFrame ventana = (JFrame) this.getTopLevelAncestor();
-					MenuInicio menu = new MenuInicio(resolucion);
+					MenuJuego menu = new MenuJuego(resolucion);
 					ventana.setContentPane(menu);
 					ventana.revalidate();
 					ventana.repaint();
