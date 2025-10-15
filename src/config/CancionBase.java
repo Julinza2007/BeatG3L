@@ -1,3 +1,4 @@
+
 	package config;
 	
 	import java.awt.*;
@@ -267,35 +268,47 @@
 	        panelJuego.setComponentZOrder(nota, 0);
 	    }
 	    protected void finalizarCancion() {
-			detenerMovimientoNotas();
+	        // Detener el movimiento de notas
+	        detenerMovimientoNotas();
+
+	        // Pedir el nombre del jugador
+	        String nombre = JOptionPane.showInputDialog(
+	            this,
+	            "¡Canción terminada!\nIngresa tu nombre:",
+	            "Fin del nivel",
+	            JOptionPane.PLAIN_MESSAGE
+	        );
+
+	        if (nombre == null || nombre.trim().isEmpty()) {
+	            nombre = "Jugador";
+	        }
+
+	        // Obtener puntaje final
+	        int puntajeFinal = precision.getPuntos();
+
+	        // Guardar puntaje usando la clase Ranking (sin "config." porque estamos en el mismo package)
+	        Ranking.guardarPuntuacion(nombre, puntajeFinal);
+
+	        nivelSuperado = true;
+
+	        // Mostrar el ranking gráfico directamente
+	        SwingUtilities.invokeLater(() -> {
+	            JFrame ventana = (JFrame) SwingUtilities.getWindowAncestor(this);
+	            RankingPanel rankingPanel = new RankingPanel(); // Constructor vacío
+	            ventana.setContentPane(rankingPanel);
+	            ventana.revalidate();
+	            ventana.repaint();
+	        });
+
+	        // Después de unos segundos, volver al menú de inicio
+	        new javax.swing.Timer(4000, e -> {
+	            GUI.menu.TransicionPantallas.volverAlInicio(this, resolucion);
+	        }).start();
+	    }
 			
-			String nombre = JOptionPane.showInputDialog(
-					this,
-					"Cancion terminada! \n Ingresa tu nombre:",
-					"Fin del nivel",
-					JOptionPane.PLAIN_MESSAGE
-					);
-			
-			
-			if (nombre == null || nombre.trim().isEmpty()) {
-				nombre = "Jugador";
-			}
-			
-			int puntajeFinal = precision.getPuntos();
-			
-			config.Ranking.guardarPuntuacion(nombre, puntajeFinal);
-			JOptionPane.showMessageDialog(this,
-					"Puntaje Guardado! \n" + nombre + ":" + puntajeFinal,
-					"Ranking",
-					JOptionPane.INFORMATION_MESSAGE
-					);
-			
-			config.Ranking.mostrarEnVentana();
-			
-			nivelSuperado = true;
-			
-			
-		}
+		
+	    
+	    
 	
 	    protected abstract void construirCancion(ResolucionManager resolucion);
 	}

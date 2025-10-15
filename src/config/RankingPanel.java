@@ -1,3 +1,4 @@
+
 package config;
 
 import java.awt.BorderLayout;
@@ -11,11 +12,15 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
+import GUI.menu.MenuInicio;
 
 public class RankingPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -29,7 +34,7 @@ public class RankingPanel extends JPanel {
 		
 		
 		JLabel titulo = new JLabel("RANKING DE JUGADORES", SwingConstants.CENTER);
-		titulo.setFont(new Font("Press Start 2P", Font.BOLD, 18));
+		titulo.setFont(new Font("Arial", Font.BOLD, 18));
 		titulo.setBackground(Color.yellow);
 		titulo.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
 		
@@ -37,16 +42,26 @@ public class RankingPanel extends JPanel {
 		listaPanel.setLayout(new BoxLayout(listaPanel, BoxLayout.Y_AXIS));
 		listaPanel.setBackground(Color.BLACK);
 		
-		JScrollPane scroll = new JScrollPane(listaPanel); // corregido listapanel -> listaPanel
+		JScrollPane scroll = new JScrollPane(listaPanel); 
 		scroll.setBorder(null);
 		scroll.getVerticalScrollBar().setUnitIncrement(10);
 		scroll.setOpaque(false);
-		scroll.getViewport().setOpaque(false); // corregido getViewPort() -> getViewport()
+		scroll.getViewport().setOpaque(false); 
 		
 		add(titulo, BorderLayout.NORTH);
 		add(scroll, BorderLayout.CENTER);
 		
 		cargarRanking();
+		
+		JButton btnVolver = new JButton("Volver");
+		btnVolver.setFont("Arial", Font.BOLD, 14);
+		add (btnVolver, BorderLayout.SOUTH);
+		
+		
+		btnVolver.addActionListener(e -> {
+			JFrame ventana = (JFrame) SwingUtilities.getWindowAncestor(this);
+			GUI.menu.TransicionPantallas.volverAlInicio(this, resolucion);
+		});
 	}
 	
 	private void cargarRanking() {
@@ -55,7 +70,7 @@ public class RankingPanel extends JPanel {
 		
 		try(BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))){
 			String linea;
-			while((linea = reader.readLine()) != null) { // corregido paréntesis
+			while((linea = reader.readLine()) != null) { 
 				lista.add(linea.split(","));
 			}
 			
@@ -63,7 +78,7 @@ public class RankingPanel extends JPanel {
 		catch(IOException e) {
 			JLabel sinDatos = new JLabel("No hay rankings, Se el primero!", SwingConstants.CENTER);
 			sinDatos.setForeground(Color.GRAY);
-			sinDatos.setFont(new Font("Press Start 2P", Font.PLAIN, 14));
+			sinDatos.setFont(new Font("Arial", Font.PLAIN, 14));
 			listaPanel.add(sinDatos);
 			revalidate();
 			repaint();
@@ -77,7 +92,7 @@ public class RankingPanel extends JPanel {
 			String puntaje = lista.get(i)[1];
 			
 			JLabel fila = new JLabel(String.format("%02d. %-10s %6s pts", i+1, nombre, puntaje));
-			fila.setFont(new Font("Press Start 2P", Font.PLAIN, 14)); // agregado tamaño
+			fila.setFont(new Font("Arial", Font.PLAIN, 14)); 
 			fila.setForeground(Color.white);
 			fila.setBorder(BorderFactory.createEmptyBorder(5, 20, 5, 10));
 			
@@ -94,12 +109,14 @@ public class RankingPanel extends JPanel {
 	}
 	
 	public static void mostrarVentanaRanking() {
-		JFrame frame = new JFrame("Ranking"); // corregido Jframe -> JFrame
+		JFrame frame = new JFrame("Ranking"); 
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setSize(500, 600);
 		frame.setLocationRelativeTo(null);
 		frame.setContentPane(new RankingPanel());
 		frame.setVisible(true);
 	}
+	
+	
 
 }
