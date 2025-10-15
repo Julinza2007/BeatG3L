@@ -13,9 +13,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import GUI.canciones.Cancion1;
 import GUI.Componentes;
 import GUI.Fondo;
+import GUI.canciones.Cancion1.Cancion1;
 import config.ResolucionManager;
 
 public class MenuJuego extends JPanel {
@@ -36,7 +36,7 @@ public class MenuJuego extends JPanel {
         
         // Panel superior con título
         JLabel titulo = new JLabel("Canciones", SwingConstants.CENTER);
-        titulo.setFont(new Font("Arial", Font.BOLD, resolucion.escalarY(36)));
+        titulo.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(36), 20)));
         titulo.setForeground(Color.WHITE);
         contentPane.add(titulo, BorderLayout.NORTH);
         
@@ -52,9 +52,6 @@ public class MenuJuego extends JPanel {
         panelCentral.add(Box.createVerticalGlue());
         panelCentral.add(btnCancion1);
         panelCentral.add(Box.createVerticalGlue());
-        
-        
-        
         
         
         JPanel panelBotones = new JPanel();

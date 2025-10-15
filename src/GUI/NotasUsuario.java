@@ -4,9 +4,6 @@ import java.awt.Graphics;
 import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-
-import config.ResolucionManager;
-
 public class NotasUsuario extends JPanel {
 
     private static final long serialVersionUID = 1L;
@@ -17,17 +14,14 @@ public class NotasUsuario extends JPanel {
     private int ancho;
     private int alto;
 
-    public NotasUsuario(String rutaNormal, String rutaPresion, int x, int y, ResolucionManager resolucion) {
+    public NotasUsuario(String rutaNormal, String rutaPresion, int x, int y, int ancho, int alto) {
         setOpaque(false);
-
         imgNormal = new ImageIcon(getClass().getResource(rutaNormal)).getImage();
         imgPresion = new ImageIcon(getClass().getResource(rutaPresion)).getImage();
         actual = imgNormal;
-
-        ancho = resolucion.escalarX(80);
-        alto = resolucion.escalarY(80);
-
-        setBounds(resolucion.escalarX(x), resolucion.escalarY(y), ancho, alto);
+        this.ancho = ancho;
+        this.alto = alto;
+        setBounds(x, y, ancho, alto);
     }
 
     public void presionar() {

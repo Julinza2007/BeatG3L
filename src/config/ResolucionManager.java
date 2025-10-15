@@ -52,8 +52,26 @@ public class ResolucionManager {
     public int escalarY(int valor) {
         return (int) (valor * scaleY);
     }
+    
+    public int escalarXMin(int valor, int minimo) {
+        return Math.max((int) (valor * scaleX), minimo);
+    }
 
-    // Getters
+    public int escalarYMin(int valor, int minimo) {
+        return Math.max((int) (valor * scaleY), minimo);
+    }
+    
+ // Escala uniforme = la más conservadora para evitar estirar (mantiene relación de aspecto)
+    public double getEscalaUniforme() {
+        return Math.min(scaleX, scaleY);
+    }
+    public int escalarUniforme(int valor) {
+        return (int)Math.round(valor * getEscalaUniforme());
+    }
+    public int escalarUniformeMin(int valor, int minimo) {
+        return Math.max(escalarUniforme(valor), minimo);
+    }
+   
     public int getAncho() { return ancho; }
     public int getAlto() { return alto; }
     public double getScaleX() { return scaleX; }

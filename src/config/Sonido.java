@@ -4,6 +4,7 @@ import javax.sound.sampled.*;
 
 public class Sonido {
     private static Clip musicaFondo;
+    private static Clip cancion;
     private static Clip efecto;
 
     // Volumen global 0.0–1.0 (50% por defecto)
@@ -76,6 +77,23 @@ public class Sonido {
             efecto.open(in);
             aplicarVolumen(efecto);                   // ← aplicar volumen actual
             efecto.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static void reproducirCancion(String rutaClasspath) {
+    	try {
+            if (cancion != null && cancion.isRunning()) return;
+            detenerMusica();
+            AudioInputStream in = AudioSystem.getAudioInputStream(
+                Sonido.class.getResource("/" + rutaClasspath)
+            );
+            
+            cancion = AudioSystem.getClip();
+            cancion.open(in);
+            aplicarVolumen(cancion);
+//            cancion.loop(Clip.LOOP_CONTINUOUSLY);
         } catch (Exception e) {
             e.printStackTrace();
         }
