@@ -18,26 +18,42 @@ public class PantallaInicio extends JPanel {
 
 
         // Texto superior
-        JLabel texto = new JLabel("Desarrollado por G3L", SwingConstants.CENTER);
+        JLabel texto = new JLabel("G3L Studios", SwingConstants.CENTER);
+        texto.setBorder(BorderFactory.createEmptyBorder(30, 0, 70, 0)); 
         try {
-        	fuenteElectric_kicks = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/config/fonts/electricKicks.ttf"));
+        	fuenteElectric_kicks = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/config/fonts/electric.ttf"));
         }
         catch (Exception e) { // Si no se cumple la promesa, entra al catch y se usa por default ARIAL.
 			e.printStackTrace();
 			fuenteElectric_kicks = new Font("Arial", Font.BOLD, 48);
 		}
-        texto.setFont(fuenteElectric_kicks.deriveFont(Font.PLAIN, resolucion.escalarY(30)));
+        texto.setFont(fuenteElectric_kicks.deriveFont(Font.PLAIN, resolucion.escalarY(50)));
         
         texto.setForeground(Color.WHITE);
-        add(texto, BorderLayout.NORTH);
+        add(texto, BorderLayout.SOUTH);
         
         
         // Logo centrado
         ImageIcon logo = new ImageIcon(getClass().getResource("/img/G3LgroupMasChico.png"));
         JLabel labelLogo = new JLabel(logo, SwingConstants.CENTER);
         add(labelLogo, BorderLayout.CENTER);
-        
+       
         Animaciones.zoomPantalla(labelLogo, logo);
+        
+     // Permitir que el usuario saltee la pantalla de inicio
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                // Si presiona cualquier tecla, pasa al menu
+                JFrame ventana = (JFrame) getTopLevelAncestor();
+                ventana.setContentPane(new MenuInicio(resolucion));
+                ventana.revalidate();
+                ventana.repaint();
+            }
+        });
+        setFocusable(true);
+        requestFocusInWindow();
+
 
       
         // Timer para cambiar a MenuInicio
