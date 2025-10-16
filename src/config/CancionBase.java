@@ -29,6 +29,14 @@ public abstract class CancionBase extends JPanel {
     // centros de columna (pixeles en panelJuego)
     private final int[] centrosCol = new int[4];
 
+    // === NUEVO: estado para holds ===
+    /** Y (top) de las teclas, actúa como "línea de hit" vertical. */
+    protected int yImpacto = 0;
+    /** Teclas presionadas por columna: 0=D,1=F,2=J,3=K */
+    private final boolean[] teclaActiva = new boolean[4];
+    /** Anti-spam para puntaje continuo (uno cada ~80 ms por columna) */
+    private final long[] ultimoTickHoldMs = new long[4];
+
     private boolean columnasListas = false;  // para disparar construirCancion una única vez
 
     public CancionBase(ResolucionManager resolucion) {
@@ -45,16 +53,14 @@ public abstract class CancionBase extends JPanel {
         fondo.add(panelJuego, BorderLayout.CENTER);
 
         this.precision = new PrecisionPuntaje(0, resolucion);
-        precision.setBounds(resolucion.escalarX(1375), resolucion.escalarY(50), 600, 30); // x, y, ancho, alto
+        precision.setBounds(resolucion.escalarX(1375), resolucion.escalarY(50), 600, 30);
         panelJuego.add(precision);
 
         SwingUtilities.invokeLater(() -> {
             crearTeclasJugador();
-            // Intentar posicionar columnas (si el panel ya tiene tamaño)
             layoutColumnasYAnclarAbajo();
         });
 
-        // Reposicionar en cada resize/shown con tamaño REAL
         panelJuego.addComponentListener(new ComponentAdapter() {
             @Override public void componentResized(ComponentEvent e) { layoutColumnasYAnclarAbajo(); realinearNotasActivas(); }
             @Override public void componentShown(ComponentEvent e)   { layoutColumnasYAnclarAbajo(); realinearNotasActivas(); }
@@ -68,20 +74,20 @@ public abstract class CancionBase extends JPanel {
             public void keyPressed(KeyEvent e) {
                 if (nivelSuperado) return;
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_D -> presionar(notaD);
-                    case KeyEvent.VK_F -> presionar(notaF);
-                    case KeyEvent.VK_J -> presionar(notaJ);
-                    case KeyEvent.VK_K -> presionar(notaK);
+                    case KeyEvent.VK_D -> presionar(0, notaD);
+                    case KeyEvent.VK_F -> presionar(1, notaF);
+                    case KeyEvent.VK_J -> presionar(2, notaJ);
+                    case KeyEvent.VK_K -> presionar(3, notaK);
                 }
             }
             @Override
             public void keyReleased(KeyEvent e) {
                 if (nivelSuperado) return;
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_D -> soltar(notaD);
-                    case KeyEvent.VK_F -> soltar(notaF);
-                    case KeyEvent.VK_J -> soltar(notaJ);
-                    case KeyEvent.VK_K -> soltar(notaK);
+                    case KeyEvent.VK_D -> soltar(0, notaD);
+                    case KeyEvent.VK_F -> soltar(1, notaF);
+                    case KeyEvent.VK_J -> soltar(2, notaJ);
+                    case KeyEvent.VK_K -> soltar(3, notaK);
                 }
             }
         });
@@ -89,8 +95,6 @@ public abstract class CancionBase extends JPanel {
 
     /** Crea las 4 teclas; las posiciones definitivas se fijan en layoutColumnasYAnclarAbajo() */
     private void crearTeclasJugador() {
-        // Tamaños de tecla ya te los da tu constructor: ancho/alto por parámetros
-        // Acá solo instanciamos con X/Y dummy; luego se posicionan.
         notaD = new NotasUsuario("/img/notas/notasUsuario/izquierda.png",
                                  "/img/notas/notasUsuario/izquierdaPresion.png",
                                  0, 0,
@@ -125,7 +129,7 @@ public abstract class CancionBase extends JPanel {
     private void layoutColumnasYAnclarAbajo() {
         int w = panelJuego.getWidth();
         int h = panelJuego.getHeight();
-        if (w <= 0 || h <= 0) return; // esperar a tener tamaño real
+        if (w <= 0 || h <= 0) return;
 
         final int anchoNota = notaD.getWidth();
         final int altoNota  = notaD.getHeight();
@@ -152,10 +156,12 @@ public abstract class CancionBase extends JPanel {
         centrosCol[2] = x2 + anchoNota/2;
         centrosCol[3] = x3 + anchoNota/2;
 
+        // === NUEVO: línea de hit vertical (top de las teclas)
+        yImpacto = y;
+
         panelJuego.revalidate();
         panelJuego.repaint();
 
-        // Construir la canción sólo cuando las columnas YA están correctamente posicionadas
         if (!columnasListas) {
             columnasListas = true;
             SwingUtilities.invokeLater(() -> construirCancion(resolucion));
@@ -165,7 +171,7 @@ public abstract class CancionBase extends JPanel {
     /** Re-alinea las notas activas a la columna (por si cambió el tamaño). */
     private void realinearNotasActivas() {
         for (Nota n : new ArrayList<>(notasActivas)) {
-            int col = n.getColumna(); // si tu Nota “color” no tiene columna, podés añadir un setter/getter opcional
+            int col = n.getColumna();
             int x = getColumnXForWidth(col, n.getWidth());
             n.setLocation(x, n.getY());
         }
@@ -178,61 +184,76 @@ public abstract class CancionBase extends JPanel {
         return centrosCol[columna] - anchoNota/2;
     }
 
-    private void presionar(NotasUsuario notaUsuario) {
+    // ====== Entrada de usuario (con estado por columna) ======
+    private void presionar(int col, NotasUsuario notaUsuario) {
+        teclaActiva[col] = true;
         notaUsuario.presionar();
         verificarColision(notaUsuario);
     }
 
-    private void soltar(NotasUsuario notaUsuario) {
+    private void soltar(int col, NotasUsuario notaUsuario) {
+        teclaActiva[col] = false;
         notaUsuario.soltar();
     }
 
-    // Igual que tuya, solo revisá tolX si querés más “ancho de hit”
+    /** Hit detection con soporte de holds: la cabeza puntúa una sola vez y NO se remueve el componente. */
     private void verificarColision(JPanel notaUsuario) {
         Rectangle hitUsuario = notaUsuario.getBounds();
         int tolX = Math.max(1, resolucion.escalarX(10));
 
         for (int i = notasActivas.size() - 1; i >= 0; i--) {
             Nota n = notasActivas.get(i);
-            
+
             int centroUsuarioY = hitUsuario.y + hitUsuario.height / 2;
             int centroNotaY = n.getY() + n.getHeight() / 2;
             int diferencia = Math.abs(centroUsuarioY - centroNotaY);
-            
+
             int centroUsuario = hitUsuario.x + hitUsuario.width / 2;
             int centroNota = n.getX() + n.getWidth() / 2;
-            
-
             if (Math.abs(centroUsuario - centroNota) > tolX) continue;
 
             if (n.getBounds().intersects(hitUsuario)) {
-            	if (diferencia > 30) {
-            		precision.Good();
-            		precision.setForeground(Color.GREEN);
-            		System.out.println("La diferencia es: " + diferencia);
-            	}
-            	else if (diferencia < 30) {
-            		precision.Perfect();
-            		precision.setForeground(Color.YELLOW);
-            		System.out.println("La diferencia es: " + diferencia);
-            	}
+                // Puntaje básico de impacto (cabeza o tap)
+                if (diferencia > 30) {
+                    precision.Good();
+                    precision.setForeground(Color.GREEN);
+                } else {
+                    precision.Perfect();
+                    precision.setForeground(Color.YELLOW);
+                }
+
+                if (n.esHold) {
+                    // Cabeza del hold: puntuar una sola vez y NO remover
+                    n.marcarHeadSiNoFue();
+                    return;
+                }
+
+                // Tap normal: remover
                 panelJuego.remove(n);
                 notasActivas.remove(i);
                 panelJuego.repaint();
-                System.out.println("le pegaste");
                 return;
             }
         }
     }
 
+    // ====== Movimiento + puntaje continuo de holds ======
     protected void iniciarMovimientoNotas() {
-        int velocidad = resolucion.escalarY(5);
+        final int velocidad = resolucion.escalarY(5);
         timerNotas = new Timer(10, e -> {
+            // mover
             for (int i = notasActivas.size() - 1; i >= 0; i--) {
                 Nota n = notasActivas.get(i);
                 n.setLocation(n.getX(), n.getY() + velocidad);
-                eliminarNotasPasadas(n);
             }
+            // puntaje continuo para holds (si corresponde)
+            tickHoldScoring();
+
+            // eliminar (taps pasados al borde; holds al pasar la cola por la línea)
+            for (int i = notasActivas.size() - 1; i >= 0; i--) {
+                eliminarNotasPasadas(notasActivas.get(i));
+            }
+
             panelJuego.repaint();
         });
         timerNotas.start();
@@ -242,17 +263,61 @@ public abstract class CancionBase extends JPanel {
         if (timerNotas != null && timerNotas.isRunning()) timerNotas.stop();
     }
 
+    /**
+     * Puntaje continuo: si la tecla de su columna está presionada
+     * y el cuerpo del hold está cruzando la línea de hit, sumamos ticks
+     * cada ~80ms. (Muy simple, puedes sofisticarlo luego.)
+     */
+    private void tickHoldScoring() {
+        final long ahora = System.currentTimeMillis();
+        final long intervaloMs = 80; // cada 80ms da un "Good"
+
+        for (Nota n : notasActivas) {
+            if (!n.esHold) continue;
+
+            int col = n.getColumna();
+            if (!teclaActiva[col]) continue;
+
+            // ¿El cuerpo del hold cruza la línea de hit?
+            // Consideramos cruzado si y < yImpacto < y+H
+            int top = n.getY();
+            int bottom = n.getY() + n.getHeight();
+            if (top <= yImpacto && yImpacto <= bottom) {
+                if (ahora - ultimoTickHoldMs[col] >= intervaloMs) {
+                    ultimoTickHoldMs[col] = ahora;
+                    precision.Good();
+                    precision.setForeground(Color.GREEN);
+                }
+            }
+        }
+    }
+
+    /**
+     * Eliminación de notas:
+     *  - Tap: si salió por abajo (comportamiento anterior).
+     *  - Hold: si la COLA pasó la línea de hit (bottom >= yImpacto + mitad de la tecla),
+     *          lo removemos sin marcar Miss (ya lo evaluó el puntaje continuo).
+     */
     private void eliminarNotasPasadas(Nota n) {
-        int bordeInferior = panelJuego.getHeight(); // respecto al panel real
+        if (n.esHold) {
+            // Cola = borde superior del componente
+            int top = n.getY();
+            int umbral = yImpacto + (notaD.getHeight() / 2); // un poquito por debajo de la línea
+            if (top >= umbral) {
+                panelJuego.remove(n);
+                notasActivas.remove(n);
+            }
+            return;
+        }
+
+        // Tap normal: si sale de pantalla => Miss
+        int bordeInferior = panelJuego.getHeight();
         int margen = Math.max(1, resolucion.escalarY(n.getHeight() / 2));
         if (n.getY() > bordeInferior + margen) {
-        	System.out.println("se borro una nota pasada");
-        	precision.Miss();
-        	precision.setForeground(Color.RED);
+            precision.Miss();
+            precision.setForeground(Color.RED);
             panelJuego.remove(n);
             notasActivas.remove(n);
-            panelJuego.repaint();
-            return;
         }
     }
 
@@ -260,6 +325,10 @@ public abstract class CancionBase extends JPanel {
         panelJuego.add(nota);
         notasActivas.add(nota);
         panelJuego.setComponentZOrder(nota, 0);
+    }
+
+    protected void finalizarCancion() {
+        detenerMovimientoNotas();
     }
 
     protected abstract void construirCancion(ResolucionManager resolucion);

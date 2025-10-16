@@ -1,6 +1,6 @@
 ============================================================
-  TODO EL CÓDIGO - Proyecto bajo: /c/Users/Alumno/Desktop/BeatG3L-master/src
-  Generado: 2025-10-15 08:33:53
+  TODO EL CÓDIGO - Proyecto bajo: /d/Repositorios/workSpaceJava/BeatG3L/src
+  Generado: 2025-10-15 23:17:25
 ============================================================
 
 ========== INICIO: ClasePrimaria.java ==========
@@ -51,6 +51,14 @@ public abstract class CancionBase extends JPanel {
     // centros de columna (pixeles en panelJuego)
     private final int[] centrosCol = new int[4];
 
+    // === NUEVO: estado para holds ===
+    /** Y (top) de las teclas, actúa como "línea de hit" vertical. */
+    protected int yImpacto = 0;
+    /** Teclas presionadas por columna: 0=D,1=F,2=J,3=K */
+    private final boolean[] teclaActiva = new boolean[4];
+    /** Anti-spam para puntaje continuo (uno cada ~80 ms por columna) */
+    private final long[] ultimoTickHoldMs = new long[4];
+
     private boolean columnasListas = false;  // para disparar construirCancion una única vez
 
     public CancionBase(ResolucionManager resolucion) {
@@ -67,16 +75,14 @@ public abstract class CancionBase extends JPanel {
         fondo.add(panelJuego, BorderLayout.CENTER);
 
         this.precision = new PrecisionPuntaje(0, resolucion);
-        precision.setBounds(resolucion.escalarX(1375), resolucion.escalarY(50), 600, 30); // x, y, ancho, alto
+        precision.setBounds(resolucion.escalarX(1375), resolucion.escalarY(50), 600, 30);
         panelJuego.add(precision);
 
         SwingUtilities.invokeLater(() -> {
             crearTeclasJugador();
-            // Intentar posicionar columnas (si el panel ya tiene tamaño)
             layoutColumnasYAnclarAbajo();
         });
 
-        // Reposicionar en cada resize/shown con tamaño REAL
         panelJuego.addComponentListener(new ComponentAdapter() {
             @Override public void componentResized(ComponentEvent e) { layoutColumnasYAnclarAbajo(); realinearNotasActivas(); }
             @Override public void componentShown(ComponentEvent e)   { layoutColumnasYAnclarAbajo(); realinearNotasActivas(); }
@@ -90,20 +96,20 @@ public abstract class CancionBase extends JPanel {
             public void keyPressed(KeyEvent e) {
                 if (nivelSuperado) return;
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_D -> presionar(notaD);
-                    case KeyEvent.VK_F -> presionar(notaF);
-                    case KeyEvent.VK_J -> presionar(notaJ);
-                    case KeyEvent.VK_K -> presionar(notaK);
+                    case KeyEvent.VK_D -> presionar(0, notaD);
+                    case KeyEvent.VK_F -> presionar(1, notaF);
+                    case KeyEvent.VK_J -> presionar(2, notaJ);
+                    case KeyEvent.VK_K -> presionar(3, notaK);
                 }
             }
             @Override
             public void keyReleased(KeyEvent e) {
                 if (nivelSuperado) return;
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_D -> soltar(notaD);
-                    case KeyEvent.VK_F -> soltar(notaF);
-                    case KeyEvent.VK_J -> soltar(notaJ);
-                    case KeyEvent.VK_K -> soltar(notaK);
+                    case KeyEvent.VK_D -> soltar(0, notaD);
+                    case KeyEvent.VK_F -> soltar(1, notaF);
+                    case KeyEvent.VK_J -> soltar(2, notaJ);
+                    case KeyEvent.VK_K -> soltar(3, notaK);
                 }
             }
         });
@@ -111,8 +117,6 @@ public abstract class CancionBase extends JPanel {
 
     /** Crea las 4 teclas; las posiciones definitivas se fijan en layoutColumnasYAnclarAbajo() */
     private void crearTeclasJugador() {
-        // Tamaños de tecla ya te los da tu constructor: ancho/alto por parámetros
-        // Acá solo instanciamos con X/Y dummy; luego se posicionan.
         notaD = new NotasUsuario("/img/notas/notasUsuario/izquierda.png",
                                  "/img/notas/notasUsuario/izquierdaPresion.png",
                                  0, 0,
@@ -147,7 +151,7 @@ public abstract class CancionBase extends JPanel {
     private void layoutColumnasYAnclarAbajo() {
         int w = panelJuego.getWidth();
         int h = panelJuego.getHeight();
-        if (w <= 0 || h <= 0) return; // esperar a tener tamaño real
+        if (w <= 0 || h <= 0) return;
 
         final int anchoNota = notaD.getWidth();
         final int altoNota  = notaD.getHeight();
@@ -174,10 +178,12 @@ public abstract class CancionBase extends JPanel {
         centrosCol[2] = x2 + anchoNota/2;
         centrosCol[3] = x3 + anchoNota/2;
 
+        // === NUEVO: línea de hit vertical (top de las teclas)
+        yImpacto = y;
+
         panelJuego.revalidate();
         panelJuego.repaint();
 
-        // Construir la canción sólo cuando las columnas YA están correctamente posicionadas
         if (!columnasListas) {
             columnasListas = true;
             SwingUtilities.invokeLater(() -> construirCancion(resolucion));
@@ -187,7 +193,7 @@ public abstract class CancionBase extends JPanel {
     /** Re-alinea las notas activas a la columna (por si cambió el tamaño). */
     private void realinearNotasActivas() {
         for (Nota n : new ArrayList<>(notasActivas)) {
-            int col = n.getColumna(); // si tu Nota “color” no tiene columna, podés añadir un setter/getter opcional
+            int col = n.getColumna();
             int x = getColumnXForWidth(col, n.getWidth());
             n.setLocation(x, n.getY());
         }
@@ -200,61 +206,76 @@ public abstract class CancionBase extends JPanel {
         return centrosCol[columna] - anchoNota/2;
     }
 
-    private void presionar(NotasUsuario notaUsuario) {
+    // ====== Entrada de usuario (con estado por columna) ======
+    private void presionar(int col, NotasUsuario notaUsuario) {
+        teclaActiva[col] = true;
         notaUsuario.presionar();
         verificarColision(notaUsuario);
     }
 
-    private void soltar(NotasUsuario notaUsuario) {
+    private void soltar(int col, NotasUsuario notaUsuario) {
+        teclaActiva[col] = false;
         notaUsuario.soltar();
     }
 
-    // Igual que tuya, solo revisá tolX si querés más “ancho de hit”
+    /** Hit detection con soporte de holds: la cabeza puntúa una sola vez y NO se remueve el componente. */
     private void verificarColision(JPanel notaUsuario) {
         Rectangle hitUsuario = notaUsuario.getBounds();
         int tolX = Math.max(1, resolucion.escalarX(10));
 
         for (int i = notasActivas.size() - 1; i >= 0; i--) {
             Nota n = notasActivas.get(i);
-            
+
             int centroUsuarioY = hitUsuario.y + hitUsuario.height / 2;
             int centroNotaY = n.getY() + n.getHeight() / 2;
             int diferencia = Math.abs(centroUsuarioY - centroNotaY);
-            
+
             int centroUsuario = hitUsuario.x + hitUsuario.width / 2;
             int centroNota = n.getX() + n.getWidth() / 2;
-            
-
             if (Math.abs(centroUsuario - centroNota) > tolX) continue;
 
             if (n.getBounds().intersects(hitUsuario)) {
-            	if (diferencia > 30) {
-            		precision.Good();
-            		precision.setForeground(Color.GREEN);
-            		System.out.println("La diferencia es: " + diferencia);
-            	}
-            	else if (diferencia < 30) {
-            		precision.Perfect();
-            		precision.setForeground(Color.YELLOW);
-            		System.out.println("La diferencia es: " + diferencia);
-            	}
+                // Puntaje básico de impacto (cabeza o tap)
+                if (diferencia > 30) {
+                    precision.Good();
+                    precision.setForeground(Color.GREEN);
+                } else {
+                    precision.Perfect();
+                    precision.setForeground(Color.YELLOW);
+                }
+
+                if (n.esHold) {
+                    // Cabeza del hold: puntuar una sola vez y NO remover
+                    n.marcarHeadSiNoFue();
+                    return;
+                }
+
+                // Tap normal: remover
                 panelJuego.remove(n);
                 notasActivas.remove(i);
                 panelJuego.repaint();
-                System.out.println("le pegaste");
                 return;
             }
         }
     }
 
+    // ====== Movimiento + puntaje continuo de holds ======
     protected void iniciarMovimientoNotas() {
-        int velocidad = resolucion.escalarY(5);
+        final int velocidad = resolucion.escalarY(5);
         timerNotas = new Timer(10, e -> {
+            // mover
             for (int i = notasActivas.size() - 1; i >= 0; i--) {
                 Nota n = notasActivas.get(i);
                 n.setLocation(n.getX(), n.getY() + velocidad);
-                eliminarNotasPasadas(n);
             }
+            // puntaje continuo para holds (si corresponde)
+            tickHoldScoring();
+
+            // eliminar (taps pasados al borde; holds al pasar la cola por la línea)
+            for (int i = notasActivas.size() - 1; i >= 0; i--) {
+                eliminarNotasPasadas(notasActivas.get(i));
+            }
+
             panelJuego.repaint();
         });
         timerNotas.start();
@@ -264,17 +285,61 @@ public abstract class CancionBase extends JPanel {
         if (timerNotas != null && timerNotas.isRunning()) timerNotas.stop();
     }
 
+    /**
+     * Puntaje continuo: si la tecla de su columna está presionada
+     * y el cuerpo del hold está cruzando la línea de hit, sumamos ticks
+     * cada ~80ms. (Muy simple, puedes sofisticarlo luego.)
+     */
+    private void tickHoldScoring() {
+        final long ahora = System.currentTimeMillis();
+        final long intervaloMs = 80; // cada 80ms da un "Good"
+
+        for (Nota n : notasActivas) {
+            if (!n.esHold) continue;
+
+            int col = n.getColumna();
+            if (!teclaActiva[col]) continue;
+
+            // ¿El cuerpo del hold cruza la línea de hit?
+            // Consideramos cruzado si y < yImpacto < y+H
+            int top = n.getY();
+            int bottom = n.getY() + n.getHeight();
+            if (top <= yImpacto && yImpacto <= bottom) {
+                if (ahora - ultimoTickHoldMs[col] >= intervaloMs) {
+                    ultimoTickHoldMs[col] = ahora;
+                    precision.Good();
+                    precision.setForeground(Color.GREEN);
+                }
+            }
+        }
+    }
+
+    /**
+     * Eliminación de notas:
+     *  - Tap: si salió por abajo (comportamiento anterior).
+     *  - Hold: si la COLA pasó la línea de hit (bottom >= yImpacto + mitad de la tecla),
+     *          lo removemos sin marcar Miss (ya lo evaluó el puntaje continuo).
+     */
     private void eliminarNotasPasadas(Nota n) {
-        int bordeInferior = panelJuego.getHeight(); // respecto al panel real
+        if (n.esHold) {
+            // Cola = borde superior del componente
+            int top = n.getY();
+            int umbral = yImpacto + (notaD.getHeight() / 2); // un poquito por debajo de la línea
+            if (top >= umbral) {
+                panelJuego.remove(n);
+                notasActivas.remove(n);
+            }
+            return;
+        }
+
+        // Tap normal: si sale de pantalla => Miss
+        int bordeInferior = panelJuego.getHeight();
         int margen = Math.max(1, resolucion.escalarY(n.getHeight() / 2));
         if (n.getY() > bordeInferior + margen) {
-        	System.out.println("se borro una nota pasada");
-        	precision.Miss();
-        	precision.setForeground(Color.RED);
+            precision.Miss();
+            precision.setForeground(Color.RED);
             panelJuego.remove(n);
             notasActivas.remove(n);
-            panelJuego.repaint();
-            return;
         }
     }
 
@@ -282,6 +347,10 @@ public abstract class CancionBase extends JPanel {
         panelJuego.add(nota);
         notasActivas.add(nota);
         panelJuego.setComponentZOrder(nota, 0);
+    }
+
+    protected void finalizarCancion() {
+        detenerMovimientoNotas();
     }
 
     protected abstract void construirCancion(ResolucionManager resolucion);
@@ -426,43 +495,42 @@ import javax.sound.sampled.*;
 
 public class Sonido {
     private static Clip musicaFondo;
-    private static Clip cancion;
     private static Clip efecto;
+
+    // Streaming para MP3
+    private static SourceDataLine lineaCancion;
+    private static Thread hiloCancion;
 
     // Volumen global 0.0–1.0 (50% por defecto)
     private static float volume = 0.5f;
 
     public static synchronized void setVolume(float v) {
         volume = Math.max(0f, Math.min(1f, v));
-        // Reaplicar al vuelo si hay clips activos
         aplicarVolumen(musicaFondo);
         aplicarVolumen(efecto);
+        aplicarVolumen(lineaCancion); // importante para la canción en streaming
     }
 
     public static synchronized float getVolume() {
         return volume;
     }
 
-    private static void aplicarVolumen(Clip clip) {
-        if (clip == null) return;
-
+    private static void aplicarVolumen(Line line) {
+        if (line == null) return;
         try {
-            FloatControl gain = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            FloatControl gain = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
             float min = gain.getMinimum();
-            // Mapear 0..1 a (-80..0] dB en forma logarítmica
             float dB = (volume <= 0f) ? min : (float) (20.0 * Math.log10(volume));
-            if (dB > 0f) dB = 0f;                 // nunca amplificar
-            if (dB < min) dB = min;               // respetar mínimo del control
+            if (dB > 0f) dB = 0f;
+            if (dB < min) dB = min;
             gain.setValue(dB);
             return;
         } catch (Exception ignored) {}
 
         try {
-            FloatControl vol = (FloatControl) clip.getControl(FloatControl.Type.VOLUME);
+            FloatControl vol = (FloatControl) line.getControl(FloatControl.Type.VOLUME);
             vol.setValue(Math.max(0f, Math.min(1f, volume)));
-            return;
         } catch (Exception ignored) {}
-
     }
 
     public static void reproducirMusicaLoop(String rutaClasspath) {
@@ -475,7 +543,7 @@ public class Sonido {
             );
             musicaFondo = AudioSystem.getClip();
             musicaFondo.open(in);
-            aplicarVolumen(musicaFondo);              // ← aplicar volumen actual
+            aplicarVolumen(musicaFondo);
             musicaFondo.loop(Clip.LOOP_CONTINUOUSLY);
         } catch (Exception e) {
             e.printStackTrace();
@@ -497,31 +565,103 @@ public class Sonido {
             );
             efecto = AudioSystem.getClip();
             efecto.open(in);
-            aplicarVolumen(efecto);                   // ← aplicar volumen actual
+            aplicarVolumen(efecto);
             efecto.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
-    public static void reproducirCancion(String rutaClasspath) {
-    	try {
-            if (cancion != null && cancion.isRunning()) return;
-            detenerMusica();
-            AudioInputStream in = AudioSystem.getAudioInputStream(
-                Sonido.class.getResource("/" + rutaClasspath)
+
+    // --- MP3 por streaming (evita invalid frame size: NOT_SPECIFIED) ---
+
+    public static synchronized void detenerCancion() {
+        if (hiloCancion != null && hiloCancion.isAlive()) {
+            hiloCancion.interrupt();
+            hiloCancion = null;
+        }
+        if (lineaCancion != null) {
+            try {
+                lineaCancion.stop();
+                lineaCancion.flush();
+                lineaCancion.close();
+            } catch (Exception ignored) {}
+            lineaCancion = null;
+        }
+    }
+
+    public static synchronized void reproducirCancion(String rutaClasspath) {
+        try {
+            // si ya está sonando, no hagas nada
+            if (lineaCancion != null && lineaCancion.isActive()) return;
+
+            detenerMusica();   // por si había música de menú (Clip/WAV)
+            detenerCancion();  // limpiar cualquier resto
+
+            final var url = Sonido.class.getResource("/" + rutaClasspath);
+            if (url == null) throw new IllegalArgumentException("Recurso no encontrado: " + rutaClasspath);
+
+            // Abrir MP3 y convertir a PCM_SIGNED 16-bit con fallback de SR/canales
+            AudioInputStream in = AudioSystem.getAudioInputStream(url);
+            AudioFormat base = in.getFormat();
+
+            float sr = (base.getSampleRate() == AudioSystem.NOT_SPECIFIED) ? 44100f : base.getSampleRate();
+            int   ch = (base.getChannels()    == AudioSystem.NOT_SPECIFIED) ? 2      : base.getChannels();
+
+            AudioFormat decoded = new AudioFormat(
+                    AudioFormat.Encoding.PCM_SIGNED,
+                    sr,
+                    16,
+                    ch,
+                    ch * 2,          // 16 bits * canales / 8
+                    sr,
+                    false            // little endian
             );
-            
-            cancion = AudioSystem.getClip();
-            cancion.open(in);
-            aplicarVolumen(cancion);
-//            cancion.loop(Clip.LOOP_CONTINUOUSLY);
+
+            AudioInputStream din = AudioSystem.getAudioInputStream(decoded, in);
+
+            DataLine.Info info = new DataLine.Info(SourceDataLine.class, decoded);
+            lineaCancion = (SourceDataLine) AudioSystem.getLine(info);
+            lineaCancion.open(decoded);
+            aplicarVolumen(lineaCancion);
+
+            // reproducir en thread para no bloquear EDT
+            hiloCancion = new Thread(() -> {
+                try (AudioInputStream stream = din) {
+                    lineaCancion.start();
+                    byte[] buffer = new byte[8192];
+                    int n;
+                    while (!Thread.currentThread().isInterrupted()
+                           && (n = stream.read(buffer, 0, buffer.length)) != -1) {
+                        lineaCancion.write(buffer, 0, n);
+                    }
+                    lineaCancion.drain();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    detenerCancion();
+                }
+            }, "MP3-Streaming");
+            hiloCancion.setDaemon(true);
+            hiloCancion.start();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-}
 
+    public static synchronized boolean cancionActiva() {
+        return lineaCancion != null && lineaCancion.isActive();
+    }
+    public static synchronized void pausarCancion() {
+        if (lineaCancion != null) lineaCancion.stop();
+    }
+    public static synchronized void reanudarCancion() {
+        if (lineaCancion != null) {
+            aplicarVolumen(lineaCancion);
+            lineaCancion.start();
+        }
+    }
+}
 
 ========== FIN: config/Sonido.java ==========
 
@@ -543,61 +683,163 @@ public class TraductorSM {
             Mapa mapa = leerArchivoSM(rutaSM);
             guardarComoJSON(mapa, rutaJSON);
             System.out.println("✅ Traducción completada: " + rutaJSON);
+            System.out.println("Notas exportadas: " + mapa.notas.size());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public static Mapa leerArchivoSM(String ruta) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(ruta));
-        String linea;
-        Mapa mapa = new Mapa();
-        boolean leyendoNotas = false;
-        int medida = 0;
-        int fila = 0;
+        try (BufferedReader br = new BufferedReader(new FileReader(ruta))) {
+            String linea;
+            Mapa mapa = new Mapa();
 
-        while ((linea = br.readLine()) != null) {
-            linea = linea.trim();
+            // --- meta del chart ---
+            Double offsetSeg = 0.0;                 // #OFFSET: en segundos (puede ser negativo)
+            List<BpmChange> cambios = new ArrayList<>();  // beat -> bpm
+            cambios.add(new BpmChange(0.0, 120.0)); // default por si no hubiera #BPMS
 
-            if (linea.startsWith("#TITLE:")) {
-                mapa.titulo = linea.substring(7, linea.length() - 1);
-            } 
-            else if (linea.startsWith("#BPMS:")) {
-                String datos = linea.substring(6, linea.length() - 1);
-                String[] partes = datos.split("=");
-                if (partes.length == 2) {
-                    mapa.bpm = Double.parseDouble(partes[1]);
-                }
-            } 
-            else if (linea.startsWith("#NOTES:")) {
-                leyendoNotas = true;
-                // Saltar las primeras líneas de metadata de NOTES
-                for (int i = 0; i < 6; i++) br.readLine();
-                continue;
-            } 
-            else if (leyendoNotas) {
-                if (linea.equals(",")) {
-                    medida++;
-                    fila = 0;
-                } else if (linea.equals(";")) {
-                    leyendoNotas = false;
-                } else if (!linea.isEmpty()) {
-                    for (int col = 0; col < linea.length(); col++) {
-                        if (linea.charAt(col) == '1') {
-                            Nota n = new Nota();
-                            n.medida = medida;
-                            n.fila = fila;
-                            n.columna = col;
-                            mapa.notas.add(n);
+            // --- estado del bloque de notas ---
+            boolean leyendoNotas = false;
+            int compas = 0;                 // número de compás (0..N)
+            List<String> filasCompas = new ArrayList<>(); // acumulamos filas del compás actual
+
+            // buffers para holds por columna (se dimensionan al ver la 1ª fila)
+            long[] inicioHold = null;
+            boolean[] holdActivo = null;
+
+            while ((linea = br.readLine()) != null) {
+                linea = linea.trim();
+
+                // ===== encabezado =====
+                if (linea.startsWith("#TITLE:")) {
+                    mapa.titulo = linea.substring(7, linea.length() - 1);
+                } else if (linea.startsWith("#OFFSET:")) {
+                    // #OFFSET: <segundos>;
+                    String s = linea.substring(8, linea.length() - 1);
+                    try { offsetSeg = Double.parseDouble(s); } catch (Exception ignored) {}
+                } else if (linea.startsWith("#BPMS:")) {
+                    // #BPMS: beat=bpm,beat=bpm, ... ;
+                    String datos = linea.substring(6, linea.length() - 1);
+                    cambios.clear();
+                    for (String par : datos.split(",")) {
+                        String[] kv = par.split("=");
+                        if (kv.length == 2) {
+                            double beat = Double.parseDouble(kv[0].trim());
+                            double bpm  = Double.parseDouble(kv[1].trim());
+                            cambios.add(new BpmChange(beat, bpm));
                         }
                     }
-                    fila++;
+                    cambios.sort(Comparator.comparingDouble(b -> b.beat));
+                    if (cambios.isEmpty()) cambios.add(new BpmChange(0.0, 120.0));
+                }
+                // ===== bloque de notas =====
+                else if (linea.startsWith("#NOTES:")) {
+                    leyendoNotas = true;
+                    // saltar 6 líneas de metadata del chart (tipo, autor pasos, dificultad, etc.)
+                    for (int i = 0; i < 6; i++) br.readLine();
+                    compas = 0;
+                    filasCompas.clear();
+                    inicioHold = null;
+                    holdActivo = null;
+                    continue;
+                } else if (leyendoNotas) {
+                    if (linea.equals(";")) {
+                        // fin del chart
+                        // por si quedó un compás sin volcar (no debería, pero limpiamos)
+                        procesarCompas(mapa, filasCompas, compas, offsetSeg, cambios, inicioHold, holdActivo);
+                        leyendoNotas = false;
+                    } else if (linea.equals(",")) {
+                        // fin de compás → procesar con SU cantidad de filas
+                        procesarCompas(mapa, filasCompas, compas, offsetSeg, cambios, inicioHold, holdActivo);
+                        compas++;
+                        filasCompas.clear();
+                    } else if (!linea.isEmpty()) {
+                        filasCompas.add(linea);
+                        // dimensionar buffers de holds según columnas
+                        int columnas = linea.length();
+                        if (inicioHold == null) inicioHold = new long[columnas];
+                        if (holdActivo == null) holdActivo = new boolean[columnas];
+                    }
+                }
+            }
+            return mapa;
+        }
+    }
+
+    // ---- helpers internos (colocalos dentro de TraductorSM) ----
+    private static class BpmChange {
+        final double beat; // beat absoluto donde cambia
+        final double bpm;
+        BpmChange(double beat, double bpm) { this.beat = beat; this.bpm = bpm; }
+    }
+
+    /** Convierte un beat absoluto a ms acumulando cada tramo de BPM. */
+    private static long beatToMs(double beatObjetivo, List<BpmChange> cambios) {
+        cambios.sort(Comparator.comparingDouble(b -> b.beat));
+        double ms = 0.0;
+        for (int i = 0; i < cambios.size(); i++) {
+            double beatIni = cambios.get(i).beat;
+            double bpm = cambios.get(i).bpm;
+            double beatFin = (i + 1 < cambios.size()) ? cambios.get(i + 1).beat : beatObjetivo;
+            if (beatObjetivo <= beatIni) break; // nada que sumar
+            double hasta = Math.min(beatFin, beatObjetivo);
+            double deltaBeats = Math.max(0, hasta - beatIni);
+            ms += (60000.0 / bpm) * deltaBeats;
+            if (beatObjetivo <= beatFin) break;
+        }
+        return Math.round(ms);
+    }
+
+    /** Vuelca un compás completo usando su #filas real como subdivisión. */
+    private static void procesarCompas(
+            Mapa mapa,
+            List<String> filasCompas,
+            int compas,
+            double offsetSeg,
+            List<BpmChange> cambios,
+            long[] inicioHold,
+            boolean[] holdActivo
+    ) {
+        if (filasCompas.isEmpty()) return;
+        final int filas = filasCompas.size(); // subdivisión REAL de este compás
+        for (int fila = 0; fila < filas; fila++) {
+            String row = filasCompas.get(fila);
+            int columnas = row.length();
+            for (int col = 0; col < columnas; col++) {
+                char c = row.charAt(col);
+
+                // beat absoluto = (compás * 4) + (fracción dentro del compás)*4
+                double frac = (double) fila / (double) filas;
+                double beat = compas * 4.0 + frac * 4.0;
+
+                long tiempoMs = beatToMs(beat, cambios) + Math.round(offsetSeg * 1000.0);
+
+                if (c == '1') {
+                    Nota n = new Nota();
+                    n.tipo = "tap";
+                    n.columna = col;
+                    n.tiempo = tiempoMs;
+                    n.duracion = 0;
+                    mapa.notas.add(n);
+                } else if (c == '2') {
+                    holdActivo[col] = true;
+                    inicioHold[col] = tiempoMs;
+                } else if (c == '3') {
+                    if (holdActivo[col]) {
+                        Nota n = new Nota();
+                        n.tipo = "hold";
+                        n.columna = col;
+                        n.tiempo = inicioHold[col];
+                        n.duracion = Math.max(0, tiempoMs - inicioHold[col]);
+                        mapa.notas.add(n);
+                        holdActivo[col] = false;
+                    }
                 }
             }
         }
-        br.close();
-        return mapa;
     }
+
 
     public static void guardarComoJSON(Mapa mapa, String ruta) throws IOException {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -611,13 +853,16 @@ public class TraductorSM {
 class Mapa {
     String titulo = "";
     double bpm = 120;
+    String artista = "";
+    String dificultad = "";
     List<Nota> notas = new ArrayList<>();
 }
 
 class Nota {
-    int medida;
-    int fila;
-    int columna;
+    String tipo = "";   // "tap" o "hold"
+    int columna;        // 0..3
+    long tiempo;        // ms desde el inicio
+    long duracion;      // 0 si no es hold
 }
 
 ========== FIN: config/TraductorSM.java ==========
@@ -740,7 +985,6 @@ public class BeatG3L extends JFrame {
 ========== INICIO: GUI/canciones/Cancion1/Cancion1.java ==========
 package GUI.canciones.Cancion1;
 
-import java.awt.Color;
 import GUI.Nota;
 import config.CancionBase;
 import config.ResolucionManager;
@@ -748,6 +992,7 @@ import config.ResolucionManager;
 public class Cancion1 extends CancionBase {
 
     private static final long serialVersionUID = 1L;
+    private Thread hiloCreador;
 
     public Cancion1(ResolucionManager resolucion) {
         super(resolucion);
@@ -755,30 +1000,118 @@ public class Cancion1 extends CancionBase {
 
     @Override
     protected void construirCancion(ResolucionManager resolucion) {
-        // Se llama automáticamente DESPUÉS de que las columnas están bien posicionadas
+        // 1) Audio
+        config.Sonido.detenerMusica();
+        config.Sonido.reproducirCancion("GUI/canciones/Cancion1/my-8-bit-hero-301280.mp3");
 
-        // Spawn Y en pixeles de panel (negativos para entrar desde arriba)
-        final int y1 = -100, y2 = -300, y3 = -500, y4 = -700;
+        // 2) Mapa
+        java.util.List<EventoNota> mapaDeNotas = cargarMapaDesdeJson(
+            "/GUI/canciones/Cancion1/my-8-bit-hero-301280.json"
+        );
+        if (mapaDeNotas == null || mapaDeNotas.isEmpty()) {
+            System.err.println("No se pudieron cargar notas del JSON.");
+            iniciarMovimientoNotas();
+            return;
+        }
+        mapaDeNotas.sort(java.util.Comparator.comparingLong(n -> n.tiempo));
 
-        // Creamos notas “de color” como venías, pero la X la alineamos con el helper:
-        Nota n1 = new Nota(0, y1, Color.RED,     resolucion);
-        n1.setLocation(getColumnXForWidth(0, n1.getWidth()), y1);
-        agregarNota(n1);
+        // 3) Parámetros de caída
+        final int tickMs = 10; // igual al Timer de CancionBase
+        final int velocidadPxPorTick = resolucion.escalarY(5);
+        final double velocidadPxPorMs = velocidadPxPorTick / (double) tickMs;
 
-        Nota n2 = new Nota(0, y2, Color.YELLOW,  resolucion);
-        n2.setLocation(getColumnXForWidth(1, n2.getWidth()), y2);
-        agregarNota(n2);
+        // 4) Geometría vertical
+        final int yImpacto = notaD.getY();                // línea de hit
+        final int yAparicion = -resolucion.escalarY(200); // nace fuera de pantalla
+        final int distanciaPx = Math.max(1, yImpacto - yAparicion);
+        final long anticipacionMs = Math.round(distanciaPx / velocidadPxPorMs);
 
-        Nota n3 = new Nota(0, y3, Color.MAGENTA, resolucion);
-        n3.setLocation(getColumnXForWidth(2, n3.getWidth()), y3);
-        agregarNota(n3);
+        // Ajuste fino (si lo necesitás, calibrable)
+        final long offsetMs = -100;
 
-        Nota n4 = new Nota(0, y4, Color.GREEN,   resolucion);
-        n4.setLocation(getColumnXForWidth(3, n4.getWidth()), y4);
-        agregarNota(n4);
-
-        // Arrancar la caída
+        // 5) Arrancar movimiento
         iniciarMovimientoNotas();
+
+        // 6) Spawner
+        final long tiempoInicioNs = System.nanoTime();
+        hiloCreador = new Thread(() -> {
+            try {
+                for (EventoNota ev : mapaDeNotas) {
+                    int columna = Math.max(0, Math.min(3, ev.columna));
+                    long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs + offsetMs);
+
+                    long ahoraMs = (System.nanoTime() - tiempoInicioNs) / 1_000_000L;
+                    long esperarMs = momentoAparicionMs - ahoraMs;
+                    if (esperarMs > 0) Thread.sleep(esperarMs);
+
+                    // ancho provisional para calcular X centrada
+                    int ladoTemporal = resolucion.escalarUniformeMin(157/2, 80);
+                    int xColumna = getColumnXForWidth(columna, ladoTemporal);
+
+                    final Nota nota;
+                    if ("hold".equalsIgnoreCase(ev.tipo)) {
+                        nota = new Nota(
+                            xColumna,
+                            yAparicion,
+                            columna,
+                            true,               // esHold
+                            ev.duracion,        // ms
+                            velocidadPxPorMs,
+                            resolucion
+                        );
+                    } else {
+                        nota = new Nota(
+                            xColumna,
+                            yAparicion,
+                            columna,
+                            false,              // esHold
+                            0L,
+                            velocidadPxPorMs,
+                            resolucion
+                        );
+                    }
+
+                    javax.swing.SwingUtilities.invokeLater(() -> agregarNota(nota));
+                }
+            } catch (InterruptedException ignored) {
+            }
+        }, "Creador-Notas-Cancion1");
+        hiloCreador.setDaemon(true);
+        hiloCreador.start();
+    }
+
+    @Override
+    protected void finalizarCancion() {
+        if (hiloCreador != null && hiloCreador.isAlive()) {
+            hiloCreador.interrupt();
+            hiloCreador = null;
+        }
+        config.Sonido.detenerCancion();
+        super.finalizarCancion();
+    }
+
+    /** Carga y parsea el JSON del mapa de notas. */
+    private java.util.List<EventoNota> cargarMapaDesdeJson(String rutaEnClasspath) {
+        try (java.io.InputStream is = getClass().getResourceAsStream(rutaEnClasspath);
+             java.io.InputStreamReader lector = new java.io.InputStreamReader(is, java.nio.charset.StandardCharsets.UTF_8)) {
+
+            com.google.gson.JsonObject raiz = com.google.gson.JsonParser.parseReader(lector).getAsJsonObject();
+            com.google.gson.Gson gson = new com.google.gson.Gson();
+            com.google.gson.reflect.TypeToken<java.util.List<EventoNota>> tipoLista =
+                    new com.google.gson.reflect.TypeToken<java.util.List<EventoNota>>() {};
+            return gson.fromJson(raiz.getAsJsonArray("notas"), tipoLista.getType());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return java.util.Collections.emptyList();
+        }
+    }
+
+    /** DTO del JSON. */
+    private static class EventoNota {
+        String tipo;     // "tap" o "hold"
+        int columna;     // 0..3
+        long tiempo;     // ms desde inicio
+        long duracion;   // ms (solo hold)
     }
 }
 
@@ -1364,7 +1697,7 @@ public class PantallaInicio extends JPanel {
 
       
         // Timer para cambiar a MenuInicio
-        new Timer(4000, new ActionListener() {
+        new Timer(100, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFrame ventana = (JFrame) getTopLevelAncestor();
@@ -1397,54 +1730,133 @@ public class Nota extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    private Image imagenNota;
-    private Color color;
-    private int columna = 0; // opcional: para re-alinear en resizes
+    // Parámetros básicos (mantengo simple)
+    private int columna = 0;             // 0=izq, 1=abajo, 2=arriba, 3=der
+    public  boolean esHold = false;      // CancionBase lo lee directo
+    private boolean headScored = false;  // evitar doble score de cabeza
 
-    public Nota(int posX, int posY, Color color, ResolucionManager resolucion) {
-        this.color = color;
+    // Imágenes
+    private Image imgHead;  // tap / cabeza
+    private Image imgBody;  // cuerpo (hold)
+    private Image imgTail;  // cola  (hold)
 
-        // Tamaño base real de la nota móvil: 157x157 → la dibujamos a la mitad, con escala uniforme
+    // Tamaños y cache de proporciones
+    private int lado;       // ancho destino de la nota (cabeza/cuerpo/cola)
+    private int headH;      // alto destino de cabeza (mantiene proporción del PNG)
+    private int tailH;      // alto destino de cola   (mantiene proporción del PNG)
+    private int bodySrcH;   // alto original del body (para “tilear”)
+    private int bodySrcW;   // ancho original del body
+
+    public Nota(int x, int y, int columna, boolean esHold, long duracionMs, double velocidadPxPorMs, ResolucionManager resolucion) {
+        this.columna = Math.max(0, Math.min(3, columna));
+        this.esHold = esHold;
+
+        // base ~157px; uso mitad + escalado mínimo que ya venís usando
         int base = 157 / 2;
-        int lado = resolucion.escalarUniformeMin(base, 80); // usa UNIFORME (no X/Y distinto)
+        this.lado = resolucion.escalarUniformeMin(base, 80);
 
-        // NO re-escalar Y al posicionar, recibimos posY en pixeles del panel (puede ser negativo para spawn)
-        setOpaque(false);
-        setSize(lado, lado);
-        setLocation(posX, posY);
-
-        // Elegir sprite según color (tu lógica actual)
-        if (color.equals(Color.RED)) {
-            imagenNota = new ImageIcon(getClass().getResource("/img/notas/izquierda.png")).getImage();
-            columna = 0;
-        } else if (color.equals(Color.YELLOW)) {
-            imagenNota = new ImageIcon(getClass().getResource("/img/notas/abajo.png")).getImage();
-            columna = 1;
-        } else if (color.equals(Color.MAGENTA)) {
-            imagenNota = new ImageIcon(getClass().getResource("/img/notas/arriba.png")).getImage();
-            columna = 2;
-        } else if (color.equals(Color.GREEN)) {
-            imagenNota = new ImageIcon(getClass().getResource("/img/notas/derecha.png")).getImage();
-            columna = 3;
-        } else {
-            imagenNota = null;
+        // Rutas por columna
+        String headPath, bodyPath = null, tailPath = null;
+        switch (this.columna) {
+            case 0 -> { headPath="/img/notas/izquierda.png";  bodyPath="/img/notas/izquierdaHold.png";  tailPath="/img/notas/izquierdaHoldTermina.png"; }
+            case 1 -> { headPath="/img/notas/abajo.png";       bodyPath="/img/notas/abajoHold.png";      tailPath="/img/notas/abajoHoldTermina.png"; }
+            case 2 -> { headPath="/img/notas/arriba.png";      bodyPath="/img/notas/arribaHold.png";     tailPath="/img/notas/arribaHoldTermina.png"; }
+            default -> { headPath="/img/notas/derecha.png";    bodyPath="/img/notas/derechaHold.png";    tailPath="/img/notas/derechaHoldTermina.png"; }
         }
+
+        // Cargar imágenes
+        imgHead = new ImageIcon(getClass().getResource(headPath)).getImage();
+        if (esHold) {
+            imgBody = new ImageIcon(getClass().getResource(bodyPath)).getImage();
+            imgTail = new ImageIcon(getClass().getResource(tailPath)).getImage();
+        }
+
+        // Calcular alturas respetando proporciones del PNG
+        headH = escalarAltoPorAncho(imgHead, lado);
+        if (esHold) {
+            tailH = escalarAltoPorAncho(imgTail, lado);
+            bodySrcW = imgBody.getWidth(null);
+            bodySrcH = imgBody.getHeight(null);
+            if (bodySrcW <= 0 || bodySrcH <= 0) { bodySrcW = 1; bodySrcH = 1; }
+        }
+
+        // Altura final del componente
+        int altoPx;
+        if (esHold) {
+            // altura = cuerpo(según duración) + head + tail
+            int cuerpoPx = (int)Math.round(Math.max(0, duracionMs) * velocidadPxPorMs);
+            altoPx = Math.max(headH + tailH + 2, cuerpoPx + headH + tailH);
+        } else {
+            altoPx = headH; // el tap usa el alto proporcional de su PNG
+        }
+
+        setOpaque(false);
+        setBounds(x, y, lado, altoPx);
     }
 
-    /** Para que CancionBase pueda re-alinear tras un resize. */
-    public int getColumna() {
-        return columna;
+    private static int escalarAltoPorAncho(Image img, int anchoDestino) {
+        int w = img.getWidth(null);
+        int h = img.getHeight(null);
+        if (w <= 0 || h <= 0) return anchoDestino; // fallback cuadrado
+        // Mantener proporción: alto = anchoDestino * (h/w)
+        return Math.max(1, Math.round(anchoDestino * (h / (float) w)));
+    }
+
+    public int getColumna() { return columna; }
+
+    /** Marca cabeza de hold una sola vez; devuelve true si fue la primera. */
+    public boolean marcarHeadSiNoFue() {
+        if (headScored) return false;
+        headScored = true;
+        return true;
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        if (imagenNota != null) {
-            g.drawImage(imagenNota, 0, 0, getWidth(), getHeight(), this);
-        } else {
-            g.setColor(color);
-            g.fillRect(0, 0, getWidth(), getHeight());
+    protected void paintComponent(Graphics g0) {
+        super.paintComponent(g0);
+        Graphics2D g = (Graphics2D) g0;
+
+        // Pixel-art nítido
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+
+        int W = getWidth();
+        int H = getHeight();
+
+        if (!esHold) {
+            // Tap simple (se dibuja proporcional, sin blur)
+            g.drawImage(imgHead, 0, 0, W, H, this);
+            return;
         }
+
+        // Hold: COLA ARRIBA, CUERPO TILEADO, CABEZA ABAJO
+        int y = 0;
+
+        // 1) Cola (arriba)
+        g.drawImage(imgTail, 0, y, W, y + tailH, 0, 0, imgTail.getWidth(null), imgTail.getHeight(null), this);
+        y += tailH;
+
+        // 2) Cuerpo repetido (tile) sin estirar para que no se deforme
+        int alturaCuerpoDisponible = Math.max(0, H - tailH - headH);
+        if (alturaCuerpoDisponible > 0) {
+            int srcH = bodySrcH;
+            int dibujado = 0;
+            while (dibujado < alturaCuerpoDisponible) {
+                int chunk = Math.min(srcH, alturaCuerpoDisponible - dibujado);
+                // Escalar ancho a W, pero NO distorsionar vertical: copiamos un “slice” del body
+                g.drawImage(
+                    imgBody,
+                    0, y + dibujado, W, y + dibujado + chunk,
+                    0, 0, bodySrcW, chunk,
+                    this
+                );
+                dibujado += chunk;
+            }
+            y += alturaCuerpoDisponible;
+        }
+
+        // 3) Cabeza (abajo)
+        g.drawImage(imgHead, 0, H - headH, W, H, 0, 0, imgHead.getWidth(null), imgHead.getHeight(null), this);
     }
 }
 
