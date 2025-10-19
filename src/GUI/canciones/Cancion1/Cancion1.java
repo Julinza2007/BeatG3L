@@ -57,7 +57,9 @@ public class Cancion1 extends CancionBase {
 
                     long ahoraMs = (System.nanoTime() - tiempoInicioNs) / 1_000_000L;
                     long esperarMs = momentoAparicionMs - ahoraMs;
-                    if (esperarMs > 0) Thread.sleep(esperarMs);
+                    while ((System.nanoTime() - tiempoInicioNs) / 1_000_000L < momentoAparicionMs) {
+                        Thread.sleep(1); // espera activa mínima
+                    }
 
                     // ancho provisional para calcular X centrada
                     int ladoTemporal = resolucion.escalarUniformeMin(157/2, 80);
@@ -85,6 +87,24 @@ public class Cancion1 extends CancionBase {
                             resolucion
                         );
                     }
+                    
+                    boolean dentroDeHold = false;
+                    if ("tap".equalsIgnoreCase(ev.tipo)) {
+                        for (EventoNota otra : mapaDeNotas) {
+                            if ("hold".equalsIgnoreCase(otra.tipo) && otra.columna == ev.columna) {
+                                long inicio = otra.tiempo;
+                                long fin = otra.tiempo + otra.duracion;
+                                if (ev.tiempo >= inicio && ev.tiempo <= fin) {
+                                    dentroDeHold = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if ("tap".equalsIgnoreCase(ev.tipo) && dentroDeHold) {
+                        continue; // no crear esta nota
+                    }
+
 
                     javax.swing.SwingUtilities.invokeLater(() -> agregarNota(nota));
                 }

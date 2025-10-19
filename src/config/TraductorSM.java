@@ -26,6 +26,8 @@ public class TraductorSM {
             String linea;
             Mapa mapa = new Mapa();
 
+            limpiarNotasTapDentroDeHold(mapa); // ← aquí se limpia
+            
             // --- meta del chart ---
             Double offsetSeg = 0.0;                 // #OFFSET: en segundos (puede ser negativo)
             List<BpmChange> cambios = new ArrayList<>();  // beat -> bpm
@@ -148,12 +150,31 @@ public class TraductorSM {
                 long tiempoMs = beatToMs(beat, cambios) + Math.round(offsetSeg * 1000.0);
 
                 if (c == '1') {
-                    Nota n = new Nota();
-                    n.tipo = "tap";
-                    n.columna = col;
-                    n.tiempo = tiempoMs;
-                    n.duracion = 0;
-                    mapa.notas.add(n);
+                	boolean dentroDeHold = false;
+
+                	// 1) Verificar si hay un hold activo en esta columna
+                	if (holdActivo[col]) {
+                	    long inicio = inicioHold[col];
+                	    long finEstimado = tiempoMs; // aún no sabemos el final real, pero podemos usar el tiempo actual como aproximación
+                	    if (tiempoMs >= inicio - 50 && tiempoMs <= finEstimado + 50) {
+                	        dentroDeHold = true;
+                	    }
+                	}
+
+                	// 2) Verificar contra holds ya cerrados (como hacías antes)
+                	if (!dentroDeHold) {
+                	    for (Nota nota : mapa.notas) {
+                	        if ("hold".equals(nota.tipo) && nota.columna == col) {
+                	            long inicio = nota.tiempo;
+                	            long fin = nota.tiempo + nota.duracion;
+                	            if (tiempoMs >= inicio - 50 && tiempoMs <= fin + 50) {
+                	                dentroDeHold = true;
+                	                break;
+                	            }
+                	        }
+                	    }
+                	}
+
                 } else if (c == '2') {
                     holdActivo[col] = true;
                     inicioHold[col] = tiempoMs;
@@ -170,6 +191,32 @@ public class TraductorSM {
                 }
             }
         }
+    }
+    
+    public static void limpiarNotasTapDentroDeHold(Mapa mapa) {
+        List<Nota> filtradas = new ArrayList<>();
+        for (Nota tap : mapa.notas) {
+            if (!"tap".equals(tap.tipo)) {
+                filtradas.add(tap);
+                continue;
+            }
+
+            boolean dentroDeHold = false;
+            for (Nota hold : mapa.notas) {
+                if ("hold".equals(hold.tipo) && hold.columna == tap.columna) {
+                    long inicio = hold.tiempo;
+                    long fin = hold.tiempo + hold.duracion;
+                    if (tap.tiempo >= inicio && tap.tiempo <= fin) {
+                        dentroDeHold = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!dentroDeHold) filtradas.add(tap);
+        }
+
+        mapa.notas = filtradas;
     }
 
 
