@@ -65,48 +65,62 @@ public class Cancion1 extends CancionBase {
                     int ladoTemporal = resolucion.escalarUniformeMin(157/2, 80);
                     int xColumna = getColumnXForWidth(columna, ladoTemporal);
 
-                    final Nota nota;
-                    if ("hold".equalsIgnoreCase(ev.tipo)) {
-                        nota = new Nota(
-                            xColumna,
-                            yAparicion,
-                            columna,
-                            true,               // esHold
-                            ev.duracion,        // ms
-                            velocidadPxPorMs,
-                            resolucion
-                        );
-                    } else {
-                        nota = new Nota(
-                            xColumna,
-                            yAparicion,
-                            columna,
-                            false,              // esHold
-                            0L,
-                            velocidadPxPorMs,
-                            resolucion
-                        );
-                    }
-                    
-                    boolean dentroDeHold = false;
-                    if ("tap".equalsIgnoreCase(ev.tipo)) {
-                        for (EventoNota otra : mapaDeNotas) {
-                            if ("hold".equalsIgnoreCase(otra.tipo) && otra.columna == ev.columna) {
-                                long inicio = otra.tiempo;
-                                long fin = otra.tiempo + otra.duracion;
-                                if (ev.tiempo >= inicio && ev.tiempo <= fin) {
-                                    dentroDeHold = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if ("tap".equalsIgnoreCase(ev.tipo) && dentroDeHold) {
-                        continue; // no crear esta nota
-                    }
 
+                 // 2. Filtro visual antes de crear la nota
+                 boolean conflictoVisual = false;
+                 if ("tap".equalsIgnoreCase(ev.tipo)) {
+                     ahoraMs = (System.nanoTime() - tiempoInicioNs) / 1_000_000L;
+                     long tiempoRestanteMs = ev.tiempo - ahoraMs;
+                     int yTap = yImpacto - (int)(tiempoRestanteMs * velocidadPxPorMs);
 
-                    javax.swing.SwingUtilities.invokeLater(() -> agregarNota(nota));
+                     for (EventoNota otra : mapaDeNotas) {
+                         if ("hold".equalsIgnoreCase(otra.tipo) && otra.columna == ev.columna) {
+                             long tiempoRestanteHoldMs = otra.tiempo - ahoraMs;
+                             int yHoldInicio = yImpacto - (int)(tiempoRestanteHoldMs * velocidadPxPorMs);
+                             int alturaHoldPx = (int)(otra.duracion * velocidadPxPorMs);
+                             int yHoldFin = yHoldInicio + alturaHoldPx;
+
+                             if (yTap >= yHoldInicio && yTap <= yHoldFin) {
+                                 conflictoVisual = true;
+                                 System.out.printf("⚠️ TAP solapada visualmente: columna=%d, tiempo=%d, y=%d%n",
+                                     ev.columna, ev.tiempo, yTap);
+                                 break;
+                             }
+                         }
+                     }
+                     if (conflictoVisual) continue; // 3. Salir antes de crear la nota
+                 }
+
+                 // 4. Crear la nota solo si no hubo conflicto
+                 if ("hold".equalsIgnoreCase(ev.tipo)) {
+                	 Nota nota = new Nota(
+                         xColumna,
+                         yAparicion,
+                         columna,
+                         true,
+                         ev.duracion,
+                         velocidadPxPorMs,
+                         resolucion
+                     );
+                     System.out.printf("🟢 Nota creada: tipo=%s, columna=%d, tiempo=%d, duracion=%d%n",
+                    		 ev.tipo, ev.columna, ev.tiempo, ev.duracion);
+                     javax.swing.SwingUtilities.invokeLater(() -> agregarNota(nota));
+                 } else {
+                	 Nota nota = new Nota(
+                         xColumna,
+                         yAparicion,
+                         columna,
+                         false,
+                         0L,
+                         velocidadPxPorMs,
+                         resolucion
+                     );
+                     System.out.printf("🟢 Nota creada: tipo=%s, columna=%d, tiempo=%d, duracion=%d%n",
+                    		 ev.tipo, ev.columna, ev.tiempo, ev.duracion);
+                     javax.swing.SwingUtilities.invokeLater(() -> agregarNota(nota));
+                 }
+
+                 
                 }
             } catch (InterruptedException ignored) {
             }

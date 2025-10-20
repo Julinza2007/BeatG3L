@@ -322,9 +322,12 @@ public abstract class CancionBase extends JPanel {
     }
 
     public void agregarNota(Nota nota) {
-        panelJuego.add(nota);
+        panelJuego.add(nota, 0);
         notasActivas.add(nota);
         panelJuego.setComponentZOrder(nota, 0);
+        
+        this.revalidate();
+        this.repaint();
     }
 
     protected void finalizarCancion() {

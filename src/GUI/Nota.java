@@ -63,7 +63,7 @@ public class Nota extends JPanel {
         if (esHold) {
             // altura = cuerpo(según duración) + head + tail
             int cuerpoPx = (int)Math.round(Math.max(0, duracionMs) * velocidadPxPorMs);
-            altoPx = Math.max(headH + tailH + 2, cuerpoPx + headH + tailH);
+            altoPx = cuerpoPx + headH + tailH;
         } else {
             altoPx = headH; // el tap usa el alto proporcional de su PNG
         }
@@ -107,17 +107,16 @@ public class Nota extends JPanel {
             return;
         }
 
-        // --- Hold: COLA ARRIBA (invertida), CUERPO TILEADO, CABEZA ABAJO ---
-        final int overlap = 1; // px de solape para evitar líneas entre segmentos
+     // --- Hold: COLA ARRIBA (invertida), CUERPO TILEADO, CABEZA ABAJO ---
+        final int overlap = 0; // <-- Cambiar a 0 para eliminar la causa del artefacto visual.
         int y = 0;
 
         // 1) COLA (arriba) — FLIP VERTICAL
         int tailSrcW = imgTail.getWidth(null);
         int tailSrcH = imgTail.getHeight(null);
-        // destino: (0, y) -> (W, y + tailH)
-        // fuente invertida vertical: (0, tailSrcH) -> (tailSrcW, 0)
+        // Usar un destino exacto: y + tailH, sin el + overlap
         g.drawImage(imgTail,
-                0, y, W, y + tailH + overlap,
+                0, y, W, y + tailH, // <-- Cambiar y + tailH + overlap a y + tailH
                 0, tailSrcH, tailSrcW, 0,
                 this);
         y += tailH; // avanzamos sin restar overlap para mantener alto total
@@ -125,16 +124,16 @@ public class Nota extends JPanel {
         // 2) CUERPO TILEADO (sin estirar verticalmente)
         int alturaCuerpoDisponible = Math.max(0, H - tailH - headH);
         if (alturaCuerpoDisponible > 0) {
-            int bodySrcW = imgBody.getWidth(null);
-            int bodySrcH = imgBody.getHeight(null);
-            if (bodySrcW <= 0 || bodySrcH <= 0) { bodySrcW = 1; bodySrcH = 1; }
+            // ... (variables bodySrcW, bodySrcH)
 
             int dibujado = 0;
             while (dibujado < alturaCuerpoDisponible) {
                 int chunk = Math.min(bodySrcH, alturaCuerpoDisponible - dibujado);
+                
+                // Usar un destino exacto, sin el - overlap ni + overlap
                 g.drawImage(
                     imgBody,
-                    0, y + dibujado - overlap, W, y + dibujado + chunk,
+                    0, y + dibujado, W, y + dibujado + chunk, // <-- Cambiar a destino exacto: y + dibujado, W, y + dibujado + chunk
                     0, 0, bodySrcW, chunk,
                     this
                 );
@@ -144,10 +143,11 @@ public class Nota extends JPanel {
         }
 
         // 3) CABEZA (abajo)
+        // Usar un destino exacto: H - headH, sin el - overlap
         int headSrcW = imgHead.getWidth(null);
         int headSrcH = imgHead.getHeight(null);
         g.drawImage(imgHead,
-                0, H - headH - overlap, W, H,
+                0, H - headH, W, H, // <-- Cambiar H - headH - overlap a H - headH
                 0, 0, headSrcW, headSrcH,
                 this);
     }
