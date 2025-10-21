@@ -26,52 +26,46 @@ public class TraductorSM {
             String linea;
             Mapa mapa = new Mapa();
 
-            limpiarNotasTapDentroDeHold(mapa); // ← aquí se limpia
-            
             // --- meta del chart ---
-            Double offsetSeg = 0.0;                 // #OFFSET: en segundos (puede ser negativo)
-            List<BpmChange> cambios = new ArrayList<>();  // beat -> bpm
-            cambios.add(new BpmChange(0.0, 120.0)); // default por si no hubiera #BPMS
+            double offsetSeg = 0.0;
+            List<BpmChange> cambios = new ArrayList<>();
+            cambios.add(new BpmChange(0.0, 120.0));
 
-            // --- estado del bloque de notas ---
+            // --- estado ---
             boolean leyendoNotas = false;
-            int compas = 0;                 // número de compás (0..N)
-            List<String> filasCompas = new ArrayList<>(); // acumulamos filas del compás actual
-
-            // buffers para holds por columna (se dimensionan al ver la 1ª fila)
+            int compas = 0;
+            List<String> filasCompas = new ArrayList<>();
             long[] inicioHold = null;
             boolean[] holdActivo = null;
 
             while ((linea = br.readLine()) != null) {
                 linea = linea.trim();
 
-                // ===== encabezado =====
+                // encabezado
                 if (linea.startsWith("#TITLE:")) {
                     mapa.titulo = linea.substring(7, linea.length() - 1);
                 } else if (linea.startsWith("#OFFSET:")) {
-                    // #OFFSET: <segundos>;
                     String s = linea.substring(8, linea.length() - 1);
                     try { offsetSeg = Double.parseDouble(s); } catch (Exception ignored) {}
                 } else if (linea.startsWith("#BPMS:")) {
-                    // #BPMS: beat=bpm,beat=bpm, ... ;
                     String datos = linea.substring(6, linea.length() - 1);
                     cambios.clear();
                     for (String par : datos.split(",")) {
                         String[] kv = par.split("=");
                         if (kv.length == 2) {
                             double beat = Double.parseDouble(kv[0].trim());
-                            double bpm  = Double.parseDouble(kv[1].trim());
+                            double bpm = Double.parseDouble(kv[1].trim());
                             cambios.add(new BpmChange(beat, bpm));
                         }
                     }
                     cambios.sort(Comparator.comparingDouble(b -> b.beat));
                     if (cambios.isEmpty()) cambios.add(new BpmChange(0.0, 120.0));
                 }
-                // ===== bloque de notas =====
+
+                // bloque de notas
                 else if (linea.startsWith("#NOTES:")) {
                     leyendoNotas = true;
-                    // saltar 6 líneas de metadata del chart (tipo, autor pasos, dificultad, etc.)
-                    for (int i = 0; i < 6; i++) br.readLine();
+                    for (int i = 0; i < 6; i++) br.readLine(); // saltar metadatos
                     compas = 0;
                     filasCompas.clear();
                     inicioHold = null;
@@ -79,36 +73,35 @@ public class TraductorSM {
                     continue;
                 } else if (leyendoNotas) {
                     if (linea.equals(";")) {
-                        // fin del chart
-                        // por si quedó un compás sin volcar (no debería, pero limpiamos)
                         procesarCompas(mapa, filasCompas, compas, offsetSeg, cambios, inicioHold, holdActivo);
                         leyendoNotas = false;
                     } else if (linea.equals(",")) {
-                        // fin de compás → procesar con SU cantidad de filas
                         procesarCompas(mapa, filasCompas, compas, offsetSeg, cambios, inicioHold, holdActivo);
                         compas++;
                         filasCompas.clear();
                     } else if (!linea.isEmpty()) {
                         filasCompas.add(linea);
-                        // dimensionar buffers de holds según columnas
                         int columnas = linea.length();
                         if (inicioHold == null) inicioHold = new long[columnas];
                         if (holdActivo == null) holdActivo = new boolean[columnas];
                     }
                 }
             }
+
+            // limpiar taps dentro de holds (ahora sí hay notas)
+            limpiarNotasTapDentroDeHold(mapa);
+
             return mapa;
         }
     }
 
-    // ---- helpers internos (colocalos dentro de TraductorSM) ----
+    // --- Helpers internos ---
     private static class BpmChange {
-        final double beat; // beat absoluto donde cambia
+        final double beat;
         final double bpm;
         BpmChange(double beat, double bpm) { this.beat = beat; this.bpm = bpm; }
     }
 
-    /** Convierte un beat absoluto a ms acumulando cada tramo de BPM. */
     private static long beatToMs(double beatObjetivo, List<BpmChange> cambios) {
         cambios.sort(Comparator.comparingDouble(b -> b.beat));
         double ms = 0.0;
@@ -116,7 +109,7 @@ public class TraductorSM {
             double beatIni = cambios.get(i).beat;
             double bpm = cambios.get(i).bpm;
             double beatFin = (i + 1 < cambios.size()) ? cambios.get(i + 1).beat : beatObjetivo;
-            if (beatObjetivo <= beatIni) break; // nada que sumar
+            if (beatObjetivo <= beatIni) break;
             double hasta = Math.min(beatFin, beatObjetivo);
             double deltaBeats = Math.max(0, hasta - beatIni);
             ms += (60000.0 / bpm) * deltaBeats;
@@ -125,7 +118,6 @@ public class TraductorSM {
         return Math.round(ms);
     }
 
-    /** Vuelca un compás completo usando su #filas real como subdivisión. */
     private static void procesarCompas(
             Mapa mapa,
             List<String> filasCompas,
@@ -136,48 +128,55 @@ public class TraductorSM {
             boolean[] holdActivo
     ) {
         if (filasCompas.isEmpty()) return;
-        final int filas = filasCompas.size(); // subdivisión REAL de este compás
+        final int filas = filasCompas.size();
         for (int fila = 0; fila < filas; fila++) {
             String row = filasCompas.get(fila);
             int columnas = row.length();
             for (int col = 0; col < columnas; col++) {
                 char c = row.charAt(col);
 
-                // beat absoluto = (compás * 4) + (fracción dentro del compás)*4
                 double frac = (double) fila / (double) filas;
                 double beat = compas * 4.0 + frac * 4.0;
-
                 long tiempoMs = beatToMs(beat, cambios) + Math.round(offsetSeg * 1000.0);
 
                 if (c == '1') {
-                	boolean dentroDeHold = false;
+                    boolean dentroDeHold = false;
 
-                	// 1) Verificar si hay un hold activo en esta columna
-                	if (holdActivo[col]) {
-                	    long inicio = inicioHold[col];
-                	    long finEstimado = tiempoMs; // aún no sabemos el final real, pero podemos usar el tiempo actual como aproximación
-                	    if (tiempoMs >= inicio - 50 && tiempoMs <= finEstimado + 50) {
-                	        dentroDeHold = true;
-                	    }
-                	}
+                    // verificar hold activo
+                    if (holdActivo[col]) {
+                        long inicio = inicioHold[col];
+                        if (tiempoMs >= inicio - 50 && tiempoMs <= inicio + 50) {
+                            dentroDeHold = true;
+                        }
+                    }
 
-                	// 2) Verificar contra holds ya cerrados (como hacías antes)
-                	if (!dentroDeHold) {
-                	    for (Nota nota : mapa.notas) {
-                	        if ("hold".equals(nota.tipo) && nota.columna == col) {
-                	            long inicio = nota.tiempo;
-                	            long fin = nota.tiempo + nota.duracion;
-                	            if (tiempoMs >= inicio - 50 && tiempoMs <= fin + 50) {
-                	                dentroDeHold = true;
-                	                break;
-                	            }
-                	        }
-                	    }
-                	}
+                    // verificar holds ya cerrados
+                    if (!dentroDeHold) {
+                        for (Nota nota : mapa.notas) {
+                            if ("hold".equals(nota.tipo) && nota.columna == col) {
+                                long inicio = nota.tiempo;
+                                long fin = nota.tiempo + nota.duracion;
+                                if (tiempoMs >= inicio && tiempoMs <= fin) {
+                                    dentroDeHold = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!dentroDeHold) {
+                        Nota n = new Nota();
+                        n.tipo = "tap";
+                        n.columna = col;
+                        n.tiempo = tiempoMs;
+                        n.duracion = 0;
+                        mapa.notas.add(n);
+                    }
 
                 } else if (c == '2') {
                     holdActivo[col] = true;
                     inicioHold[col] = tiempoMs;
+
                 } else if (c == '3') {
                     if (holdActivo[col]) {
                         Nota n = new Nota();
@@ -192,7 +191,7 @@ public class TraductorSM {
             }
         }
     }
-    
+
     public static void limpiarNotasTapDentroDeHold(Mapa mapa) {
         List<Nota> filtradas = new ArrayList<>();
         for (Nota tap : mapa.notas) {
@@ -200,7 +199,6 @@ public class TraductorSM {
                 filtradas.add(tap);
                 continue;
             }
-
             boolean dentroDeHold = false;
             for (Nota hold : mapa.notas) {
                 if ("hold".equals(hold.tipo) && hold.columna == tap.columna) {
@@ -212,22 +210,21 @@ public class TraductorSM {
                     }
                 }
             }
-
             if (!dentroDeHold) filtradas.add(tap);
         }
-
         mapa.notas = filtradas;
     }
-
 
     public static void guardarComoJSON(Mapa mapa, String ruta) throws IOException {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(mapa);
-        FileWriter fw = new FileWriter(ruta);
-        fw.write(json);
-        fw.close();
+        try (FileWriter fw = new FileWriter(ruta)) {
+            fw.write(json);
+        }
     }
 }
+
+// ===== Clases auxiliares =====
 
 class Mapa {
     String titulo = "";
