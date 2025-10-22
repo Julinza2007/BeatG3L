@@ -13,14 +13,14 @@ public class Sonido {
     // Volumen global 0.0–1.0 (50% por defecto)
     private static float volume = 0.5f;
 
-    public static synchronized void setVolume(float v) {
+    public static synchronized void setearVolumen(float v) {
         volume = Math.max(0f, Math.min(1f, v));
         aplicarVolumen(musicaFondo);
         aplicarVolumen(efecto);
         aplicarVolumen(lineaCancion); // importante para la canción en streaming
     }
 
-    public static synchronized float getVolume() {
+    public static synchronized float getVolumen() {
         return volume;
     }
 
