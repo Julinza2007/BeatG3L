@@ -22,11 +22,11 @@ public class ResolucionManager {
 
     // Devuelve ruta del fondo según resolución
     public String getFondoMenuInicio() {
-        if (ancho == 800 && alto == 600) return "/img/fondo/1_800x600.jpg";
-        if (ancho == 1280 && alto == 720) return "/img/fondo/1_1280x720.jpg";
-        if (ancho == 1366 && alto == 768) return "/img/fondo/1_1366x768.jpg";
-        if (ancho == 1600 && alto == 900) return "/img/fondo/1_1600x900.jpg";
-        if (ancho == 1920 && alto == 1080) return "/img/fondo/1_1920x1080_mejorada.jpg";
+        if (ancho == 800 && alto == 600) return "/img/fondo/fondoMenu_800x600.jpg";
+        if (ancho == 1280 && alto == 720) return "/img/fondo/fondoMenu_1280x720.jpg";
+        if (ancho == 1366 && alto == 768) return "/img/fondo/fondoMenu_1366x768.jpeg";
+        if (ancho == 1600 && alto == 900) return "/img/fondo/fondoMenu_1600x900.jpg";
+        if (ancho == 1920 && alto == 1080) return "/img/fondo/fondoMenu_1920x1080.jpg";
 
         // Por defecto, usar la de mayor calidad
         return "/GUI/img/fondo/1_1920x1080_mejorada.jpg";
