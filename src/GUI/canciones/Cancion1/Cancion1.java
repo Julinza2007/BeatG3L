@@ -1,6 +1,5 @@
 package GUI.canciones.Cancion1;
 
-import java.awt.Color;
 import GUI.Nota;
 import config.CancionBase;
 import config.ResolucionManager;
@@ -8,6 +7,7 @@ import config.ResolucionManager;
 public class Cancion1 extends CancionBase {
 
     private static final long serialVersionUID = 1L;
+    private Thread hiloCreador;
 
     public Cancion1(ResolucionManager resolucion) {
         super(resolucion);
@@ -15,57 +15,151 @@ public class Cancion1 extends CancionBase {
 
     @Override
     protected void construirCancion(ResolucionManager resolucion) {
-        // Se llama automáticamente DESPUÉS de que las columnas están bien posicionadas
+        // 1) Audio
+        config.Sonido.detenerMusica();
+        config.Sonido.reproducirCancion("GUI/canciones/Cancion1/my-8-bit-hero-301280.mp3");
 
-        // Spawn Y en pixeles de panel (negativos para entrar desde arriba)
-        final int y1 = -100, y2 = -300, y3 = -500, y4 = -700, y5 = -800, y6 = -900 , y7 = -1000, y8 = -1100, y9 = -1200 , y10 = -1300, y11 = -1400;
+        // 2) Mapa
+        java.util.List<EventoNota> mapaDeNotas = cargarMapaDesdeJson(
+            "/GUI/canciones/Cancion1/my-8-bit-hero-301280.json"
+        );
+        if (mapaDeNotas == null || mapaDeNotas.isEmpty()) {
+            System.err.println("No se pudieron cargar notas del JSON.");
+            iniciarMovimientoNotas();
+            return;
+        }
+        mapaDeNotas.sort(java.util.Comparator.comparingLong(n -> n.tiempo));
 
-        // Creamos notas “de color” como venías, pero la X la alineamos con el helper:
-        Nota n1 = new Nota(0, y1, Color.RED,     resolucion);
-        n1.setLocation(getColumnXForWidth(0, n1.getWidth()), y1);
-        agregarNota(n1);
+        // 3) Parámetros de caída
+        final int tickMs = 10; // igual al Timer de CancionBase
+        final int velocidadPxPorTick = resolucion.escalarY(5);
+        final double velocidadPxPorMs = velocidadPxPorTick / (double) tickMs;
 
-        Nota n2 = new Nota(0, y2, Color.YELLOW,  resolucion);
-        n2.setLocation(getColumnXForWidth(1, n2.getWidth()), y2);
-        agregarNota(n2);
+        // 4) Geometría vertical
+        final int yImpacto = notaD.getY();                // línea de hit
+        final int yAparicion = -resolucion.escalarY(200); // nace fuera de pantalla
+        final int distanciaPx = Math.max(1, yImpacto - yAparicion);
+        final long anticipacionMs = Math.round(distanciaPx / velocidadPxPorMs);
 
-        Nota n3 = new Nota(0, y3, Color.MAGENTA, resolucion);
-        n3.setLocation(getColumnXForWidth(2, n3.getWidth()), y3);
-        agregarNota(n3);
+        // Ajuste fino (si lo necesitás, calibrable)
+        final long offsetMs = 10;
 
-        Nota n4 = new Nota(0, y4, Color.GREEN,   resolucion);
-        n4.setLocation(getColumnXForWidth(3, n4.getWidth()), y4);
-        agregarNota(n4);
-        
-        Nota n5 = new Nota(0, y4, Color.GREEN,   resolucion);
-        n5.setLocation(getColumnXForWidth(3, n5.getWidth()), y5);
-        agregarNota(n5);
-        
-        Nota n6 = new Nota(0, y4, Color.GREEN,   resolucion);
-        n6.setLocation(getColumnXForWidth(3, n6.getWidth()), y6);
-        agregarNota(n6);
-        
-        Nota n7 = new Nota(0, y4, Color.GREEN,   resolucion);
-        n7.setLocation(getColumnXForWidth(3, n7.getWidth()), y7);
-        agregarNota(n7);
-        
-        Nota n8 = new Nota(0, y4, Color.GREEN,   resolucion);
-        n8.setLocation(getColumnXForWidth(3, n8.getWidth()), y8);
-        agregarNota(n8);
-        
-        Nota n9 = new Nota(0, y4, Color.GREEN,   resolucion);
-        n9.setLocation(getColumnXForWidth(3, n9.getWidth()), y9);
-        agregarNota(n9);
-        
-        Nota n10 = new Nota(0, y4, Color.GREEN,   resolucion);
-        n10.setLocation(getColumnXForWidth(3, n10.getWidth()), y10);
-        agregarNota(n10);
-        
-        Nota n11 = new Nota(0, y4, Color.GREEN,   resolucion);
-        n11.setLocation(getColumnXForWidth(3, n11.getWidth()), y11);
-        agregarNota(n11);
-
-        // Arrancar la caída
+        // 5) Arrancar movimiento
         iniciarMovimientoNotas();
+
+        // 6) Spawner
+        final long tiempoInicioNs = System.nanoTime();
+        hiloCreador = new Thread(() -> {
+            try {
+                for (EventoNota ev : mapaDeNotas) {
+                    int columna = Math.max(0, Math.min(3, ev.columna));
+                    long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs + offsetMs);
+
+                    long ahoraMs = (System.nanoTime() - tiempoInicioNs) / 1_000_000L;
+                    long esperarMs = momentoAparicionMs - ahoraMs;
+                    while ((System.nanoTime() - tiempoInicioNs) / 1_000_000L < momentoAparicionMs) {
+                        Thread.sleep(1); // espera activa mínima
+                    }
+
+                    // ancho provisional para calcular X centrada
+                    int ladoTemporal = resolucion.escalarUniformeMin(157/2, 80);
+                    int xColumna = getColumnXForWidth(columna, ladoTemporal);
+
+
+                 // 2. Filtro visual antes de crear la nota
+                 boolean conflictoVisual = false;
+                 if ("tap".equalsIgnoreCase(ev.tipo)) {
+                     ahoraMs = (System.nanoTime() - tiempoInicioNs) / 1_000_000L;
+                     long tiempoRestanteMs = ev.tiempo - ahoraMs;
+                     int yTap = yImpacto - (int)(tiempoRestanteMs * velocidadPxPorMs);
+
+                     for (EventoNota otra : mapaDeNotas) {
+                         if ("hold".equalsIgnoreCase(otra.tipo) && otra.columna == ev.columna) {
+                             long tiempoRestanteHoldMs = otra.tiempo - ahoraMs;
+                             int yHoldInicio = yImpacto - (int)(tiempoRestanteHoldMs * velocidadPxPorMs);
+                             int alturaHoldPx = (int)(otra.duracion * velocidadPxPorMs);
+                             int yHoldFin = yHoldInicio + alturaHoldPx;
+
+                             if (yTap >= yHoldInicio && yTap <= yHoldFin) {
+                                 conflictoVisual = true;
+                                 System.out.printf("⚠️ TAP solapada visualmente: columna=%d, tiempo=%d, y=%d%n",
+                                     ev.columna, ev.tiempo, yTap);
+                                 break;
+                             }
+                         }
+                     }
+                     if (conflictoVisual) continue; // 3. Salir antes de crear la nota
+                 }
+
+                 // 4. Crear la nota solo si no hubo conflicto
+                 if ("hold".equalsIgnoreCase(ev.tipo)) {
+                	 Nota nota = new Nota(
+                         xColumna,
+                         yAparicion,
+                         columna,
+                         true,
+                         ev.duracion,
+                         velocidadPxPorMs,
+                         resolucion
+                     );
+                     System.out.printf("🟢 Nota creada: tipo=%s, columna=%d, tiempo=%d, duracion=%d%n",
+                    		 ev.tipo, ev.columna, ev.tiempo, ev.duracion);
+                     javax.swing.SwingUtilities.invokeLater(() -> agregarNota(nota));
+                 } else {
+                	 Nota nota = new Nota(
+                         xColumna,
+                         yAparicion,
+                         columna,
+                         false,
+                         0L,
+                         velocidadPxPorMs,
+                         resolucion
+                     );
+                     System.out.printf("🟢 Nota creada: tipo=%s, columna=%d, tiempo=%d, duracion=%d%n",
+                    		 ev.tipo, ev.columna, ev.tiempo, ev.duracion);
+                     javax.swing.SwingUtilities.invokeLater(() -> agregarNota(nota));
+                 }
+
+                 
+                }
+            } catch (InterruptedException ignored) {
+            }
+        }, "Creador-Notas-Cancion1");
+        hiloCreador.setDaemon(true);
+        hiloCreador.start();
+    }
+
+    @Override
+    protected void finalizarCancion() {
+        if (hiloCreador != null && hiloCreador.isAlive()) {
+            hiloCreador.interrupt();
+            hiloCreador = null;
+        }
+        config.Sonido.detenerCancion();
+        super.finalizarCancion();
+    }
+
+    /** Carga y parsea el JSON del mapa de notas. */
+    private java.util.List<EventoNota> cargarMapaDesdeJson(String rutaEnClasspath) {
+        try (java.io.InputStream is = getClass().getResourceAsStream(rutaEnClasspath);
+             java.io.InputStreamReader lector = new java.io.InputStreamReader(is, java.nio.charset.StandardCharsets.UTF_8)) {
+
+            com.google.gson.JsonObject raiz = com.google.gson.JsonParser.parseReader(lector).getAsJsonObject();
+            com.google.gson.Gson gson = new com.google.gson.Gson();
+            com.google.gson.reflect.TypeToken<java.util.List<EventoNota>> tipoLista =
+                    new com.google.gson.reflect.TypeToken<java.util.List<EventoNota>>() {};
+            return gson.fromJson(raiz.getAsJsonArray("notas"), tipoLista.getType());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return java.util.Collections.emptyList();
+        }
+    }
+
+    /** DTO del JSON. */
+    private static class EventoNota {
+        String tipo;     // "tap" o "hold"
+        int columna;     // 0..3
+        long tiempo;     // ms desde inicio
+        long duracion;   // ms (solo hold)
     }
 }
