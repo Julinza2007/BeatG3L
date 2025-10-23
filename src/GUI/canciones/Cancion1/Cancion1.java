@@ -26,9 +26,11 @@ public class Cancion1 extends CancionBase {
         if (mapaDeNotas == null || mapaDeNotas.isEmpty()) {
             System.err.println("No se pudieron cargar notas del JSON.");
             iniciarMovimientoNotas();
+            
             return;
         }
         mapaDeNotas.sort(java.util.Comparator.comparingLong(n -> n.tiempo));
+        this.tiempoUltimaNotaMs = mapaDeNotas.get(mapaDeNotas.size() - 1).tiempo;
 
         // 3) Parámetros de caída
         final int tickMs = 10; // igual al Timer de CancionBase
@@ -51,6 +53,10 @@ public class Cancion1 extends CancionBase {
         final long tiempoInicioNs = System.nanoTime();
         hiloCreador = new Thread(() -> {
             try {
+            	
+            	javax.swing.SwingUtilities.invokeLater(() -> notasGeneradas = false);
+
+            	
                 for (EventoNota ev : mapaDeNotas) {
                     int columna = Math.max(0, Math.min(3, ev.columna));
                     long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs + offsetMs);

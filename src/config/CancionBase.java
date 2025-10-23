@@ -21,6 +21,10 @@ public abstract class CancionBase extends JPanel {
     protected ResolucionManager resolucion;
     private Timer timerNotas;
     protected PrecisionPuntaje precision;
+    protected boolean notasGeneradas = true;
+    
+    private long tiempoInicioNotasMs = 0;
+    protected long tiempoUltimaNotaMs = 0; // tiempo relativo desde inicio
 
     // base (1920x1080)
     private static final int BASE_SEPARACION_X = 120;
@@ -93,7 +97,6 @@ public abstract class CancionBase extends JPanel {
         });
     }
 
-    /** Crea las 4 teclas; las posiciones definitivas se fijan en layoutColumnasYAnclarAbajo() */
     private void crearTeclasJugador() {
         notaD = new NotasUsuario("/img/notas/notasUsuario/izquierda.png",
                                  "/img/notas/notasUsuario/izquierdaPresion.png",
@@ -125,7 +128,6 @@ public abstract class CancionBase extends JPanel {
         panelJuego.add(notaK);
     }
 
-    /** Calcula X centradas y Y pegada abajo usando el tamaño REAL del panel; guarda centros de columna. */
     private void layoutColumnasYAnclarAbajo() {
         int w = panelJuego.getWidth();
         int h = panelJuego.getHeight();
@@ -168,7 +170,6 @@ public abstract class CancionBase extends JPanel {
         }
     }
 
-    /** Re-alinea las notas activas a la columna (por si cambió el tamaño). */
     private void realinearNotasActivas() {
         for (Nota n : new ArrayList<>(notasActivas)) {
             int col = n.getColumna();
@@ -178,7 +179,6 @@ public abstract class CancionBase extends JPanel {
         panelJuego.repaint();
     }
 
-    /** Devuelve la X (izquierda) para centrar una nota del ancho indicado en la columna dada (0..3). */
     protected int getColumnXForWidth(int columna, int anchoNota) {
         columna = Math.max(0, Math.min(3, columna));
         return centrosCol[columna] - anchoNota/2;
@@ -196,7 +196,11 @@ public abstract class CancionBase extends JPanel {
         notaUsuario.soltar();
     }
 
-    /** Hit detection con soporte de holds: la cabeza puntúa una sola vez y NO se remueve el componente. */
+/* <<<<<<< HEAD
+    /** Hit detection con soporte de holds: la cabeza puntúa una sola vez y NO se remueve el componente. 
+=======
+>>>>>>> 48d8f5bbd6c8f744661c53289ea53e198d5f012f
+*/
     private void verificarColision(JPanel notaUsuario) {
         Rectangle hitUsuario = notaUsuario.getBounds();
         int tolX = Math.max(1, resolucion.escalarX(10));
@@ -210,6 +214,7 @@ public abstract class CancionBase extends JPanel {
 
             int centroUsuario = hitUsuario.x + hitUsuario.width / 2;
             int centroNota = n.getX() + n.getWidth() / 2;
+// <<<<<<< HEAD
             if (Math.abs(centroUsuario - centroNota) > tolX) continue;
 
             if (n.getBounds().intersects(hitUsuario)) {
@@ -229,6 +234,20 @@ public abstract class CancionBase extends JPanel {
                 }
 
                 // Tap normal: remover
+/*=======
+
+            if (Math.abs(centroUsuario - centroNota) > tolX) continue;
+
+            if (n.getBounds().intersects(hitUsuario)) {
+                if (diferencia > 30) {
+                    precision.Good();
+                    precision.setForeground(Color.GREEN);
+                } else if (diferencia < 30) {
+                    precision.Perfect();
+                    precision.setForeground(Color.YELLOW);
+                }
+>>>>>>> 48d8f5bbd6c8f744661c53289ea53e198d5f012f
+*/
                 panelJuego.remove(n);
                 notasActivas.remove(i);
                 panelJuego.repaint();
@@ -240,9 +259,12 @@ public abstract class CancionBase extends JPanel {
     // ====== Movimiento + puntaje continuo de holds ======
     protected void iniciarMovimientoNotas() {
         final int velocidad = resolucion.escalarY(5);
+        tiempoInicioNotasMs = System.currentTimeMillis();
+        final long tiempoFinalizacionEsperadoMs = tiempoUltimaNotaMs + 4000; // tiempo relativo desde inicio
         timerNotas = new Timer(10, e -> {
             // mover
             for (int i = notasActivas.size() - 1; i >= 0; i--) {
+            	
                 Nota n = notasActivas.get(i);
                 n.setLocation(n.getX(), n.getY() + velocidad);
             }
@@ -255,7 +277,22 @@ public abstract class CancionBase extends JPanel {
             }
 
             panelJuego.repaint();
+            
+            
+            long ahora = System.currentTimeMillis();
+            long tiempoTranscurrido = ahora - tiempoInicioNotasMs;
+            boolean tiempoSuficiente = tiempoTranscurrido >= tiempoFinalizacionEsperadoMs;
+            
+            System.out.printf("⏱️ Tiempo: %d ms | tiempo delay: " + tiempoFinalizacionEsperadoMs + " | Generadas: %b | Activas: %d%n",
+            	    ahora - tiempoInicioNotasMs, notasGeneradas, notasActivas.size());
+            
+            if (!notasGeneradas && notasActivas.isEmpty() && tiempoSuficiente) {
+                ((Timer) e.getSource()).stop();
+                finalizarCancion();
+            }
+
         });
+        	
         timerNotas.start();
     }
 
@@ -299,7 +336,8 @@ public abstract class CancionBase extends JPanel {
      *          lo removemos sin marcar Miss (ya lo evaluó el puntaje continuo).
      */
     private void eliminarNotasPasadas(Nota n) {
-        if (n.esHold) {
+// <<<<<<< HEAD
+/*        if (n.esHold) {
             // Cola = borde superior del componente
             int top = n.getY();
             int umbral = yImpacto + (notaD.getHeight() / 2); // un poquito por debajo de la línea
@@ -309,8 +347,9 @@ public abstract class CancionBase extends JPanel {
             }
             return;
         }
-
+*/
         // Tap normal: si sale de pantalla => Miss
+
         int bordeInferior = panelJuego.getHeight();
         int margen = Math.max(1, resolucion.escalarY(n.getHeight() / 2));
         if (n.getY() > bordeInferior + margen) {
@@ -319,6 +358,9 @@ public abstract class CancionBase extends JPanel {
             panelJuego.remove(n);
             notasActivas.remove(n);
         }
+
+            panelJuego.repaint();
+        
     }
 
     public void agregarNota(Nota nota) {
@@ -330,8 +372,35 @@ public abstract class CancionBase extends JPanel {
         this.repaint();
     }
 
+    
+
     protected void finalizarCancion() {
         detenerMovimientoNotas();
+
+        String nombre = JOptionPane.showInputDialog(
+            this,
+            "¡Canción terminada!\nIngresa tu nombre:",
+            "Fin del nivel",
+            JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (nombre == null || nombre.trim().isEmpty()) {
+            nombre = "Jugador";
+        }
+
+        int puntajeFinal = precision.getPuntos();
+        Ranking.guardarPuntuacion(nombre, puntajeFinal);
+
+        nivelSuperado = true;
+
+        // Mostrar el ranking con botón "Volver"
+        SwingUtilities.invokeLater(() -> {
+            JFrame ventana = (JFrame) SwingUtilities.getWindowAncestor(this);
+            RankingPanel rankingPanel = new RankingPanel(resolucion); // ✅ constructor corregido
+            ventana.setContentPane(rankingPanel);
+            ventana.revalidate();
+            ventana.repaint();
+        });
     }
 
     protected abstract void construirCancion(ResolucionManager resolucion);
