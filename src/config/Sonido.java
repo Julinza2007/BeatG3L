@@ -6,40 +6,40 @@ public class Sonido {
     private static Clip musicaFondo;
     private static Clip efecto;
 
+    // Streaming para MP3
+    private static SourceDataLine lineaCancion;
+    private static Thread hiloCancion;
+
     // Volumen global 0.0–1.0 (50% por defecto)
     private static float volume = 0.5f;
 
-    public static synchronized void setVolume(float v) {
+    public static synchronized void setearVolumen(float v) {
         volume = Math.max(0f, Math.min(1f, v));
-        // Reaplicar al vuelo si hay clips activos
         aplicarVolumen(musicaFondo);
         aplicarVolumen(efecto);
+        aplicarVolumen(lineaCancion); // importante para la canción en streaming
     }
 
-    public static synchronized float getVolume() {
+    public static synchronized float getVolumen() {
         return volume;
     }
 
-    private static void aplicarVolumen(Clip clip) {
-        if (clip == null) return;
-
+    private static void aplicarVolumen(Line line) {
+        if (line == null) return;
         try {
-            FloatControl gain = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            FloatControl gain = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
             float min = gain.getMinimum();
-            // Mapear 0..1 a (-80..0] dB en forma logarítmica
             float dB = (volume <= 0f) ? min : (float) (20.0 * Math.log10(volume));
-            if (dB > 0f) dB = 0f;                 // nunca amplificar
-            if (dB < min) dB = min;               // respetar mínimo del control
+            if (dB > 0f) dB = 0f;
+            if (dB < min) dB = min;
             gain.setValue(dB);
             return;
         } catch (Exception ignored) {}
 
         try {
-            FloatControl vol = (FloatControl) clip.getControl(FloatControl.Type.VOLUME);
+            FloatControl vol = (FloatControl) line.getControl(FloatControl.Type.VOLUME);
             vol.setValue(Math.max(0f, Math.min(1f, volume)));
-            return;
         } catch (Exception ignored) {}
-
     }
 
     public static void reproducirMusicaLoop(String rutaClasspath) {
@@ -52,7 +52,7 @@ public class Sonido {
             );
             musicaFondo = AudioSystem.getClip();
             musicaFondo.open(in);
-            aplicarVolumen(musicaFondo);              // ← aplicar volumen actual
+            aplicarVolumen(musicaFondo);
             musicaFondo.loop(Clip.LOOP_CONTINUOUSLY);
         } catch (Exception e) {
             e.printStackTrace();
@@ -74,11 +74,100 @@ public class Sonido {
             );
             efecto = AudioSystem.getClip();
             efecto.open(in);
-            aplicarVolumen(efecto);                   // ← aplicar volumen actual
+            aplicarVolumen(efecto);
             efecto.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-}
 
+    // --- MP3 por streaming (evita invalid frame size: NOT_SPECIFIED) ---
+
+    public static synchronized void detenerCancion() {
+        if (hiloCancion != null && hiloCancion.isAlive()) {
+            hiloCancion.interrupt();
+            hiloCancion = null;
+        }
+        if (lineaCancion != null) {
+            try {
+                lineaCancion.stop();
+                lineaCancion.flush();
+                lineaCancion.close();
+            } catch (Exception ignored) {}
+            lineaCancion = null;
+        }
+    }
+
+    public static synchronized void reproducirCancion(String rutaClasspath) {
+        try {
+            // si ya está sonando, no hagas nada
+            if (lineaCancion != null && lineaCancion.isActive()) return;
+
+            detenerMusica();   // por si había música de menú (Clip/WAV)
+            detenerCancion();  // limpiar cualquier resto
+
+            final var url = Sonido.class.getResource("/" + rutaClasspath);
+            if (url == null) throw new IllegalArgumentException("Recurso no encontrado: " + rutaClasspath);
+
+            // Abrir MP3 y convertir a PCM_SIGNED 16-bit con fallback de SR/canales
+            AudioInputStream in = AudioSystem.getAudioInputStream(url);
+            AudioFormat base = in.getFormat();
+
+            float sr = (base.getSampleRate() == AudioSystem.NOT_SPECIFIED) ? 44100f : base.getSampleRate();
+            int   ch = (base.getChannels()    == AudioSystem.NOT_SPECIFIED) ? 2      : base.getChannels();
+
+            AudioFormat decoded = new AudioFormat(
+                    AudioFormat.Encoding.PCM_SIGNED,
+                    sr,
+                    16,
+                    ch,
+                    ch * 2,          // 16 bits * canales / 8
+                    sr,
+                    false            // little endian
+            );
+
+            AudioInputStream din = AudioSystem.getAudioInputStream(decoded, in);
+
+            DataLine.Info info = new DataLine.Info(SourceDataLine.class, decoded);
+            lineaCancion = (SourceDataLine) AudioSystem.getLine(info);
+            lineaCancion.open(decoded);
+            aplicarVolumen(lineaCancion);
+
+            // reproducir en thread para no bloquear EDT
+            hiloCancion = new Thread(() -> {
+                try (AudioInputStream stream = din) {
+                    lineaCancion.start();
+                    byte[] buffer = new byte[8192];
+                    int n;
+                    while (!Thread.currentThread().isInterrupted()
+                           && (n = stream.read(buffer, 0, buffer.length)) != -1) {
+                        lineaCancion.write(buffer, 0, n);
+                    }
+                    lineaCancion.drain();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    detenerCancion();
+                }
+            }, "MP3-Streaming");
+            hiloCancion.setDaemon(true);
+            hiloCancion.start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static synchronized boolean cancionActiva() {
+        return lineaCancion != null && lineaCancion.isActive();
+    }
+    public static synchronized void pausarCancion() {
+        if (lineaCancion != null) lineaCancion.stop();
+    }
+    public static synchronized void reanudarCancion() {
+        if (lineaCancion != null) {
+            aplicarVolumen(lineaCancion);
+            lineaCancion.start();
+        }
+    }
+}

@@ -63,7 +63,7 @@ public class MenuInicioOpciones extends JPanel {
         lblVol.setForeground(Color.WHITE);
         lblVol.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(24), 16)));
 
-        int volInicial = Math.round(Sonido.getVolume() * 100f); // 0..100
+        int volInicial = Math.round(Sonido.getVolumen() * 100f); // 0..100
         JSlider sliderVol = new JSlider(0, 100, volInicial);
         sliderVol.setAlignmentX(CENTER_ALIGNMENT);
         sliderVol.setOpaque(false);
@@ -82,7 +82,7 @@ public class MenuInicioOpciones extends JPanel {
         // Se aplica volumen en tiempo real
         sliderVol.addChangeListener(e -> {
             float vol = sliderVol.getValue() / 100f;
-            Sonido.setVolume(vol);
+            Sonido.setearVolumen(vol);
         });
 
         JPanel panelBotones = new JPanel();
