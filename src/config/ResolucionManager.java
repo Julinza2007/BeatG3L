@@ -1,5 +1,10 @@
 package config;
 
+import java.awt.Dimension;
+import java.awt.DisplayMode;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+
 public class ResolucionManager {
 
     // Resolución base (para escalado)
@@ -22,11 +27,11 @@ public class ResolucionManager {
 
     // Devuelve ruta del fondo según resolución
     public String getFondoMenuInicio() {
-        if (ancho == 800 && alto == 600) return "/img/fondo/1_800x600.jpg";
-        if (ancho == 1280 && alto == 720) return "/img/fondo/1_1280x720.jpg";
-        if (ancho == 1366 && alto == 768) return "/img/fondo/1_1366x768.jpg";
-        if (ancho == 1600 && alto == 900) return "/img/fondo/1_1600x900.jpg";
-        if (ancho == 1920 && alto == 1080) return "/img/fondo/1_1920x1080_mejorada.jpg";
+        if (ancho == 800 && alto == 600) return "/img/fondo/fondo/1_800x600.jpg";
+        if (ancho == 1280 && alto == 720) return "/img/fondo/fondo/1_1280x720.jpg";
+        if (ancho == 1366 && alto == 768) return "/img/fondo/fondo/1_1366x768.jpg";
+        if (ancho == 1600 && alto == 900) return "/img/fondo/fondo/1_1600x900.jpg";
+        if (ancho == 1920 && alto == 1080) return "/img/fondo/fondo/1_1920x1080.jpg";
 
         // Por defecto, usar la de mayor calidad
         return "/GUI/img/fondo/1_1920x1080_mejorada.jpg";
@@ -52,7 +57,7 @@ public class ResolucionManager {
     public int escalarY(int valor) {
         return (int) (valor * scaleY);
     }
-    
+
     public int escalarXMin(int valor, int minimo) {
         return Math.max((int) (valor * scaleX), minimo);
     }
@@ -60,20 +65,53 @@ public class ResolucionManager {
     public int escalarYMin(int valor, int minimo) {
         return Math.max((int) (valor * scaleY), minimo);
     }
-    
- // Escala uniforme = la más conservadora para evitar estirar (mantiene relación de aspecto)
+
+    // Escala uniforme (mantiene proporción sin estirar)
     public double getEscalaUniforme() {
         return Math.min(scaleX, scaleY);
     }
+
     public int escalarUniforme(int valor) {
         return (int)Math.round(valor * getEscalaUniforme());
     }
+
     public int escalarUniformeMin(int valor, int minimo) {
         return Math.max(escalarUniforme(valor), minimo);
     }
-   
+
+    // Getters
     public int getAncho() { return ancho; }
     public int getAlto() { return alto; }
     public double getScaleX() { return scaleX; }
     public double getScaleY() { return scaleY; }
+    
+    public static Dimension obtenerResolucionMaxima() {
+        GraphicsDevice dispositivo = GraphicsEnvironment
+                .getLocalGraphicsEnvironment()
+                .getDefaultScreenDevice();
+        DisplayMode modo = dispositivo.getDisplayMode();
+        return new Dimension(modo.getWidth(), modo.getHeight());
+    }
+    
+    public static String[] obtenerResolucionesCompatibles() {
+        Dimension max = obtenerResolucionMaxima();
+        int maxAncho = max.width;
+        int maxAlto = max.height;
+
+        java.util.List<String> resoluciones = new java.util.ArrayList<>();
+
+        if (maxAncho >= 800 && maxAlto >= 600) resoluciones.add("800 x 600");
+        if (maxAncho >= 1280 && maxAlto >= 720) resoluciones.add("1280 x 720");
+        if (maxAncho >= 1366 && maxAlto >= 768) resoluciones.add("1366 x 768");
+        if (maxAncho >= 1600 && maxAlto >= 900) resoluciones.add("1600 x 900");
+        if (maxAncho >= 1920 && maxAlto >= 1080) resoluciones.add("1920 x 1080");
+
+        return resoluciones.toArray(new String[0]);
+    }
+    
+    
+    
+    
+    
+    
 }
