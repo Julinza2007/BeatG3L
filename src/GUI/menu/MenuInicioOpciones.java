@@ -29,8 +29,7 @@ public class MenuInicioOpciones extends JPanel {
         Fondo contentPane = new Fondo(resolucion.getFondoOpciones()); // Se pone el fondo del menú de opciones
         contentPane.setLayout(new BorderLayout(10, 10)); 	// Se usa BorderLayout con espacios de 10 pixeles entre componentes
         add(contentPane, BorderLayout.CENTER);
-
-        JPanel centro = new JPanel();
+         JPanel centro = new JPanel();
         centro.setOpaque(false);
         centro.setLayout(new BoxLayout(centro, BoxLayout.Y_AXIS));
         contentPane.add(centro, BorderLayout.CENTER);
@@ -40,13 +39,8 @@ public class MenuInicioOpciones extends JPanel {
         lblResol.setForeground(Color.WHITE);
         lblResol.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(24), 16)));
 
-        String[] opcionesResol = {
-            "800 x 600",
-            "1280 x 720",
-            "1366 x 768",
-            "1600 x 900",
-            "1920 x 1080"
-        };
+        String[] opcionesResol = ResolucionManager.obtenerResolucionesCompatibles();
+
         
         JComboBox<String> comboResol = new JComboBox<>(opcionesResol);
         comboResol.setAlignmentX(CENTER_ALIGNMENT);
@@ -63,7 +57,7 @@ public class MenuInicioOpciones extends JPanel {
         lblVol.setForeground(Color.WHITE);
         lblVol.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(24), 16)));
 
-        int volInicial = Math.round(Sonido.getVolume() * 100f); // 0..100
+        int volInicial = Math.round(Sonido.getVolumen() * 100f); // 0..100
         JSlider sliderVol = new JSlider(0, 100, volInicial);
         sliderVol.setAlignmentX(CENTER_ALIGNMENT);
         sliderVol.setOpaque(false);
@@ -82,7 +76,7 @@ public class MenuInicioOpciones extends JPanel {
         // Se aplica volumen en tiempo real
         sliderVol.addChangeListener(e -> {
             float vol = sliderVol.getValue() / 100f;
-            Sonido.setVolume(vol);
+            Sonido.setearVolumen(vol);
         });
 
         JPanel panelBotones = new JPanel();
