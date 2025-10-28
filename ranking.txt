@@ -11,3 +11,7 @@ Jugador,16600
 Jugador,0
 Jugador,12500
 ELUNEY,73100
+pablo,78150
+Jugador,0
+elu,78200
+elu,1124500

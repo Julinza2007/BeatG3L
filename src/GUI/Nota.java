@@ -81,6 +81,10 @@ public class Nota extends JPanel {
     }
 
     public int getColumna() { return columna; }
+    
+    private boolean resuelta = false;
+    public boolean fueResuelta() { return resuelta; }
+    public void marcarResuelta() { resuelta = true; }
 
     /** Marca cabeza de hold una sola vez; devuelve true si fue la primera. */
     public boolean marcarHeadSiNoFue() {

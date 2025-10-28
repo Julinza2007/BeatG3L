@@ -94,7 +94,10 @@ public class Cancion1 extends CancionBase {
                              }
                          }
                      }
-                     if (conflictoVisual) continue; // 3. Salir antes de crear la nota
+                     if (conflictoVisual) {
+                    	    System.out.printf("⛔ Nota tap filtrada por conflicto visual: columna=%d, tiempo=%d%n", ev.columna, ev.tiempo);
+                    	    continue;
+                    	}
                  }
 
                  // 4. Crear la nota solo si no hubo conflicto

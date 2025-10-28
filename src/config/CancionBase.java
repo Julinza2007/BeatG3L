@@ -228,6 +228,7 @@ public abstract class CancionBase extends JPanel {
                 }
 
                 if (n.esHold) {
+                	n.marcarResuelta();
                     // Cabeza del hold: puntuar una sola vez y NO remover
                     n.marcarHeadSiNoFue();
                     return;
@@ -282,10 +283,10 @@ public abstract class CancionBase extends JPanel {
             long ahora = System.currentTimeMillis();
             long tiempoTranscurrido = ahora - tiempoInicioNotasMs;
             boolean tiempoSuficiente = tiempoTranscurrido >= tiempoFinalizacionEsperadoMs;
-            
+            /*
             System.out.printf("⏱️ Tiempo: %d ms | tiempo delay: " + tiempoFinalizacionEsperadoMs + " | Generadas: %b | Activas: %d%n",
             	    ahora - tiempoInicioNotasMs, notasGeneradas, notasActivas.size());
-            
+            */
             if (!notasGeneradas && notasActivas.isEmpty() && tiempoSuficiente) {
                 ((Timer) e.getSource()).stop();
                 finalizarCancion();
@@ -350,13 +351,27 @@ public abstract class CancionBase extends JPanel {
 */
         // Tap normal: si sale de pantalla => Miss
 
-        int bordeInferior = panelJuego.getHeight();
+    	int bordeInferior = panelJuego.getHeight();
         int margen = Math.max(1, resolucion.escalarY(n.getHeight() / 2));
+    	
+    	if (n.fueResuelta()){ 
+    		if (n.getY() > bordeInferior + margen) {
+    			panelJuego.remove(n);
+                notasActivas.remove(n);
+    		}
+    		return;
+    	} // no evaluar ni marcar Miss
+    	
+       
         if (n.getY() > bordeInferior + margen) {
+        	long ahora = System.currentTimeMillis();
             precision.Miss();
+            System.out.printf("❌ MISS registrado: columna=%d, tiempoActual=%d%n",
+            	    n.getColumna(), ahora - tiempoInicioNotasMs);
             precision.setForeground(Color.RED);
             panelJuego.remove(n);
             notasActivas.remove(n);
+            
         }
 
             panelJuego.repaint();
