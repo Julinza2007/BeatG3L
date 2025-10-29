@@ -9,6 +9,7 @@ import GUI.Fondo;
 import GUI.Nota;
 import GUI.NotasUsuario;
 import GUI.PrecisionPuntaje;
+import GUI.canciones.Cancion1.Cancion1;
 
 public abstract class CancionBase extends JPanel {
 
@@ -30,6 +31,10 @@ public abstract class CancionBase extends JPanel {
     private static final int BASE_SEPARACION_X = 120;
     private static final int BASE_MARGIN_BOTTOM = 180;
 
+    private boolean enPausa = false;
+    private JLabel textoPausa;
+    private JPanel capaOpaca;
+    
     // centros de columna (pixeles en panelJuego)
     private final int[] centrosCol = new int[4];
 
@@ -76,6 +81,12 @@ public abstract class CancionBase extends JPanel {
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+            	if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    alternarPausa();
+                    return;
+                }
+                if (nivelSuperado || enPausa) return;
+            	
                 if (nivelSuperado) return;
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_D -> presionar(0, notaD);
@@ -178,6 +189,7 @@ public abstract class CancionBase extends JPanel {
         }
         panelJuego.repaint();
     }
+    
 
     protected int getColumnXForWidth(int columna, int anchoNota) {
         columna = Math.max(0, Math.min(3, columna));
@@ -301,7 +313,9 @@ public abstract class CancionBase extends JPanel {
     }
 
     protected void detenerMovimientoNotas() {
-        if (timerNotas != null && timerNotas.isRunning()) timerNotas.stop();
+        if (timerNotas != null && timerNotas.isRunning()){ 
+        	timerNotas.stop();
+        }
     }
 
     /**
@@ -390,7 +404,46 @@ public abstract class CancionBase extends JPanel {
         this.repaint();
     }
 
+    private void alternarPausa() {
+        enPausa = !enPausa;
+
+        if (enPausa) {
+            detenerMovimientoNotas();
+            if (this instanceof Cancion1 c1) c1.pausarGeneracion();
+            Sonido.pausarCancion();
+            mostrarOverlayPausa();
+        } else {
+            ocultarOverlayPausa();
+            if (this instanceof Cancion1 c1) c1.reanudarGeneracion();
+            Sonido.reanudarCancion();
+            iniciarMovimientoNotas();
+        }
+    }
     
+    private void mostrarOverlayPausa() {
+        capaOpaca = new JPanel();
+        capaOpaca.setBackground(new Color(0, 0, 0, 100)); // negro translúcido
+        capaOpaca.setBounds(0, 0, panelJuego.getWidth(), panelJuego.getHeight());
+        capaOpaca.setLayout(null);
+
+        textoPausa = new JLabel("PAUSA");
+        textoPausa.setFont(new Font("Arial", Font.BOLD, 60));
+        textoPausa.setForeground(Color.WHITE);
+        textoPausa.setBounds(panelJuego.getWidth()/2 - 150, panelJuego.getHeight()/2 - 50, 300, 100);
+        textoPausa.setHorizontalAlignment(SwingConstants.CENTER);
+
+        capaOpaca.add(textoPausa);
+        panelJuego.add(capaOpaca);
+        panelJuego.setComponentZOrder(capaOpaca, 0); // lo lleva al frente
+        panelJuego.repaint();
+    }
+
+    private void ocultarOverlayPausa() {
+        panelJuego.remove(capaOpaca);
+        capaOpaca = null;
+        textoPausa = null;
+        panelJuego.repaint();
+    }
 
     protected void finalizarCancion() {
         detenerMovimientoNotas();

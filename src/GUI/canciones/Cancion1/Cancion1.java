@@ -7,7 +7,12 @@ import config.ResolucionManager;
 public class Cancion1 extends CancionBase {
 
     private static final long serialVersionUID = 1L;
-    private Thread hiloCreador;
+    public Thread hiloCreador;
+    
+    private volatile boolean enPausa = false;
+    private long tiempoPausaAcumuladoMs = 0;
+    private long tiempoInicioNs;
+    private long tiempoInicioPausaNs = 0;
 
     public Cancion1(ResolucionManager resolucion) {
         super(resolucion);
@@ -17,7 +22,7 @@ public class Cancion1 extends CancionBase {
     protected void construirCancion(ResolucionManager resolucion) {
         // 1) Audio
         config.Sonido.detenerMusica();
-        config.Sonido.reproducirCancion("GUI/canciones/Cancion1/my-8-bit-hero-301280.mp3");
+        config.Sonido.reproducirCancion("GUI/canciones/Cancion1/my-8-bit-hero-301280.mp3", 0);
 
         // 2) Mapa
         java.util.List<EventoNota> mapaDeNotas = cargarMapaDesdeJson(
@@ -60,13 +65,29 @@ public class Cancion1 extends CancionBase {
                 for (EventoNota ev : mapaDeNotas) {
                     int columna = Math.max(0, Math.min(3, ev.columna));
                     long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs + offsetMs);
+                    
+                    long ahoraMs;
+                    long esperarMs;
+                    
+                    
+                    while (true) {
+                        ahoraMs = (System.nanoTime() - tiempoInicioNs - tiempoPausaAcumuladoMs * 1_000_000L) / 1_000_000L;
+                        esperarMs = momentoAparicionMs - ahoraMs;
 
-                    long ahoraMs = (System.nanoTime() - tiempoInicioNs) / 1_000_000L;
-                    long esperarMs = momentoAparicionMs - ahoraMs;
+                        if (enPausa) {
+                            tiempoInicioPausaNs = System.nanoTime();
+                            while (enPausa) Thread.sleep(10);
+                            tiempoPausaAcumuladoMs += (System.nanoTime() - tiempoInicioPausaNs) / 1_000_000L;
+                        }
+
+                        if (esperarMs <= 0) break;
+                        Thread.sleep(1);
+                    }
+                    /*
                     while ((System.nanoTime() - tiempoInicioNs) / 1_000_000L < momentoAparicionMs) {
                         Thread.sleep(1); // espera activa mínima
                     }
-
+                    */
                     // ancho provisional para calcular X centrada
                     int ladoTemporal = resolucion.escalarUniformeMin(157/2, 80);
                     int xColumna = getColumnXForWidth(columna, ladoTemporal);
@@ -162,6 +183,14 @@ public class Cancion1 extends CancionBase {
             e.printStackTrace();
             return java.util.Collections.emptyList();
         }
+    }
+    
+    public void pausarGeneracion() {
+        enPausa = true;
+    }
+
+    public void reanudarGeneracion() {
+        enPausa = false;
     }
 
     /** DTO del JSON. */

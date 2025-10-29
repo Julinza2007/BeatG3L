@@ -12,6 +12,15 @@ public class Sonido {
 
     // Volumen global 0.0–1.0 (50% por defecto)
     private static float volume = 0.5f;
+    
+    private static long tiempoInicioCancionNs = 0;
+    private static long tiempoPausaAcumuladoMs = 0;
+    private static long tiempoTranscurridoMs = 0;
+    private static long tiempoInicioPausaNs = 0;
+    private static long tiempoReproducidoMs = 0;
+    private static boolean enPausa = false;
+    
+    private static String rutaActual = null;
 
     public static synchronized void setearVolumen(float v) {
         volume = Math.max(0f, Math.min(1f, v));
@@ -98,7 +107,12 @@ public class Sonido {
         }
     }
 
-    public static synchronized void reproducirCancion(String rutaClasspath) {
+    public static synchronized void reproducirCancion(String rutaClasspath, long tiempo_inicio_cancion) {
+    	
+
+    	
+    	reproducirCancionDesde(rutaClasspath, tiempo_inicio_cancion);
+    	/*
         try {
             // si ya está sonando, no hagas nada
             if (lineaCancion != null && lineaCancion.isActive()) return;
@@ -156,18 +170,107 @@ public class Sonido {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    */
+    }
+    
+    public static synchronized void reproducirCancionDesde(String rutaClasspath, long offsetMs) {
+    	tiempoInicioCancionNs = System.nanoTime();
+    	tiempoReproducidoMs = offsetMs;
+    	enPausa = false;
+    	/*
+        detenerMusica();
+        detenerCancion();
+        */
+        rutaActual = rutaClasspath;
+
+        try {
+            final var url = Sonido.class.getResource("/" + rutaClasspath);
+            if (url == null) throw new IllegalArgumentException("Recurso no encontrado: " + rutaClasspath);
+
+            AudioInputStream in = AudioSystem.getAudioInputStream(url);
+            AudioFormat base = in.getFormat();
+
+            float sr = (base.getSampleRate() == AudioSystem.NOT_SPECIFIED) ? 44100f : base.getSampleRate();
+            int ch = (base.getChannels() == AudioSystem.NOT_SPECIFIED) ? 2 : base.getChannels();
+
+            AudioFormat decoded = new AudioFormat(
+                AudioFormat.Encoding.PCM_SIGNED, sr, 16, ch, ch * 2, sr, false
+            );
+
+            AudioInputStream din = AudioSystem.getAudioInputStream(decoded, in);
+
+            // Saltar los primeros offsetMs milisegundos
+            long bytesPorMs = (long)(decoded.getFrameRate() * decoded.getFrameSize() / 1000);
+            long bytesASaltar = offsetMs * bytesPorMs;
+            din.skip(bytesASaltar);
+
+            DataLine.Info info = new DataLine.Info(SourceDataLine.class, decoded);
+            lineaCancion = (SourceDataLine) AudioSystem.getLine(info);
+            lineaCancion.open(decoded);
+            aplicarVolumen(lineaCancion);
+
+            tiempoInicioCancionNs = System.nanoTime();
+            tiempoPausaAcumuladoMs = 0;
+
+            hiloCancion = new Thread(() -> {
+                try (AudioInputStream stream = din) {
+                    lineaCancion.start();
+                    byte[] buffer = new byte[8192];
+                    int n;
+                    long tiempoUltimoTickNs = System.nanoTime();
+                    
+                    SourceDataLine lineaLocal = lineaCancion;
+                    if (lineaLocal == null) return;
+                    
+                    while (!Thread.currentThread().isInterrupted()
+                    	       && lineaCancion != null
+                    	       && (n = stream.read(buffer, 0, buffer.length)) != -1) {
+                    	    lineaCancion.write(buffer, 0, n);
+                        
+                        long ahoraNs = System.nanoTime();
+                        tiempoReproducidoMs += (ahoraNs - tiempoUltimoTickNs) / 1_000_000L;
+                        tiempoUltimoTickNs = ahoraNs;
+                    }
+                    SourceDataLine lineaLocal1 = lineaCancion;
+                    if (lineaLocal1 == null) return;
+
+                    while (!Thread.currentThread().isInterrupted()
+                           && lineaLocal1 != null
+                           && (n = stream.read(buffer, 0, buffer.length)) != -1) {
+                        lineaLocal1.write(buffer, 0, n);
+                    }
+                    lineaCancion.drain();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    detenerCancion();
+                }
+            }, "MP3-Streaming");
+            hiloCancion.setDaemon(true);
+            hiloCancion.start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static synchronized boolean cancionActiva() {
         return lineaCancion != null && lineaCancion.isActive();
     }
     public static synchronized void pausarCancion() {
-        if (lineaCancion != null) lineaCancion.stop();
+        if (lineaCancion != null) {
+        	tiempoReproducidoMs = (System.nanoTime() - tiempoInicioCancionNs) / 1_000_000L;
+        	enPausa = true;
+            detenerCancion(); // detenemos el hilo
+        }
     }
     public static synchronized void reanudarCancion() {
-        if (lineaCancion != null) {
+        /*if (lineaCancion != null) {
             aplicarVolumen(lineaCancion);
             lineaCancion.start();
+        }*/
+    	if (rutaActual != null && enPausa) {
+            reproducirCancionDesde(rutaActual, tiempoReproducidoMs);
         }
     }
 }

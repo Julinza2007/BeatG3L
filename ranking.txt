@@ -18,3 +18,4 @@ elu,1124500
 Julinza,983450
 Julian,1298150
 elunete,214300
+eluney,184800
