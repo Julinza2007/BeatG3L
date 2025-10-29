@@ -17,6 +17,7 @@ import javax.swing.SwingConstants;
 import GUI.Componentes;
 import GUI.Fondo;
 import GUI.canciones.Cancion1.Cancion1;
+import GUI.canciones.Cancion5.Cancion5;
 import config.ResolucionManager;
 
 public class MenuJuego extends JPanel {
@@ -68,6 +69,12 @@ public class MenuJuego extends JPanel {
 		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion1);
 		panelCentral.add(Box.createVerticalGlue());
+		
+		JButton btnCancion5 = Componentes.crearBotonConImagen("cancion 5", btnBase, resolucion);
+		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+		panelCentral.add(Box.createVerticalGlue());
+		panelCentral.add(btnCancion5);
+		panelCentral.add(Box.createVerticalGlue());
 
 		JPanel panelBotones = new JPanel();
 		panelBotones.setOpaque(false);
@@ -95,17 +102,29 @@ public class MenuJuego extends JPanel {
 
 		btnCancion1.addActionListener(e -> {
 			JFrame ventana = (JFrame) this.getTopLevelAncestor();
-			Cancion1 cancion = new Cancion1(resolucion);
-			ventana.setContentPane(cancion);
+			Cancion1 cancion1 = new Cancion1(resolucion);
+			ventana.setContentPane(cancion1);
 			ventana.revalidate();
 			ventana.repaint();
 
 			// 🔥 Asegura el foco al nuevo panel después de ser visible
 			javax.swing.SwingUtilities.invokeLater(() -> {
-				cancion.requestFocusInWindow();
+				cancion1.requestFocusInWindow();
 			});
 		});
+		
+		btnCancion5.addActionListener(e -> {
+			JFrame ventana = (JFrame) this.getTopLevelAncestor();
+			Cancion5 cancion5 = new Cancion5(resolucion);
+			ventana.setContentPane(cancion5);
+			ventana.revalidate();
+			ventana.repaint();
 
+			// 🔥 Asegura el foco al nuevo panel después de ser visible
+			javax.swing.SwingUtilities.invokeLater(() -> {
+				cancion5.requestFocusInWindow();
+			});
+		});
 		btnRankings.addActionListener(e -> {
 			JFrame ventana = (JFrame) this.getTopLevelAncestor();
 			MenuRankings rankings = new MenuRankings(resolucion);

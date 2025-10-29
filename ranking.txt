@@ -15,3 +15,4 @@ pablo,78150
 Jugador,0
 elu,78200
 elu,1124500
+Jugador,571850
