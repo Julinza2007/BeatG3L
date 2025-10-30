@@ -1,6 +1,6 @@
 ============================================================
-  TODO EL CÓDIGO - Proyecto bajo: /c/Users/Alumno/beatg3l/src
-  Generado: 2025-10-23 08:43:07
+  TODO EL CÓDIGO - Proyecto bajo: /d/Repositorios/workSpaceJava/BeatG3L/src
+  Generado: 2025-10-30 16:54:44
 ============================================================
 
 ========== INICIO: ClasePrimaria.java ==========
@@ -11,8 +11,8 @@ public class ClasePrimaria {
 	public static void main(String[] args) {
 		mostrarJuego();
 	}
-	public static void mostrarJuego() {
-		BeatG3L juego = new BeatG3L();
+	public static void mostrarJuego() {		
+		BeatG3L juego = new BeatG3L();;
 		juego.setVisible(true);
 	}
 
@@ -381,10 +381,10 @@ public class Nota extends JPanel {
         // Rutas por columna
         String headPath, bodyPath = null, tailPath = null;
         switch (this.columna) {
-            case 0 -> { headPath="/img/notas/izquierda.png";  bodyPath="/img/notas/izquierdaHold.png";  tailPath="/img/notas/izquierdaHoldTermina.png"; }
-            case 1 -> { headPath="/img/notas/abajo.png";       bodyPath="/img/notas/abajoHold.png";      tailPath="/img/notas/abajoHoldTermina.png"; }
-            case 2 -> { headPath="/img/notas/arriba.png";      bodyPath="/img/notas/arribaHold.png";     tailPath="/img/notas/arribaHoldTermina.png"; }
-            default -> { headPath="/img/notas/derecha.png";    bodyPath="/img/notas/derechaHold.png";    tailPath="/img/notas/derechaHoldTermina.png"; }
+            case 0 -> { headPath="/img/notas/izquierda.png";  bodyPath="/img/notas/izquierdaHold.png";  tailPath="/img/notas/izquierdaHoldTermina2.png"; }
+            case 1 -> { headPath="/img/notas/abajo.png";       bodyPath="/img/notas/abajoHold.png";      tailPath="/img/notas/abajoHoldTermina2.png"; }
+            case 2 -> { headPath="/img/notas/arriba.png";      bodyPath="/img/notas/arribaHold.png";     tailPath="/img/notas/arribaHoldTermina2.png"; }
+            default -> { headPath="/img/notas/derecha.png";    bodyPath="/img/notas/derechaHold.png";    tailPath="/img/notas/derechaHoldTermina2.png"; }
         }
 
         // Cargar imágenes
@@ -426,6 +426,10 @@ public class Nota extends JPanel {
     }
 
     public int getColumna() { return columna; }
+    
+    private boolean resuelta = false;
+    public boolean fueResuelta() { return resuelta; }
+    public void marcarResuelta() { resuelta = true; }
 
     /** Marca cabeza de hold una sola vez; devuelve true si fue la primera. */
     public boolean marcarHeadSiNoFue() {
@@ -664,14 +668,16 @@ import java.awt.*;
 ========== INICIO: GUI/canciones/Cancion1/Cancion1.java ==========
 package GUI.canciones.Cancion1;
 
-import GUI.Nota;
+import org.w3c.dom.events.EventException;
+
 import config.CancionBase;
+import config.Mapeado;
 import config.ResolucionManager;
 
 public class Cancion1 extends CancionBase {
 
     private static final long serialVersionUID = 1L;
-    private Thread hiloCreador;
+    private Mapeado mapeado;
 
     public Cancion1(ResolucionManager resolucion) {
         super(resolucion);
@@ -679,155 +685,56 @@ public class Cancion1 extends CancionBase {
 
     @Override
     protected void construirCancion(ResolucionManager resolucion) {
-        // 1) Audio
-        config.Sonido.detenerMusica();
-        config.Sonido.reproducirCancion("GUI/canciones/Cancion1/my-8-bit-hero-301280.mp3");
+    	
+        mapeado = new Mapeado(this, resolucion,
+            "GUI/canciones/Cancion1/my-8-bit-hero-301280.mp3",
+            "/GUI/canciones/Cancion1/my-8-bit-hero-301280.json");
+     // Después (no bloquea el EDT):
+        new Thread(mapeado::iniciar, "inicio-cancion").start();
 
-        // 2) Mapa
-        java.util.List<EventoNota> mapaDeNotas = cargarMapaDesdeJson(
-            "/GUI/canciones/Cancion1/my-8-bit-hero-301280.json"
-        );
-        if (mapaDeNotas == null || mapaDeNotas.isEmpty()) {
-            System.err.println("No se pudieron cargar notas del JSON.");
-            iniciarMovimientoNotas();
-            return;
-        }
-        mapaDeNotas.sort(java.util.Comparator.comparingLong(n -> n.tiempo));
-
-        // 3) Parámetros de caída
-        final int tickMs = 10; // igual al Timer de CancionBase
-        final int velocidadPxPorTick = resolucion.escalarY(5);
-        final double velocidadPxPorMs = velocidadPxPorTick / (double) tickMs;
-
-        // 4) Geometría vertical
-        final int yImpacto = notaD.getY();                // línea de hit
-        final int yAparicion = -resolucion.escalarY(200); // nace fuera de pantalla
-        final int distanciaPx = Math.max(1, yImpacto - yAparicion);
-        final long anticipacionMs = Math.round(distanciaPx / velocidadPxPorMs);
-
-        // Ajuste fino (si lo necesitás, calibrable)
-        final long offsetMs = 10;
-
-        // 5) Arrancar movimiento
-        iniciarMovimientoNotas();
-
-        // 6) Spawner
-        final long tiempoInicioNs = System.nanoTime();
-        hiloCreador = new Thread(() -> {
-            try {
-                for (EventoNota ev : mapaDeNotas) {
-                    int columna = Math.max(0, Math.min(3, ev.columna));
-                    long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs + offsetMs);
-
-                    long ahoraMs = (System.nanoTime() - tiempoInicioNs) / 1_000_000L;
-                    long esperarMs = momentoAparicionMs - ahoraMs;
-                    while ((System.nanoTime() - tiempoInicioNs) / 1_000_000L < momentoAparicionMs) {
-                        Thread.sleep(1); // espera activa mínima
-                    }
-
-                    // ancho provisional para calcular X centrada
-                    int ladoTemporal = resolucion.escalarUniformeMin(157/2, 80);
-                    int xColumna = getColumnXForWidth(columna, ladoTemporal);
-
-
-                 // 2. Filtro visual antes de crear la nota
-                 boolean conflictoVisual = false;
-                 if ("tap".equalsIgnoreCase(ev.tipo)) {
-                     ahoraMs = (System.nanoTime() - tiempoInicioNs) / 1_000_000L;
-                     long tiempoRestanteMs = ev.tiempo - ahoraMs;
-                     int yTap = yImpacto - (int)(tiempoRestanteMs * velocidadPxPorMs);
-
-                     for (EventoNota otra : mapaDeNotas) {
-                         if ("hold".equalsIgnoreCase(otra.tipo) && otra.columna == ev.columna) {
-                             long tiempoRestanteHoldMs = otra.tiempo - ahoraMs;
-                             int yHoldInicio = yImpacto - (int)(tiempoRestanteHoldMs * velocidadPxPorMs);
-                             int alturaHoldPx = (int)(otra.duracion * velocidadPxPorMs);
-                             int yHoldFin = yHoldInicio + alturaHoldPx;
-
-                             if (yTap >= yHoldInicio && yTap <= yHoldFin) {
-                                 conflictoVisual = true;
-                                 System.out.printf("⚠️ TAP solapada visualmente: columna=%d, tiempo=%d, y=%d%n",
-                                     ev.columna, ev.tiempo, yTap);
-                                 break;
-                             }
-                         }
-                     }
-                     if (conflictoVisual) continue; // 3. Salir antes de crear la nota
-                 }
-
-                 // 4. Crear la nota solo si no hubo conflicto
-                 if ("hold".equalsIgnoreCase(ev.tipo)) {
-                	 Nota nota = new Nota(
-                         xColumna,
-                         yAparicion,
-                         columna,
-                         true,
-                         ev.duracion,
-                         velocidadPxPorMs,
-                         resolucion
-                     );
-                     System.out.printf("🟢 Nota creada: tipo=%s, columna=%d, tiempo=%d, duracion=%d%n",
-                    		 ev.tipo, ev.columna, ev.tiempo, ev.duracion);
-                     javax.swing.SwingUtilities.invokeLater(() -> agregarNota(nota));
-                 } else {
-                	 Nota nota = new Nota(
-                         xColumna,
-                         yAparicion,
-                         columna,
-                         false,
-                         0L,
-                         velocidadPxPorMs,
-                         resolucion
-                     );
-                     System.out.printf("🟢 Nota creada: tipo=%s, columna=%d, tiempo=%d, duracion=%d%n",
-                    		 ev.tipo, ev.columna, ev.tiempo, ev.duracion);
-                     javax.swing.SwingUtilities.invokeLater(() -> agregarNota(nota));
-                 }
-
-                 
-                }
-            } catch (InterruptedException ignored) {
-            }
-        }, "Creador-Notas-Cancion1");
-        hiloCreador.setDaemon(true);
-        hiloCreador.start();
     }
 
     @Override
     protected void finalizarCancion() {
-        if (hiloCreador != null && hiloCreador.isAlive()) {
-            hiloCreador.interrupt();
-            hiloCreador = null;
-        }
-        config.Sonido.detenerCancion();
+        if (mapeado != null) mapeado.detener();
         super.finalizarCancion();
     }
+}
 
-    /** Carga y parsea el JSON del mapa de notas. */
-    private java.util.List<EventoNota> cargarMapaDesdeJson(String rutaEnClasspath) {
-        try (java.io.InputStream is = getClass().getResourceAsStream(rutaEnClasspath);
-             java.io.InputStreamReader lector = new java.io.InputStreamReader(is, java.nio.charset.StandardCharsets.UTF_8)) {
+========== FIN: GUI/canciones/Cancion1/Cancion1.java ==========
 
-            com.google.gson.JsonObject raiz = com.google.gson.JsonParser.parseReader(lector).getAsJsonObject();
-            com.google.gson.Gson gson = new com.google.gson.Gson();
-            com.google.gson.reflect.TypeToken<java.util.List<EventoNota>> tipoLista =
-                    new com.google.gson.reflect.TypeToken<java.util.List<EventoNota>>() {};
-            return gson.fromJson(raiz.getAsJsonArray("notas"), tipoLista.getType());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return java.util.Collections.emptyList();
-        }
+========== INICIO: GUI/canciones/Cancion5/Cancion5.java ==========
+package GUI.canciones.Cancion5;
+
+import config.CancionBase;
+import config.Mapeado;
+import config.ResolucionManager;
+
+public class Cancion5 extends CancionBase {
+
+    private static final long serialVersionUID = 1L;
+    private Mapeado mapeado;
+
+    public Cancion5(ResolucionManager resolucion) {
+        super(resolucion);
     }
 
-    /** DTO del JSON. */
-    private static class EventoNota {
-        String tipo;     // "tap" o "hold"
-        int columna;     // 0..3
-        long tiempo;     // ms desde inicio
-        long duracion;   // ms (solo hold)
+    @Override
+    protected void construirCancion(ResolucionManager resolucion) {
+        mapeado = new Mapeado(this, resolucion,
+            "GUI/canciones/Cancion5/audio.mp3",
+            "/GUI/canciones/Cancion5/I-Dont-Wanna-Be-Me.json");
+        new Thread(mapeado::iniciar, "inicio-cancion").start();
+    }
+
+    @Override
+    protected void finalizarCancion() {
+        if (mapeado != null) mapeado.detener();
+        super.finalizarCancion();
     }
 }
-========== FIN: GUI/canciones/Cancion1/Cancion1.java ==========
+
+========== FIN: GUI/canciones/Cancion5/Cancion5.java ==========
 
 ========== INICIO: GUI/menu/MenuInicio.java ==========
 package GUI.menu;
@@ -1167,9 +1074,13 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
 import GUI.Componentes;
 import GUI.Fondo;
 import GUI.canciones.Cancion1.Cancion1;
+import GUI.canciones.Cancion5.Cancion5;
+import config.Mapeado;
 import config.ResolucionManager;
 
 public class MenuJuego extends JPanel {
@@ -1221,6 +1132,12 @@ public class MenuJuego extends JPanel {
 		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion1);
 		panelCentral.add(Box.createVerticalGlue());
+		
+		JButton btnCancion5 = Componentes.crearBotonConImagen("cancion 5", btnBase, resolucion);
+		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+		panelCentral.add(Box.createVerticalGlue());
+		panelCentral.add(btnCancion5);
+		panelCentral.add(Box.createVerticalGlue());
 
 		JPanel panelBotones = new JPanel();
 		panelBotones.setOpaque(false);
@@ -1247,18 +1164,41 @@ public class MenuJuego extends JPanel {
 		}
 
 		btnCancion1.addActionListener(e -> {
-			JFrame ventana = (JFrame) this.getTopLevelAncestor();
-			Cancion1 cancion = new Cancion1(resolucion);
-			ventana.setContentPane(cancion);
-			ventana.revalidate();
-			ventana.repaint();
+		    javax.swing.JFrame ventana = (javax.swing.JFrame)
+		            javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
 
-			// 🔥 Asegura el foco al nuevo panel después de ser visible
-			javax.swing.SwingUtilities.invokeLater(() -> {
-				cancion.requestFocusInWindow();
-			});
+		    btnCancion1.setEnabled(false);
+		    ventana.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+
+		    // Llama directo a esperarCarga (que ya espera)
+		    try {
+		        config.Mapeado.esperarCarga(1, ventana, resolucion);
+		    } finally {
+		        ventana.setCursor(java.awt.Cursor.getDefaultCursor());
+		        btnCancion1.setEnabled(true);
+		    }
 		});
 
+		
+		btnCancion5.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame)
+		            javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    btnCancion5.setEnabled(false);
+		    ventana.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+
+		    // Llama directo a esperarCarga (que ya espera)
+		    try {
+		        config.Mapeado.esperarCarga(5, ventana, resolucion);
+		    } finally {
+		        ventana.setCursor(java.awt.Cursor.getDefaultCursor());
+		        btnCancion1.setEnabled(true);
+		    }
+		});
+		
+		
 		btnRankings.addActionListener(e -> {
 			JFrame ventana = (JFrame) this.getTopLevelAncestor();
 			MenuRankings rankings = new MenuRankings(resolucion);
@@ -1277,85 +1217,6 @@ public class MenuJuego extends JPanel {
 
 	}
 }
-//=======
-//    	ImageIcon btnBase = new ImageIcon(getClass().getResource("/img/fondo/btnEscalado.png"));
-//    	
-//    	setLayout(new BorderLayout());
-//
-//        // Fondo del menú de opciones
-//        Fondo contentPane = new Fondo(resolucion.getFondoOpciones());
-//        contentPane.setLayout(new BorderLayout(10, 10));
-//        add(contentPane);
-//        
-//        // Panel superior con título
-//        JLabel titulo = new JLabel("Canciones", SwingConstants.CENTER);
-//        titulo.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(36), 20)));
-//        titulo.setForeground(Color.WHITE);
-//        contentPane.add(titulo, BorderLayout.NORTH);
-//        
-//        
-//        // Panel central con Botones de canciones
-//        JPanel panelCentral = new JPanel();
-//        panelCentral.setOpaque(false);
-//        panelCentral.setLayout(new BoxLayout(panelCentral, BoxLayout.Y_AXIS));
-//        contentPane.add(panelCentral, BorderLayout.CENTER);
-//        
-//        JButton btnCancion1 = Componentes.crearBotonConImagen("cancion 1", btnBase, resolucion);
-//        panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
-//        panelCentral.add(Box.createVerticalGlue());
-//        panelCentral.add(btnCancion1);
-//        panelCentral.add(Box.createVerticalGlue());
-//        
-//        
-//        JPanel panelBotones = new JPanel();
-//        panelBotones.setOpaque(false);
-//        panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.X_AXIS));
-//        contentPane.add(panelBotones, BorderLayout.SOUTH);
-//        
-//        JButton btnVolver = new JButton("Volver");
-//        panelBotones.add(Box.createRigidArea(new Dimension(resolucion.escalarX(20), 0)));
-//        panelBotones.add(Box.createHorizontalGlue());
-//        panelBotones.add(btnVolver);
-//        panelBotones.add(Box.createHorizontalGlue());
-//        
-//        Font fuenteBotones = new Font("Arial", Font.BOLD, resolucion.escalarY(22));
-//        Dimension tamBoton = new Dimension(resolucion.escalarX(200), resolucion.escalarY(60));
-//
-//        for (JButton boton : new JButton[]{btnVolver, btnCancion1}) {
-//            boton.setFont(fuenteBotones);
-//            boton.setForeground(Color.WHITE);
-//            boton.setFocusPainted(false);
-//            boton.setContentAreaFilled(false);
-//            boton.setOpaque(false);
-//            boton.setPreferredSize(tamBoton);
-//            boton.setMaximumSize(tamBoton);
-//        }
-//        
-//        btnCancion1.addActionListener(e -> {
-//            JFrame ventana = (JFrame) this.getTopLevelAncestor();
-//            Cancion1 cancion = new Cancion1(resolucion);
-//            ventana.setContentPane(cancion);
-//            ventana.revalidate();
-//            ventana.repaint();
-//
-//            // 🔥 Asegura el foco al nuevo panel después de ser visible
-//            javax.swing.SwingUtilities.invokeLater(() -> {
-//                cancion.requestFocusInWindow();
-//            });
-//        });
-//        
-//        btnVolver.addActionListener(e -> {
-//            JFrame ventana = (JFrame) this.getTopLevelAncestor();
-//            MenuInicio menu = new MenuInicio(resolucion);
-//            ventana.setContentPane(menu);
-//            ventana.revalidate();
-//            ventana.repaint();
-//        });
-//        
-//    }
-//}
-//>>>>>>> faa7f28c8e4523b07fce3d21fd8f04e67bf88d9e
-
 ========== FIN: GUI/menu/MenuJuego.java ==========
 
 ========== INICIO: GUI/menu/MenuRankings.java ==========
@@ -1550,6 +1411,10 @@ public abstract class CancionBase extends JPanel {
     protected ResolucionManager resolucion;
     private Timer timerNotas;
     protected PrecisionPuntaje precision;
+    protected boolean notasGeneradas = true;
+    
+    private long tiempoInicioNotasMs = 0;
+    protected long tiempoUltimaNotaMs = 0; // tiempo relativo desde inicio
 
     // base (1920x1080)
     private static final int BASE_SEPARACION_X = 120;
@@ -1753,6 +1618,7 @@ public abstract class CancionBase extends JPanel {
                 }
 
                 if (n.esHold) {
+                	n.marcarResuelta();
                     // Cabeza del hold: puntuar una sola vez y NO remover
                     n.marcarHeadSiNoFue();
                     return;
@@ -1784,9 +1650,12 @@ public abstract class CancionBase extends JPanel {
     // ====== Movimiento + puntaje continuo de holds ======
     protected void iniciarMovimientoNotas() {
         final int velocidad = resolucion.escalarY(5);
+        tiempoInicioNotasMs = System.currentTimeMillis();
+        final long tiempoFinalizacionEsperadoMs = tiempoUltimaNotaMs + 4000; // tiempo relativo desde inicio
         timerNotas = new Timer(10, e -> {
             // mover
             for (int i = notasActivas.size() - 1; i >= 0; i--) {
+            	
                 Nota n = notasActivas.get(i);
                 n.setLocation(n.getX(), n.getY() + velocidad);
             }
@@ -1799,12 +1668,22 @@ public abstract class CancionBase extends JPanel {
             }
 
             panelJuego.repaint();
-
-            if (notasActivas.isEmpty()) {
+            
+            
+            long ahora = System.currentTimeMillis();
+            long tiempoTranscurrido = ahora - tiempoInicioNotasMs;
+            boolean tiempoSuficiente = tiempoTranscurrido >= tiempoFinalizacionEsperadoMs;
+            /*
+            System.out.printf("⏱️ Tiempo: %d ms | tiempo delay: " + tiempoFinalizacionEsperadoMs + " | Generadas: %b | Activas: %d%n",
+            	    ahora - tiempoInicioNotasMs, notasGeneradas, notasActivas.size());
+            */
+            if (!notasGeneradas && notasActivas.isEmpty() && tiempoSuficiente) {
                 ((Timer) e.getSource()).stop();
                 finalizarCancion();
             }
+
         });
+        	
         timerNotas.start();
     }
 
@@ -1849,7 +1728,7 @@ public abstract class CancionBase extends JPanel {
      */
     private void eliminarNotasPasadas(Nota n) {
 // <<<<<<< HEAD
-        if (n.esHold) {
+/*        if (n.esHold) {
             // Cola = borde superior del componente
             int top = n.getY();
             int umbral = yImpacto + (notaD.getHeight() / 2); // un poquito por debajo de la línea
@@ -1859,20 +1738,32 @@ public abstract class CancionBase extends JPanel {
             }
             return;
         }
-
+*/
         // Tap normal: si sale de pantalla => Miss
-/*
-=======
->>>>>>> 48d8f5bbd6c8f744661c53289ea53e198d5f012f
-        int bordeInferior = panelJuego.getHeight();
+
+    	int bordeInferior = panelJuego.getHeight();
         int margen = Math.max(1, resolucion.escalarY(n.getHeight() / 2));
+    	
+    	if (n.fueResuelta()){ 
+    		if (n.getY() > bordeInferior + margen) {
+    			panelJuego.remove(n);
+                notasActivas.remove(n);
+    		}
+    		return;
+    	} // no evaluar ni marcar Miss
+    	
+       
         if (n.getY() > bordeInferior + margen) {
+        	long ahora = System.currentTimeMillis();
             precision.Miss();
+            System.out.printf("❌ MISS registrado: columna=%d, tiempoActual=%d%n",
+            	    n.getColumna(), ahora - tiempoInicioNotasMs);
             precision.setForeground(Color.RED);
             panelJuego.remove(n);
             notasActivas.remove(n);
-<<<<<<< HEAD
-=======*/
+            
+        }
+
             panelJuego.repaint();
         
     }
@@ -1920,6 +1811,229 @@ public abstract class CancionBase extends JPanel {
     protected abstract void construirCancion(ResolucionManager resolucion);
 }
 ========== FIN: config/CancionBase.java ==========
+
+========== INICIO: config/Mapeado.java ==========
+package config;
+
+import java.util.*;
+import GUI.Nota;
+import javax.swing.SwingUtilities;
+
+public class Mapeado {
+
+    private final CancionBase cancionBase;
+    private final ResolucionManager resolucion;
+    private final String rutaAudio;
+    private final String rutaJson;
+    private Thread hiloCreador;
+    
+    public Mapeado(CancionBase cancionBase, ResolucionManager resolucion, String rutaAudio, String rutaJson) {
+        this.cancionBase = cancionBase;
+        this.resolucion = resolucion;
+        this.rutaAudio = rutaAudio;
+        this.rutaJson = rutaJson;
+    }
+    
+ // ===== Precarga mínima, una sola vez =====
+
+    private static volatile boolean primeraVezLista = false;
+
+    public static boolean estaListaLaPrimeraVez() { return primeraVezLista; }
+
+    public static void prepararPrimeraVezAsync(Runnable alTerminar) {
+        if (primeraVezLista) { // ya está listo
+            if (alTerminar != null) SwingUtilities.invokeLater(alTerminar);
+            return;
+        }
+        Thread hilo = new Thread(() -> {
+            try {
+                precargarImagenesBasicas();
+                calentarAudioBasico();
+                primeraVezLista = true;
+            } finally {
+                if (alTerminar != null) SwingUtilities.invokeLater(alTerminar);
+            }
+        }, "precarga-primera-vez");
+        hilo.setDaemon(true);
+        hilo.start();
+    }
+    
+    public static void esperar(Runnable cuandoListo) {
+        if (cuandoListo == null) return;
+        prepararPrimeraVezAsync(cuandoListo);
+    }
+    
+
+    // — Separado por métodos (modular y legible) —
+    private static void precargarImagenesBasicas() {
+        // Notas jugador (las mismas rutas que ya usás)
+        String[] rutas = {
+            "/img/notas/notasUsuario/izquierda.png",
+            "/img/notas/notasUsuario/izquierdaPresion.png",
+            "/img/notas/notasUsuario/abajo.png",
+            "/img/notas/notasUsuario/abajoPresion.png",
+            "/img/notas/notasUsuario/arriba.png",
+            "/img/notas/notasUsuario/arribaPresion.png",
+            "/img/notas/notasUsuario/derecha.png",
+            "/img/notas/notasUsuario/derechaPresion.png",
+            // Una cabeza por columna (con esto ya “despierta” Java2D)
+            "/img/notas/izquierda.png",
+            "/img/notas/abajo.png",
+            "/img/notas/arriba.png",
+            "/img/notas/derecha.png"
+        };
+        for (String r : rutas) {
+            try {
+                java.net.URL u = Mapeado.class.getResource(r);
+                if (u != null) new javax.swing.ImageIcon(u).getImage(); // fuerza decodificación PNG
+            } catch (Exception ignorar) {}
+        }
+    }
+
+    private static void calentarAudioBasico() {
+        // No reproduce nada: sólo abre/cierra una línea PCM pequeña
+        javax.sound.sampled.AudioFormat f = new javax.sound.sampled.AudioFormat(44100f, 16, 2, true, false);
+        try {
+            javax.sound.sampled.DataLine.Info info =
+                new javax.sound.sampled.DataLine.Info(javax.sound.sampled.SourceDataLine.class, f);
+            javax.sound.sampled.SourceDataLine linea =
+                (javax.sound.sampled.SourceDataLine) javax.sound.sampled.AudioSystem.getLine(info);
+            linea.open(f, 1024);
+            linea.start();
+            linea.stop();
+            linea.close();
+        } catch (Exception ignorar) {}
+    }
+
+    
+
+    public void iniciar() {
+        // 1) Reproducir audio
+    	try {
+    		Thread.sleep(1000);
+    	}
+    	catch(InterruptedException e){
+    		System.err.println(e);
+    	}
+    	
+        Sonido.detenerMusica();
+        Sonido.reproducirCancion(rutaAudio);
+        try {
+            Thread.sleep(300); // compensación
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // 2) Cargar mapa
+        List<EventoNota> mapaDeNotas = cargarMapaDesdeJson();
+        if (mapaDeNotas == null || mapaDeNotas.isEmpty()) {
+            System.err.println("No se pudieron cargar notas del JSON.");
+            cancionBase.iniciarMovimientoNotas();
+            return;
+        }
+
+        mapaDeNotas.sort(Comparator.comparingLong(n -> n.tiempo));
+        cancionBase.tiempoUltimaNotaMs = mapaDeNotas.get(mapaDeNotas.size() - 1).tiempo;
+
+        // 3) Parámetros de caída
+        final int tickMs = 10;
+        final int velocidadPxPorTick = resolucion.escalarY(5);
+        final double velocidadPxPorMs = velocidadPxPorTick / (double) tickMs;
+
+        final int yImpacto = cancionBase.notaD.getY();
+        final int yAparicion = -resolucion.escalarY(200);
+        final int distanciaPx = Math.max(1, yImpacto - yAparicion);
+        final long anticipacionMs = Math.round(distanciaPx / velocidadPxPorMs);
+        final long offsetMs = 10;
+
+        cancionBase.iniciarMovimientoNotas();
+
+        // 4) Crear notas en hilo
+        final long tiempoInicioNs = System.nanoTime();
+        hiloCreador = new Thread(() -> {
+            try {
+                SwingUtilities.invokeLater(() -> cancionBase.notasGeneradas = false);
+                for (EventoNota ev : mapaDeNotas) {
+                    int columna = Math.max(0, Math.min(3, ev.columna));
+                    long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs + offsetMs);
+
+                    while ((System.nanoTime() - tiempoInicioNs) / 1_000_000L < momentoAparicionMs)
+                        Thread.sleep(1);
+
+                    int ladoTemporal = resolucion.escalarUniformeMin(157/2, 80);
+                    int xColumna = cancionBase.getColumnXForWidth(columna, ladoTemporal);
+
+                    if ("hold".equalsIgnoreCase(ev.tipo)) {
+                        Nota n = new Nota(xColumna, yAparicion, columna, true, ev.duracion, velocidadPxPorMs, resolucion);
+                        SwingUtilities.invokeLater(() -> cancionBase.agregarNota(n));
+                    } else {
+                        Nota n = new Nota(xColumna, yAparicion, columna, false, 0L, velocidadPxPorMs, resolucion);
+                        SwingUtilities.invokeLater(() -> cancionBase.agregarNota(n));
+                    }
+                }
+            } catch (InterruptedException ignored) {
+            }
+        }, "Mapeado-Hilo");
+        hiloCreador.setDaemon(true);
+        hiloCreador.start();
+    }
+
+    public void detener() {
+        if (hiloCreador != null && hiloCreador.isAlive()) {
+            hiloCreador.interrupt();
+            hiloCreador = null;
+        }
+        Sonido.detenerCancion();
+    }
+    
+    public static void esperarCarga(int cancion, javax.swing.JFrame ventana, ResolucionManager resolucion) {
+        if (ventana == null) return;
+        
+        esperar(() -> {
+            javax.swing.JPanel panel;
+            switch (cancion) {
+                case 1:  panel = new GUI.canciones.Cancion1.Cancion1(resolucion); break;
+//                case 2:  panel = new GUI.canciones.Cancion2.Cancion2(resolucion); break;
+//                case 3:  panel = new GUI.canciones.Cancion3.Cancion3(resolucion); break;
+//                case 4:  panel = new GUI.canciones.Cancion4.Cancion4(resolucion); break;
+                case 5:  panel = new GUI.canciones.Cancion5.Cancion5(resolucion); break;
+//                case 6:  panel = new GUI.canciones.Cancion6.Cancion6(resolucion); break;
+//                case 7:  panel = new GUI.canciones.Cancion7.Cancion7(resolucion); break;
+//                case 8:  panel = new GUI.canciones.Cancion8.Cancion8(resolucion); break;
+//                case 9:  panel = new GUI.canciones.Cancion9.Cancion9(resolucion); break;
+                default: return;
+            }
+            // Mostrar el panel (en EDT)
+            ventana.setContentPane(panel);
+            ventana.revalidate();
+            ventana.repaint();
+            javax.swing.SwingUtilities.invokeLater(panel::requestFocusInWindow);
+        });
+    }
+
+
+    private List<EventoNota> cargarMapaDesdeJson() {
+        try (var is = getClass().getResourceAsStream(rutaJson);
+             var lector = new java.io.InputStreamReader(is, java.nio.charset.StandardCharsets.UTF_8)) {
+            var raiz = com.google.gson.JsonParser.parseReader(lector).getAsJsonObject();
+            var gson = new com.google.gson.Gson();
+            var tipoLista = new com.google.gson.reflect.TypeToken<List<EventoNota>>() {};
+            return gson.fromJson(raiz.getAsJsonArray("notas"), tipoLista.getType());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    private static class EventoNota {
+        String tipo;
+        int columna;
+        long tiempo;
+        long duracion;
+    }
+}
+
+========== FIN: config/Mapeado.java ==========
 
 ========== INICIO: config/Ranking.java ==========
 package config;
@@ -2384,8 +2498,8 @@ import com.google.gson.GsonBuilder;
 public class TraductorSM {
 
     public static void main(String[] args) {
-        String rutaSM = "src/GUI/canciones/Cancion1/my-8-bit-hero-301280.sm";
-        String rutaJSON = "src/GUI/canciones/Cancion1/my-8-bit-hero-301280.json";
+        String rutaSM = "src/GUI/canciones/Cancion5/I-Dont-Wanna-Be-Me.sm";
+        String rutaJSON = "src/GUI/canciones/Cancion5/I-Dont-Wanna-Be-Me.json";
 
         try {
             Mapa mapa = leerArchivoSM(rutaSM);
