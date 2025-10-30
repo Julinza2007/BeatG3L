@@ -150,9 +150,9 @@ public class Cancion1 extends CancionBase {
         config.Sonido.detenerCancion();
         super.finalizarCancion();
 
-        // 🟢 Después de terminar la canción, cambiamos a la escena de diálogos
+        //  Después de terminar la canción, cambiamos a la escena de diálogos
         javax.swing.SwingUtilities.invokeLater(() -> {
-            javax.swing.JFrame ventana = resolucion.getVentana(); // o ajustá si no tenés ese método
+            javax.swing.JFrame ventana = resolucion.getVentana(); 
             if (ventana != null) {
                 ventana.getContentPane().removeAll();
                 ventana.getContentPane().add(new dialogos2(ventana, resolucion));
@@ -188,4 +188,5 @@ public class Cancion1 extends CancionBase {
         long tiempo;     // ms desde inicio
         long duracion;   // ms (solo hold)
     }
+
 }
