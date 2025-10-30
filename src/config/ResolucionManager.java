@@ -5,6 +5,8 @@ public class ResolucionManager {
     // Resolución base (para escalado)
     private static final int BASE_WIDTH = 1920;
     private static final int BASE_HEIGHT = 1080;
+    private javax.swing.JFrame ventana;
+
 
     private int ancho;
     private int alto;
@@ -79,4 +81,12 @@ public class ResolucionManager {
     public int getAlto() { return alto; }
     public double getScaleX() { return scaleX; }
     public double getScaleY() { return scaleY; }
+    
+    public void setVentana(javax.swing.JFrame ventana) {
+        this.ventana = ventana;
+    }
+
+    public javax.swing.JFrame getVentana() {
+        return ventana;
+    }
 }
