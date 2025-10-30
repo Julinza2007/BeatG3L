@@ -10,7 +10,7 @@ public class Cancion1 extends CancionBase {
     public Thread hiloCreador;
     
     private volatile boolean enPausa = false;
-    private long tiempoPausaAcumuladoMs = 0;
+    private long tiempoPausaAcumuladoMs = 0; 
     private long tiempoInicioNs;
     private long tiempoInicioPausaNs = 0;
 
@@ -132,8 +132,10 @@ public class Cancion1 extends CancionBase {
                          velocidadPxPorMs,
                          resolucion
                      );
-                     System.out.printf("🟢 Nota creada: tipo=%s, columna=%d, tiempo=%d, duracion=%d%n",
+                     /*
+                       	System.out.printf("🟢 Nota creada: tipo=%s, columna=%d, tiempo=%d, duracion=%d%n",
                     		 ev.tipo, ev.columna, ev.tiempo, ev.duracion);
+                    		 */
                      javax.swing.SwingUtilities.invokeLater(() -> agregarNota(nota));
                  } else {
                 	 Nota nota = new Nota(
@@ -145,8 +147,10 @@ public class Cancion1 extends CancionBase {
                          velocidadPxPorMs,
                          resolucion
                      );
-                     System.out.printf("🟢 Nota creada: tipo=%s, columna=%d, tiempo=%d, duracion=%d%n",
+                     /*
+                      	System.out.printf("🟢 Nota creada: tipo=%s, columna=%d, tiempo=%d, duracion=%d%n",
                     		 ev.tipo, ev.columna, ev.tiempo, ev.duracion);
+                    		 */
                      javax.swing.SwingUtilities.invokeLater(() -> agregarNota(nota));
                  }
 

@@ -209,43 +209,37 @@ public class Sonido {
             lineaCancion.open(decoded);
             aplicarVolumen(lineaCancion);
 
-            tiempoInicioCancionNs = System.nanoTime();
             tiempoPausaAcumuladoMs = 0;
 
             hiloCancion = new Thread(() -> {
                 try (AudioInputStream stream = din) {
-                    lineaCancion.start();
+                	SourceDataLine lineaLocal = lineaCancion;
+                    if (lineaLocal == null) return;
+
+                    lineaLocal.start();
                     byte[] buffer = new byte[8192];
                     int n;
                     long tiempoUltimoTickNs = System.nanoTime();
                     
-                    SourceDataLine lineaLocal = lineaCancion;
-                    if (lineaLocal == null) return;
-                    
                     while (!Thread.currentThread().isInterrupted()
-                    	       && lineaCancion != null
-                    	       && (n = stream.read(buffer, 0, buffer.length)) != -1) {
-                    	    lineaCancion.write(buffer, 0, n);
-                        
-                        long ahoraNs = System.nanoTime();
-                        tiempoReproducidoMs += (ahoraNs - tiempoUltimoTickNs) / 1_000_000L;
-                        tiempoUltimoTickNs = ahoraNs;
-                    }
-                    SourceDataLine lineaLocal1 = lineaCancion;
-                    if (lineaLocal1 == null) return;
+                            && lineaLocal != null
+                            && (n = stream.read(buffer, 0, buffer.length)) != -1) {
+                         lineaLocal.write(buffer, 0, n);
 
-                    while (!Thread.currentThread().isInterrupted()
-                           && lineaLocal1 != null
-                           && (n = stream.read(buffer, 0, buffer.length)) != -1) {
-                        lineaLocal1.write(buffer, 0, n);
-                    }
-                    lineaCancion.drain();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    detenerCancion();
-                }
-            }, "MP3-Streaming");
+                         long ahoraNs = System.nanoTime();
+                         /*
+                         tiempoReproducidoMs += (ahoraNs - tiempoUltimoTickNs) / 1_000_000L;
+                         */
+                         tiempoUltimoTickNs = ahoraNs;
+                     }
+
+                     lineaLocal.drain();
+                 } catch (Exception e) {
+                     e.printStackTrace();
+                 } finally {
+                     detenerCancion();
+                 }
+             }, "MP3-Streaming");
             hiloCancion.setDaemon(true);
             hiloCancion.start();
 
@@ -259,7 +253,8 @@ public class Sonido {
     }
     public static synchronized void pausarCancion() {
         if (lineaCancion != null) {
-        	tiempoReproducidoMs = (System.nanoTime() - tiempoInicioCancionNs) / 1_000_000L;
+        	System.out.println("El tiempo de la pausa es: " + System.nanoTime() / 1_000_000L);
+        	tiempoReproducidoMs = (System.nanoTime() - tiempoInicioCancionNs) / 1_000_000L + tiempoReproducidoMs;        	
         	enPausa = true;
             detenerCancion(); // detenemos el hilo
         }
@@ -270,7 +265,8 @@ public class Sonido {
             lineaCancion.start();
         }*/
     	if (rutaActual != null && enPausa) {
-            reproducirCancionDesde(rutaActual, tiempoReproducidoMs);
+    		reproducirCancionDesde(rutaActual, tiempoReproducidoMs);
+            System.out.println("El tiempo en el que la cancion vuelve de la pausa es: " + tiempoReproducidoMs);
         }
     }
 }
