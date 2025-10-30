@@ -1,6 +1,8 @@
 package GUI.canciones.Cancion1;
 
 import GUI.Nota;
+import GUI.dialogos2;
+
 import config.CancionBase;
 import config.ResolucionManager;
 
@@ -26,9 +28,11 @@ public class Cancion1 extends CancionBase {
         if (mapaDeNotas == null || mapaDeNotas.isEmpty()) {
             System.err.println("No se pudieron cargar notas del JSON.");
             iniciarMovimientoNotas();
+            
             return;
         }
         mapaDeNotas.sort(java.util.Comparator.comparingLong(n -> n.tiempo));
+        this.tiempoUltimaNotaMs = mapaDeNotas.get(mapaDeNotas.size() - 1).tiempo;
 
         // 3) Parámetros de caída
         final int tickMs = 10; // igual al Timer de CancionBase
@@ -51,6 +55,10 @@ public class Cancion1 extends CancionBase {
         final long tiempoInicioNs = System.nanoTime();
         hiloCreador = new Thread(() -> {
             try {
+            	
+            	javax.swing.SwingUtilities.invokeLater(() -> notasGeneradas = false);
+
+            	
                 for (EventoNota ev : mapaDeNotas) {
                     int columna = Math.max(0, Math.min(3, ev.columna));
                     long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs + offsetMs);
@@ -88,7 +96,10 @@ public class Cancion1 extends CancionBase {
                              }
                          }
                      }
-                     if (conflictoVisual) continue; // 3. Salir antes de crear la nota
+                     if (conflictoVisual) {
+                    	    System.out.printf("⛔ Nota tap filtrada por conflicto visual: columna=%d, tiempo=%d%n", ev.columna, ev.tiempo);
+                    	    continue;
+                    	}
                  }
 
                  // 4. Crear la nota solo si no hubo conflicto
@@ -135,9 +146,24 @@ public class Cancion1 extends CancionBase {
             hiloCreador.interrupt();
             hiloCreador = null;
         }
+
         config.Sonido.detenerCancion();
         super.finalizarCancion();
+
+        // 🟢 Después de terminar la canción, cambiamos a la escena de diálogos
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            javax.swing.JFrame ventana = resolucion.getVentana(); // o ajustá si no tenés ese método
+            if (ventana != null) {
+                ventana.getContentPane().removeAll();
+                ventana.getContentPane().add(new dialogos2(ventana, resolucion));
+                ventana.revalidate();
+                ventana.repaint();
+            } else {
+                System.err.println(" No se encontró la ventana principal para mostrar los diálogos.");
+            }
+        });
     }
+
 
     /** Carga y parsea el JSON del mapa de notas. */
     private java.util.List<EventoNota> cargarMapaDesdeJson(String rutaEnClasspath) {
