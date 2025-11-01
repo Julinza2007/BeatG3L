@@ -27,3 +27,4 @@ Julian,840250
 Jugador,844250
 lol,211700
 Jugador,388300
+Jugador,835750

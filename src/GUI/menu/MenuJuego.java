@@ -104,38 +104,38 @@ public class MenuJuego extends JPanel {
 		}
 
 		btnCancion1.addActionListener(e -> {
-		    javax.swing.JFrame ventana = (javax.swing.JFrame)
-		            javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
 		    if (ventana == null) return;
 
+		    // (Opcional) anti-doble click
 		    btnCancion1.setEnabled(false);
-		    ventana.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
-		    try {
-		        config.Mapeado.esperarCarga(1, ventana, resolucion); // ← ahora con mínimo 1000 ms
-		    } finally {
-		        ventana.setCursor(java.awt.Cursor.getDefaultCursor());
-		        btnCancion1.setEnabled(true);
-		    }
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(1, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion1.setEnabled(true)).start();
 		});
+
+
 
 
 		
 		btnCancion5.addActionListener(e -> {
-		    javax.swing.JFrame ventana = (javax.swing.JFrame)
-		            javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
 		    if (ventana == null) return;
 
+		    // (Opcional) anti-doble click
 		    btnCancion5.setEnabled(false);
-		    ventana.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 
-		    // Llama directo a esperarCarga (que ya espera)
-		    try {
-		        config.Mapeado.esperarCarga(5, ventana, resolucion);
-		    } finally {
-		        ventana.setCursor(java.awt.Cursor.getDefaultCursor());
-		        btnCancion5.setEnabled(true);
-		    }
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(5, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion5.setEnabled(true)).start();
 		});
+
+
 		
 		
 		btnRankings.addActionListener(e -> {

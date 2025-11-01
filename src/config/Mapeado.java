@@ -32,8 +32,8 @@ public class Mapeado {
         }
         Thread hilo = new Thread(() -> {
             try {
-                precargarImagenesBasicas();
-                calentarAudioBasico();
+                precargarImagenes();
+                prepararAudio();
                 primeraVezLista = true;
             } finally {
                 if (alTerminar != null) SwingUtilities.invokeLater(alTerminar);
@@ -50,7 +50,7 @@ public class Mapeado {
     
 
     // — Separado por métodos (modular y legible) —
-    private static void precargarImagenesBasicas() {
+    private static void precargarImagenes() {
         // Notas jugador (las mismas rutas que ya usás)
         String[] rutas = {
             "/img/notas/notasUsuario/izquierda.png",
@@ -65,7 +65,8 @@ public class Mapeado {
             "/img/notas/izquierda.png",
             "/img/notas/abajo.png",
             "/img/notas/arriba.png",
-            "/img/notas/derecha.png"
+            "/img/notas/derecha.png",
+            "/img/Cargando.png"
         };
         for (String r : rutas) {
             try {
@@ -75,7 +76,7 @@ public class Mapeado {
         }
     }
 
-    private static void calentarAudioBasico() {
+    private static void prepararAudio() {
         // No reproduce nada: sólo abre/cierra una línea PCM pequeña
         javax.sound.sampled.AudioFormat f = new javax.sound.sampled.AudioFormat(44100f, 16, 2, true, false);
         try {
@@ -171,22 +172,21 @@ public class Mapeado {
         Sonido.detenerCancion();
     }
     
-    public static void esperarCarga(
-            int cancion,
-            javax.swing.JFrame ventana,
-            ResolucionManager resolucion) {
-
+    public static void esperarCarga(int cancion, javax.swing.JFrame ventana, ResolucionManager resolucion) {
         if (ventana == null) return;
 
-        final long minimoMs = 5000;            // ← tu espera mínima
-        final long t0 = System.currentTimeMillis();
+        // Mostrar overlay y cursor ocupado
+        GUI.Animaciones.mostrarCargando(ventana);
+        ventana.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 
-        // Espera la precarga y recién ahí decide si debe demorar
-        esperar(() -> {
-            long transcurrido = System.currentTimeMillis() - t0;
-            long restante = minimoMs - transcurrido;
+        final long inicioNs = System.nanoTime();
+        final int minimoMs = 5000;
 
-            Runnable crearPantalla = () -> {
+        prepararPrimeraVezAsync(() -> {
+            long transcurridoMs = (System.nanoTime() - inicioNs) / 1_000_000L;
+            int faltante = (int) Math.max(0, minimoMs - transcurridoMs);
+
+            javax.swing.Timer t = new javax.swing.Timer(faltante, ev -> {
                 javax.swing.JPanel panel = null;
                 switch (cancion) {
                     case 1 -> panel = new GUI.canciones.Cancion1.Cancion1(resolucion);
@@ -198,25 +198,25 @@ public class Mapeado {
 //                    case 7 -> panel = new GUI.canciones.Cancion7.Cancion7(resolucion);
 //                    case 8 -> panel = new GUI.canciones.Cancion8.Cancion8(resolucion);
 //                    case 9 -> panel = new GUI.canciones.Cancion9.Cancion9(resolucion);
-                    default -> { return; }
+                    default -> { /* nada */ }
                 }
-                if (panel == null) return;
-                ventana.setContentPane(panel);
-                ventana.revalidate();
-                ventana.repaint();
-                javax.swing.SwingUtilities.invokeLater(panel::requestFocusInWindow);
-            };
 
-            if (restante > 0) {
-                // Demora faltante en el EDT, sin bloquear
-                javax.swing.Timer t = new javax.swing.Timer((int) restante, e -> crearPantalla.run());
-                t.setRepeats(false);
-                t.start();
-            } else {
-                crearPantalla.run();
-            }
+                if (panel != null) {
+                    ventana.setContentPane(panel);
+                    ventana.revalidate();
+                    ventana.repaint();
+                    javax.swing.SwingUtilities.invokeLater(panel::requestFocusInWindow);
+                }
+
+                // Ocultar overlay y restaurar cursor cuando realmente terminamos
+                GUI.Animaciones.ocultarCargando(ventana);
+                ventana.setCursor(java.awt.Cursor.getDefaultCursor());
+            });
+            t.setRepeats(false);
+            t.start();
         });
     }
+
 
 
 

@@ -1,6 +1,6 @@
 ============================================================
   TODO EL CÓDIGO - Proyecto bajo: /d/Repositorios/workSpaceJava/BeatG3L/src
-  Generado: 2025-10-30 16:54:44
+  Generado: 2025-10-31 21:09:00
 ============================================================
 
 ========== INICIO: ClasePrimaria.java ==========
@@ -28,6 +28,8 @@ import javax.swing.JLabel;
 import javax.swing.Timer;
 
 public class Animaciones {
+	
+	
  public static void zoomPantalla (JLabel logoLabel, ImageIcon logoBase) {
 	 final int duracion = 4000;
 	 final int delay = 30;
@@ -57,6 +59,44 @@ public class Animaciones {
  public void btnHover() {
  	
  }
+ 
+ private static ImageIcon iconoCargando;
+ 
+ public static void precargarIconoCargando() {
+	    if (iconoCargando != null) return;
+	    java.net.URL u = Animaciones.class.getResource("/img/Cargando.png");
+	    if (u != null) iconoCargando = new ImageIcon(u);
+	}
+ 
+ public static void mostrarCargando(javax.swing.JFrame ventana) {
+	    if (ventana == null) return;
+	    precargarIconoCargando();
+
+	    javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.BorderLayout());
+	    panel.setOpaque(true);
+	    panel.setBackground(new java.awt.Color(0, 0, 0, 120)); // fondo semitransparente
+
+	    javax.swing.ImageIcon icono;
+	    if (iconoCargando != null) {
+	        icono = iconoCargando;
+	    } else {
+	        icono = new javax.swing.ImageIcon();
+	    }
+
+	    javax.swing.JLabel lbl = new javax.swing.JLabel(icono, javax.swing.SwingConstants.CENTER);
+
+	    panel.add(lbl, java.awt.BorderLayout.CENTER);
+
+	    ventana.setGlassPane(panel);
+	    panel.setVisible(true);
+	}
+ 
+ public static void ocultarCargando(javax.swing.JFrame ventana) {
+	    if (ventana == null) return;
+	    java.awt.Component gp = ventana.getGlassPane();
+	    if (gp != null) gp.setVisible(false);
+	}
+ 
     
 }
 
@@ -1171,14 +1211,21 @@ public class MenuJuego extends JPanel {
 		    btnCancion1.setEnabled(false);
 		    ventana.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 
-		    // Llama directo a esperarCarga (que ya espera)
+		    // Mostrar cartel "Cargando..."
+		    GUI.Animaciones.mostrarCargando(ventana);
+
 		    try {
+		        // Espera + entrada a la canción (con mínimo si lo definiste ahí)
 		        config.Mapeado.esperarCarga(1, ventana, resolucion);
 		    } finally {
+		        // Fallback por si algo falla antes de cambiar el panel
+		        GUI.Animaciones.ocultarCargando(ventana);
 		        ventana.setCursor(java.awt.Cursor.getDefaultCursor());
 		        btnCancion1.setEnabled(true);
 		    }
 		});
+
+
 
 		
 		btnCancion5.addActionListener(e -> {
@@ -1189,14 +1236,20 @@ public class MenuJuego extends JPanel {
 		    btnCancion5.setEnabled(false);
 		    ventana.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 
-		    // Llama directo a esperarCarga (que ya espera)
+		    // Mostrar cartel "Cargando..."
+		    GUI.Animaciones.mostrarCargando(ventana);
+
 		    try {
+		        // Espera + entrada a la canción (con mínimo si lo definiste ahí)
 		        config.Mapeado.esperarCarga(5, ventana, resolucion);
 		    } finally {
+		        // Fallback por si algo falla antes de cambiar el panel
+		        GUI.Animaciones.ocultarCargando(ventana);
 		        ventana.setCursor(java.awt.Cursor.getDefaultCursor());
-		        btnCancion1.setEnabled(true);
+		        btnCancion5.setEnabled(true);
 		    }
 		});
+
 		
 		
 		btnRankings.addActionListener(e -> {
@@ -1847,8 +1900,8 @@ public class Mapeado {
         }
         Thread hilo = new Thread(() -> {
             try {
-                precargarImagenesBasicas();
-                calentarAudioBasico();
+                precargarImagenes();
+                prepararAudio();
                 primeraVezLista = true;
             } finally {
                 if (alTerminar != null) SwingUtilities.invokeLater(alTerminar);
@@ -1865,7 +1918,7 @@ public class Mapeado {
     
 
     // — Separado por métodos (modular y legible) —
-    private static void precargarImagenesBasicas() {
+    private static void precargarImagenes() {
         // Notas jugador (las mismas rutas que ya usás)
         String[] rutas = {
             "/img/notas/notasUsuario/izquierda.png",
@@ -1880,7 +1933,8 @@ public class Mapeado {
             "/img/notas/izquierda.png",
             "/img/notas/abajo.png",
             "/img/notas/arriba.png",
-            "/img/notas/derecha.png"
+            "/img/notas/derecha.png",
+            "/img/Cargando.png"
         };
         for (String r : rutas) {
             try {
@@ -1890,7 +1944,7 @@ public class Mapeado {
         }
     }
 
-    private static void calentarAudioBasico() {
+    private static void prepararAudio() {
         // No reproduce nada: sólo abre/cierra una línea PCM pequeña
         javax.sound.sampled.AudioFormat f = new javax.sound.sampled.AudioFormat(44100f, 16, 2, true, false);
         try {
@@ -1986,30 +2040,56 @@ public class Mapeado {
         Sonido.detenerCancion();
     }
     
-    public static void esperarCarga(int cancion, javax.swing.JFrame ventana, ResolucionManager resolucion) {
+    public static void esperarCarga(
+            int cancion,
+            javax.swing.JFrame ventana,
+            ResolucionManager resolucion) {
+
         if (ventana == null) return;
-        
+
+        // Espera mínima opcional (ajustá si querés)
+        final long minimoMs = 300000;
+        final long t0 = System.currentTimeMillis();
+
         esperar(() -> {
-            javax.swing.JPanel panel;
-            switch (cancion) {
-                case 1:  panel = new GUI.canciones.Cancion1.Cancion1(resolucion); break;
-//                case 2:  panel = new GUI.canciones.Cancion2.Cancion2(resolucion); break;
-//                case 3:  panel = new GUI.canciones.Cancion3.Cancion3(resolucion); break;
-//                case 4:  panel = new GUI.canciones.Cancion4.Cancion4(resolucion); break;
-                case 5:  panel = new GUI.canciones.Cancion5.Cancion5(resolucion); break;
-//                case 6:  panel = new GUI.canciones.Cancion6.Cancion6(resolucion); break;
-//                case 7:  panel = new GUI.canciones.Cancion7.Cancion7(resolucion); break;
-//                case 8:  panel = new GUI.canciones.Cancion8.Cancion8(resolucion); break;
-//                case 9:  panel = new GUI.canciones.Cancion9.Cancion9(resolucion); break;
-                default: return;
+            long transcurrido = System.currentTimeMillis() - t0;
+            long restante = minimoMs - transcurrido;
+
+            Runnable crearPantalla = () -> {
+                javax.swing.JPanel panel = null;
+                switch (cancion) {
+                    case 1 -> panel = new GUI.canciones.Cancion1.Cancion1(resolucion);
+//                    case 2 -> panel = new GUI.canciones.Cancion2.Cancion2(resolucion);
+//                    case 3 -> panel = new GUI.canciones.Cancion3.Cancion3(resolucion);
+//                    case 4 -> panel = new GUI.canciones.Cancion4.Cancion4(resolucion);
+                    case 5 -> panel = new GUI.canciones.Cancion5.Cancion5(resolucion);
+//                    case 6 -> panel = new GUI.canciones.Cancion6.Cancion6(resolucion);
+//                    case 7 -> panel = new GUI.canciones.Cancion7.Cancion7(resolucion);
+//                    case 8 -> panel = new GUI.canciones.Cancion8.Cancion8(resolucion);
+//                    case 9 -> panel = new GUI.canciones.Cancion9.Cancion9(resolucion);
+                    default -> { return; }
+                }
+                if (panel == null) return;
+
+                ventana.setContentPane(panel);
+                ventana.revalidate();
+                ventana.repaint();
+                javax.swing.SwingUtilities.invokeLater(panel::requestFocusInWindow);
+
+                // ⬇️ Ocultamos el overlay acá cuando ya cambió el panel
+                GUI.Animaciones.ocultarCargando(ventana);
+            };
+
+            if (restante > 0) {
+                javax.swing.Timer t = new javax.swing.Timer((int) restante, e -> crearPantalla.run());
+                t.setRepeats(false);
+                t.start();
+            } else {
+                crearPantalla.run();
             }
-            // Mostrar el panel (en EDT)
-            ventana.setContentPane(panel);
-            ventana.revalidate();
-            ventana.repaint();
-            javax.swing.SwingUtilities.invokeLater(panel::requestFocusInWindow);
         });
     }
+
 
 
     private List<EventoNota> cargarMapaDesdeJson() {
