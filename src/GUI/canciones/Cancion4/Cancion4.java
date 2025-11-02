@@ -1,7 +1,5 @@
 package GUI.canciones.Cancion4;
 
-import org.w3c.dom.events.EventException;
-
 import config.CancionBase;
 import config.Mapeado;
 import config.ResolucionManager;
@@ -19,8 +17,8 @@ public class Cancion4 extends CancionBase {
     protected void construirCancion(ResolucionManager resolucion) {
     	
         mapeado = new Mapeado(this, resolucion,
-            "GUI/canciones/Cancion1/my-8-bit-hero-301280.mp3",
-            "/GUI/canciones/Cancion1/my-8-bit-hero-301280.json");
+            "GUI/canciones/Cancion4/my-8-bit-hero-301280.mp3",
+            "/GUI/canciones/Cancion4/my-8-bit-hero-301280.json");
      // Después (no bloquea el EDT):
         new Thread(mapeado::iniciar, "inicio-cancion").start();
 

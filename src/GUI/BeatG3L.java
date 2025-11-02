@@ -5,7 +5,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import javax.swing.JFrame;
 
-import GUI.menu.PantallaInicio;
+import GUI.menu.MenuJuego;
 import config.ResolucionManager;
 
 public class BeatG3L extends JFrame {
@@ -46,7 +46,8 @@ public class BeatG3L extends JFrame {
         setUndecorated(true); // Se sacan los bordes y barra del sistema
         setExtendedState(JFrame.MAXIMIZED_BOTH); // Se pone en pantalla completa
 
-        setContentPane(new PantallaInicio(resolucion));
+//        setContentPane(new PantallaInicio(resolucion));
+        setContentPane(new MenuJuego(resolucion));
         setVisible(true);
     }
     

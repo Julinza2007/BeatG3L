@@ -26,7 +26,7 @@ import java.awt.*;
 			this.estado = "";
 		
 		
-			setFont(new Font("SansSerif", Font.PLAIN, Math.max(resolucion.escalarY(35), resolucion.escalarX(24))));
+			setFont(new Font("SansSerif", Font.PLAIN, Math.max(resolucion.escalarY(20), resolucion.escalarX(14))));
 			setForeground(Color.WHITE);
 			setHorizontalAlignment(SwingConstants.LEFT);
 			actualizarTexto();
@@ -34,8 +34,7 @@ import java.awt.*;
 			
 			public void actualizarTexto() {
 				setText(String.format(
-						"<html> | Score: %d | <br> <br> | Combo: %d | <br> <br> | x%d %s | <br> <br> | precision %.2f%% | </html>", puntos, combo, multiplicador, estado, precision()));
-				
+						"Score: %d | Combo: %d | x%d %s | precision %.2f%%", puntos, combo, multiplicador, estado, precision()));
 			}
 		
 		
@@ -44,7 +43,7 @@ import java.awt.*;
 				aciertos++;
 				totalNotas++;
 				if(combo > maxCombo) maxCombo = combo;
-				if(combo % 10 == 0 && multiplicador < 8) multiplicador++;
+				if(combo % 10 == 0) multiplicador++;
 				puntos += 100 * multiplicador;
 				estado = "PERFECT";
 				actualizarTexto();
@@ -55,20 +54,9 @@ import java.awt.*;
 				aciertos++;
 				totalNotas++;
 				if (combo > maxCombo) maxCombo = combo;
-				if(combo % 10 == 0 && multiplicador < 8) multiplicador++;
+				if(combo % 10 == 0) multiplicador++;
 				puntos += 50 * multiplicador;
 				estado = "GOOD";
-				actualizarTexto();
-			}
-			
-			public void Bad() {
-				combo++;
-				aciertos++;
-				totalNotas++;
-				if (combo > maxCombo) maxCombo = combo;
-				if(combo % 10 == 0 && multiplicador < 8) multiplicador++;
-				puntos += 25 * multiplicador;
-				estado = "BAD";
 				actualizarTexto();
 			}
 			

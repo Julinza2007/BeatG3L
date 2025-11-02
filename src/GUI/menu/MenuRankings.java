@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 
 import GUI.Componentes;
 import GUI.Fondo;
-import GUI.canciones.Cancion1.Cancion1;
+import GUI.canciones.Cancion4.Cancion4;
 import config.ResolucionManager;
 
 public class MenuRankings extends JPanel {
@@ -37,10 +37,10 @@ public class MenuRankings extends JPanel {
 				panelCentral.setLayout(new BoxLayout(panelCentral, BoxLayout.Y_AXIS));
 				contentPane.add(panelCentral, BorderLayout.CENTER);
 
-				JButton btnCancion1 = Componentes.crearBotonConImagen("cancion 1", btnBase, resolucion);
+				JButton btnCancion4 = Componentes.crearBotonConImagen("cancion 1", btnBase, resolucion);
 				panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
 				panelCentral.add(Box.createVerticalGlue());
-				panelCentral.add(btnCancion1);
+				panelCentral.add(btnCancion4);
 				panelCentral.add(Box.createVerticalGlue());
 
 				JPanel panelBotones = new JPanel();
@@ -57,7 +57,7 @@ public class MenuRankings extends JPanel {
 				Font fuenteBotones = new Font("Arial", Font.BOLD, resolucion.escalarY(22));
 				Dimension tamBoton = new Dimension(resolucion.escalarX(200), resolucion.escalarY(60));
 
-				for (JButton boton : new JButton[] { btnVolver, btnCancion1 }) {
+				for (JButton boton : new JButton[] { btnVolver, btnCancion4 }) {
 					boton.setFont(fuenteBotones);
 					boton.setForeground(Color.WHITE);
 					boton.setFocusPainted(false);
@@ -67,9 +67,9 @@ public class MenuRankings extends JPanel {
 					boton.setMaximumSize(tamBoton);
 				}
 				
-				btnCancion1.addActionListener(e -> {
+				btnCancion4.addActionListener(e -> {
 					JFrame ventana = (JFrame) this.getTopLevelAncestor();
-					Cancion1 cancion = new Cancion1(resolucion);
+					Cancion4 cancion = new Cancion4(resolucion);
 					ventana.setContentPane(cancion);
 					ventana.revalidate();
 					ventana.repaint();
