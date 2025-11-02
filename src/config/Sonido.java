@@ -206,6 +206,7 @@ public class Sonido {
     public static synchronized void setearOffset(long nuevoOffsetMs) {
         offsetMs = nuevoOffsetMs;
         System.out.println("[Sonido] Offset configurado en " + offsetMs + " ms");
+        
     }
     
     public static synchronized long getOffset() {

@@ -124,7 +124,7 @@ public class Mapeado {
         
         switch (rutaAudio) {
         case "GUI/canciones/Cancion1/audio.mp3" -> Sonido.setearOffset(0);
-        case "GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(-2300);
+        case "GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(0);
 //        case "src/GUI/canciones/Cancion6/audio.mp3" -> Sonido.setearOffset(150);
         default -> Sonido.setearOffset(0);
     }
@@ -142,7 +142,7 @@ public class Mapeado {
         }
 
         // Tomar tiempo base (cuando el audio empezó)
-        final long t0AudioMs = Sonido.getPosMs();
+        final long t0AudioMs = Sonido.getPosMs() - Sonido.getOffset();
 
         // 5) Crear notas en hilo, sincronizado al reloj del audio
         hiloCreador = new Thread(() -> {
@@ -155,7 +155,7 @@ public class Mapeado {
 
                     // Esperar usando el reloj real del audio
                     while (true) {
-                        long now = Sonido.getPosMs() - t0AudioMs;
+                    	long now = Sonido.getPosMs() - t0AudioMs;
                         long diff = momentoAparicionMs - now;
                         if (diff <= 0) break;
                         if (diff > 3) Thread.sleep(1);
@@ -246,11 +246,18 @@ public class Mapeado {
             var raiz = com.google.gson.JsonParser.parseReader(lector).getAsJsonObject();
             var gson = new com.google.gson.Gson();
             var tipoLista = new com.google.gson.reflect.TypeToken<List<EventoNota>>() {};
-            return gson.fromJson(raiz.getAsJsonArray("notas"), tipoLista.getType());
+            List<EventoNota> notas = gson.fromJson(raiz.getAsJsonArray("notas"), tipoLista.getType());
+            long desfaseMs = -2300;
+            for (EventoNota nota : notas) {
+                nota.tiempo += desfaseMs;
+            }
+            return notas;
+            
         } catch (Exception e) {
             e.printStackTrace();
             return Collections.emptyList();
         }
+        
     }
 
     private static class EventoNota {
