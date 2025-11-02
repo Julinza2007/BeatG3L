@@ -6,7 +6,7 @@ public class ClasePrimaria {
 		mostrarJuego();
 	}
 	public static void mostrarJuego() {		
-		BeatG3L juego = new BeatG3L();;
+		BeatG3L juego = new BeatG3L();
 		juego.setVisible(true);
 	}
 

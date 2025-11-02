@@ -1,6 +1,6 @@
 {
   "titulo": "I Don\u0027t Wanna Be Me",
-  "bpm": 120.0,
+  "bpm": 201.07,
   "artista": "",
   "dificultad": "",
   "notas": [
@@ -743,6 +743,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 2,
+      "tiempo": 37555,
+      "duracion": 472
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 37555,
@@ -756,9 +762,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 2,
-      "tiempo": 37555,
-      "duracion": 472
+      "columna": 0,
+      "tiempo": 38027,
+      "duracion": 423
     },
     {
       "tipo": "tap",
@@ -768,9 +774,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 38027,
-      "duracion": 423
+      "columna": 3,
+      "tiempo": 38450,
+      "duracion": 429
     },
     {
       "tipo": "tap",
@@ -779,22 +785,16 @@
       "duracion": 0
     },
     {
-      "tipo": "tap",
-      "columna": 1,
-      "tiempo": 38879,
-      "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 38450,
-      "duracion": 429
-    },
-    {
       "tipo": "hold",
       "columna": 0,
       "tiempo": 38879,
       "duracion": 466
+    },
+    {
+      "tipo": "tap",
+      "columna": 1,
+      "tiempo": 38879,
+      "duracion": 0
     },
     {
       "tipo": "tap",
@@ -1319,6 +1319,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 56653,
+      "duracion": 1063
+    },
+    {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 56653,
@@ -1356,9 +1362,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 3,
-      "tiempo": 56653,
-      "duracion": 1063
+      "columna": 0,
+      "tiempo": 58443,
+      "duracion": 1405
     },
     {
       "tipo": "tap",
@@ -1404,9 +1410,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 58443,
-      "duracion": 1405
+      "columna": 3,
+      "tiempo": 61427,
+      "duracion": 1063
     },
     {
       "tipo": "tap",
@@ -1445,16 +1451,16 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 61427,
-      "duracion": 1063
-    },
-    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 62919,
       "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 63217,
+      "duracion": 1405
     },
     {
       "tipo": "tap",
@@ -1476,15 +1482,15 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 63217,
-      "duracion": 1405
-    },
-    {
-      "tipo": "hold",
       "columna": 1,
       "tiempo": 64113,
       "duracion": 509
+    },
+    {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 66201,
+      "duracion": 1064
     },
     {
       "tipo": "tap",
@@ -1524,9 +1530,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 66201,
-      "duracion": 1064
+      "columna": 3,
+      "tiempo": 67992,
+      "duracion": 1448
     },
     {
       "tipo": "tap",
@@ -1573,8 +1579,8 @@
     {
       "tipo": "hold",
       "columna": 3,
-      "tiempo": 67992,
-      "duracion": 1448
+      "tiempo": 70976,
+      "duracion": 1063
     },
     {
       "tipo": "tap",
@@ -1614,9 +1620,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 3,
-      "tiempo": 70976,
-      "duracion": 1063
+      "columna": 0,
+      "tiempo": 72549,
+      "duracion": 1417
     },
     {
       "tipo": "tap",
@@ -1647,12 +1653,6 @@
       "columna": 1,
       "tiempo": 73705,
       "duracion": 255
-    },
-    {
-      "tipo": "hold",
-      "columna": 0,
-      "tiempo": 72549,
-      "duracion": 1417
     },
     {
       "tipo": "tap",
@@ -1709,6 +1709,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 75794,
+      "duracion": 1193
+    },
+    {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 75794,
@@ -1739,16 +1745,16 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 76987,
+      "duracion": 1194
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 76987,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 75794,
-      "duracion": 1193
     },
     {
       "tipo": "tap",
@@ -1770,9 +1776,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 76987,
-      "duracion": 1194
+      "columna": 3,
+      "tiempo": 78181,
+      "duracion": 1150
     },
     {
       "tipo": "tap",
@@ -1799,12 +1805,6 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 78181,
-      "duracion": 1150
-    },
-    {
       "tipo": "tap",
       "columna": 0,
       "tiempo": 79673,
@@ -1839,6 +1839,12 @@
       "columna": 2,
       "tiempo": 80270,
       "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 80568,
+      "duracion": 1194
     },
     {
       "tipo": "tap",
@@ -1871,16 +1877,16 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 81762,
+      "duracion": 1194
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 81762,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 80568,
-      "duracion": 1194
     },
     {
       "tipo": "tap",
@@ -1902,9 +1908,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 81762,
-      "duracion": 1194
+      "columna": 3,
+      "tiempo": 82956,
+      "duracion": 1193
     },
     {
       "tipo": "tap",
@@ -1937,12 +1943,6 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 82956,
-      "duracion": 1193
-    },
-    {
       "tipo": "tap",
       "columna": 0,
       "tiempo": 84448,
@@ -1977,6 +1977,12 @@
       "columna": 2,
       "tiempo": 85044,
       "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 85343,
+      "duracion": 1193
     },
     {
       "tipo": "tap",
@@ -2009,16 +2015,16 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 86536,
+      "duracion": 1194
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 86536,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 85343,
-      "duracion": 1193
     },
     {
       "tipo": "tap",
@@ -2040,9 +2046,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 86536,
-      "duracion": 1194
+      "columna": 3,
+      "tiempo": 87730,
+      "duracion": 1150
     },
     {
       "tipo": "tap",
@@ -2069,12 +2075,6 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 87730,
-      "duracion": 1150
-    },
-    {
       "tipo": "tap",
       "columna": 0,
       "tiempo": 89222,
@@ -2109,6 +2109,12 @@
       "columna": 2,
       "tiempo": 89819,
       "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 90117,
+      "duracion": 1194
     },
     {
       "tipo": "tap",
@@ -2141,16 +2147,16 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 91311,
+      "duracion": 1193
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 91311,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 90117,
-      "duracion": 1194
     },
     {
       "tipo": "tap",
@@ -2172,9 +2178,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 91311,
-      "duracion": 1193
+      "columna": 3,
+      "tiempo": 92504,
+      "duracion": 1194
     },
     {
       "tipo": "tap",
@@ -2207,12 +2213,6 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 92504,
-      "duracion": 1194
-    },
-    {
       "tipo": "tap",
       "columna": 0,
       "tiempo": 93997,
@@ -2247,6 +2247,12 @@
       "columna": 2,
       "tiempo": 94593,
       "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 94892,
+      "duracion": 2430
     },
     {
       "tipo": "tap",
@@ -2273,16 +2279,16 @@
       "duracion": 386
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 97322,
+      "duracion": 2344
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 97322,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 94892,
-      "duracion": 2430
     },
     {
       "tipo": "tap",
@@ -2298,9 +2304,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 97322,
-      "duracion": 2344
+      "columna": 3,
+      "tiempo": 99666,
+      "duracion": 2387
     },
     {
       "tipo": "tap",
@@ -2327,16 +2333,16 @@
       "duracion": 516
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 102053,
+      "duracion": 2388
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 102053,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 99666,
-      "duracion": 2387
     },
     {
       "tipo": "tap",
@@ -2358,9 +2364,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 102053,
-      "duracion": 2388
+      "columna": 3,
+      "tiempo": 104441,
+      "duracion": 2387
     },
     {
       "tipo": "tap",
@@ -2387,16 +2393,16 @@
       "duracion": 472
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 106828,
+      "duracion": 2387
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 106828,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 104441,
-      "duracion": 2387
     },
     {
       "tipo": "tap",
@@ -2418,9 +2424,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 106828,
-      "duracion": 2387
+      "columna": 3,
+      "tiempo": 109215,
+      "duracion": 2431
     },
     {
       "tipo": "tap",
@@ -2435,16 +2441,16 @@
       "duracion": 0
     },
     {
-      "tipo": "tap",
-      "columna": 1,
-      "tiempo": 110154,
-      "duracion": 0
-    },
-    {
       "tipo": "hold",
       "columna": 2,
       "tiempo": 110154,
       "duracion": 466
+    },
+    {
+      "tipo": "tap",
+      "columna": 1,
+      "tiempo": 110154,
+      "duracion": 0
     },
     {
       "tipo": "hold",
@@ -2453,46 +2459,46 @@
       "duracion": 342
     },
     {
-      "tipo": "tap",
-      "columna": 1,
-      "tiempo": 111646,
-      "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 109215,
-      "duracion": 2431
-    },
-    {
-      "tipo": "tap",
-      "columna": 1,
-      "tiempo": 112069,
-      "duracion": 0
-    },
-    {
-      "tipo": "tap",
-      "columna": 3,
-      "tiempo": 112069,
-      "duracion": 0
-    },
-    {
-      "tipo": "tap",
-      "columna": 1,
-      "tiempo": 112498,
-      "duracion": 0
-    },
-    {
-      "tipo": "tap",
-      "columna": 3,
-      "tiempo": 112498,
-      "duracion": 0
-    },
-    {
       "tipo": "hold",
       "columna": 0,
       "tiempo": 111646,
       "duracion": 1747
+    },
+    {
+      "tipo": "tap",
+      "columna": 1,
+      "tiempo": 111646,
+      "duracion": 0
+    },
+    {
+      "tipo": "tap",
+      "columna": 1,
+      "tiempo": 112069,
+      "duracion": 0
+    },
+    {
+      "tipo": "tap",
+      "columna": 3,
+      "tiempo": 112069,
+      "duracion": 0
+    },
+    {
+      "tipo": "tap",
+      "columna": 1,
+      "tiempo": 112498,
+      "duracion": 0
+    },
+    {
+      "tipo": "tap",
+      "columna": 3,
+      "tiempo": 112498,
+      "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 114033,
+      "duracion": 1063
     },
     {
       "tipo": "tap",
@@ -2532,9 +2538,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 3,
-      "tiempo": 114033,
-      "duracion": 1063
+      "columna": 0,
+      "tiempo": 115823,
+      "duracion": 1405
     },
     {
       "tipo": "tap",
@@ -2574,9 +2580,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 115823,
-      "duracion": 1405
+      "columna": 3,
+      "tiempo": 118808,
+      "duracion": 1063
     },
     {
       "tipo": "tap",
@@ -2615,16 +2621,16 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 118808,
-      "duracion": 1063
-    },
-    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 120293,
       "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 120300,
+      "duracion": 1746
     },
     {
       "tipo": "tap",
@@ -2646,15 +2652,15 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 120300,
-      "duracion": 1746
-    },
-    {
-      "tipo": "hold",
       "columna": 1,
       "tiempo": 121493,
       "duracion": 553
+    },
+    {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 123582,
+      "duracion": 1063
     },
     {
       "tipo": "tap",
@@ -2694,9 +2700,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 123582,
-      "duracion": 1063
+      "columna": 3,
+      "tiempo": 125372,
+      "duracion": 1449
     },
     {
       "tipo": "tap",
@@ -2743,8 +2749,8 @@
     {
       "tipo": "hold",
       "columna": 3,
-      "tiempo": 125372,
-      "duracion": 1449
+      "tiempo": 128356,
+      "duracion": 1063
     },
     {
       "tipo": "tap",
@@ -2784,9 +2790,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 3,
-      "tiempo": 128356,
-      "duracion": 1063
+      "columna": 0,
+      "tiempo": 129929,
+      "duracion": 1411
     },
     {
       "tipo": "tap",
@@ -2811,12 +2817,6 @@
       "columna": 1,
       "tiempo": 130787,
       "duracion": 299
-    },
-    {
-      "tipo": "hold",
-      "columna": 0,
-      "tiempo": 129929,
-      "duracion": 1411
     },
     {
       "tipo": "hold",
@@ -2877,6 +2877,12 @@
       "columna": 1,
       "tiempo": 132957,
       "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 133131,
+      "duracion": 4818
     },
     {
       "tipo": "tap",
@@ -2987,16 +2993,16 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 137949,
+      "duracion": 4774
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 137949,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 133131,
-      "duracion": 4818
     },
     {
       "tipo": "tap",
@@ -3114,9 +3120,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 137949,
-      "duracion": 4774
+      "columna": 3,
+      "tiempo": 142723,
+      "duracion": 4731
     },
     {
       "tipo": "tap",
@@ -3239,16 +3245,16 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 147454,
+      "duracion": 3364
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 147454,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 142723,
-      "duracion": 4731
     },
     {
       "tipo": "tap",
@@ -3321,12 +3327,6 @@
       "columna": 1,
       "tiempo": 150351,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 0,
-      "tiempo": 147454,
-      "duracion": 3364
     },
     {
       "tipo": "tap",
@@ -3785,6 +3785,18 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 160074,
+      "duracion": 1617
+    },
+    {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 160074,
+      "duracion": 1617
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 160329,
@@ -3816,32 +3828,14 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 160074,
-      "duracion": 1617
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 160074,
-      "duracion": 1617
-    },
-    {
-      "tipo": "tap",
-      "columna": 2,
-      "tiempo": 162120,
-      "duracion": 0
-    },
-    {
-      "tipo": "hold",
       "columna": 1,
       "tiempo": 161858,
       "duracion": 560
     },
     {
       "tipo": "tap",
-      "columna": 1,
-      "tiempo": 162716,
+      "columna": 2,
+      "tiempo": 162120,
       "duracion": 0
     },
     {
@@ -3852,8 +3846,8 @@
     },
     {
       "tipo": "tap",
-      "columna": 2,
-      "tiempo": 163313,
+      "columna": 1,
+      "tiempo": 162716,
       "duracion": 0
     },
     {
@@ -3861,6 +3855,18 @@
       "columna": 0,
       "tiempo": 163015,
       "duracion": 597
+    },
+    {
+      "tipo": "tap",
+      "columna": 2,
+      "tiempo": 163313,
+      "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 163612,
+      "duracion": 596
     },
     {
       "tipo": "tap",
@@ -3873,12 +3879,6 @@
       "columna": 2,
       "tiempo": 164208,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 163612,
-      "duracion": 596
     },
     {
       "tipo": "tap",
@@ -4031,6 +4031,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 166596,
+      "duracion": 596
+    },
+    {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 166894,
@@ -4038,9 +4044,15 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 166596,
-      "duracion": 596
+      "columna": 2,
+      "tiempo": 167192,
+      "duracion": 1492
+    },
+    {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 167192,
+      "duracion": 1492
     },
     {
       "tipo": "tap",
@@ -4068,21 +4080,21 @@
     },
     {
       "tipo": "hold",
-      "columna": 2,
-      "tiempo": 167192,
-      "duracion": 1492
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 167192,
-      "duracion": 1492
-    },
-    {
-      "tipo": "hold",
       "columna": 0,
       "tiempo": 168684,
       "duracion": 299
+    },
+    {
+      "tipo": "hold",
+      "columna": 1,
+      "tiempo": 168995,
+      "duracion": 2220
+    },
+    {
+      "tipo": "hold",
+      "columna": 2,
+      "tiempo": 168995,
+      "duracion": 2220
     },
     {
       "tipo": "tap",
@@ -4110,15 +4122,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 1,
-      "tiempo": 168995,
-      "duracion": 2220
-    },
-    {
-      "tipo": "hold",
-      "columna": 2,
-      "tiempo": 168995,
-      "duracion": 2220
+      "columna": 3,
+      "tiempo": 171370,
+      "duracion": 4812
     },
     {
       "tipo": "tap",
@@ -4236,9 +4242,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 3,
-      "tiempo": 171370,
-      "duracion": 4812
+      "columna": 0,
+      "tiempo": 176182,
+      "duracion": 4774
     },
     {
       "tipo": "tap",
@@ -4362,9 +4368,9 @@
     },
     {
       "tipo": "hold",
-      "columna": 0,
-      "tiempo": 176182,
-      "duracion": 4774
+      "columna": 3,
+      "tiempo": 180956,
+      "duracion": 4737
     },
     {
       "tipo": "tap",
@@ -4487,16 +4493,16 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 185693,
+      "duracion": 3326
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 185693,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 180956,
-      "duracion": 4737
     },
     {
       "tipo": "tap",
@@ -4575,12 +4581,6 @@
       "columna": 3,
       "tiempo": 188547,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 0,
-      "tiempo": 185693,
-      "duracion": 3326
     },
     {
       "tipo": "tap",
@@ -4667,6 +4667,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 190468,
+      "duracion": 1063
+    },
+    {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 190468,
@@ -4709,12 +4715,6 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 190468,
-      "duracion": 1063
-    },
-    {
       "tipo": "tap",
       "columna": 0,
       "tiempo": 191705,
@@ -4737,6 +4737,12 @@
       "columna": 3,
       "tiempo": 192003,
       "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 192258,
+      "duracion": 1405
     },
     {
       "tipo": "tap",
@@ -4785,12 +4791,6 @@
       "columna": 2,
       "tiempo": 193495,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 0,
-      "tiempo": 192258,
-      "duracion": 1405
     },
     {
       "tipo": "tap",
@@ -4859,6 +4859,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 195242,
+      "duracion": 1063
+    },
+    {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 195242,
@@ -4901,12 +4907,6 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 195242,
-      "duracion": 1063
-    },
-    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 196473,
@@ -4925,6 +4925,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 197027,
+      "duracion": 1411
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 197033,
@@ -4941,12 +4947,6 @@
       "columna": 3,
       "tiempo": 197623,
       "duracion": 305
-    },
-    {
-      "tipo": "hold",
-      "columna": 0,
-      "tiempo": 197027,
-      "duracion": 1411
     },
     {
       "tipo": "hold",
@@ -5021,6 +5021,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 200017,
+      "duracion": 1063
+    },
+    {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 200185,
@@ -5057,12 +5063,6 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 0,
-      "tiempo": 200017,
-      "duracion": 1063
-    },
-    {
       "tipo": "tap",
       "columna": 0,
       "tiempo": 201248,
@@ -5085,6 +5085,12 @@
       "columna": 3,
       "tiempo": 201509,
       "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 201807,
+      "duracion": 1449
     },
     {
       "tipo": "tap",
@@ -5127,12 +5133,6 @@
       "columna": 1,
       "tiempo": 203044,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 201807,
-      "duracion": 1449
     },
     {
       "tipo": "tap",
@@ -5195,6 +5195,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 204791,
+      "duracion": 1063
+    },
+    {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 204791,
@@ -5237,12 +5243,6 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 204791,
-      "duracion": 1063
-    },
-    {
       "tipo": "tap",
       "columna": 0,
       "tiempo": 206066,
@@ -5253,6 +5253,12 @@
       "columna": 2,
       "tiempo": 206066,
       "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 206358,
+      "duracion": 1417
     },
     {
       "tipo": "tap",
@@ -5277,12 +5283,6 @@
       "columna": 3,
       "tiempo": 207216,
       "duracion": 298
-    },
-    {
-      "tipo": "hold",
-      "columna": 0,
-      "tiempo": 206358,
-      "duracion": 1417
     },
     {
       "tipo": "hold",
@@ -5339,6 +5339,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 209566,
+      "duracion": 1063
+    },
+    {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 209566,
@@ -5381,12 +5387,6 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 209566,
-      "duracion": 1063
-    },
-    {
       "tipo": "tap",
       "columna": 0,
       "tiempo": 210803,
@@ -5409,6 +5409,12 @@
       "columna": 3,
       "tiempo": 211101,
       "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 211356,
+      "duracion": 1405
     },
     {
       "tipo": "tap",
@@ -5451,12 +5457,6 @@
       "columna": 2,
       "tiempo": 212593,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 0,
-      "tiempo": 211356,
-      "duracion": 1405
     },
     {
       "tipo": "tap",
@@ -5525,6 +5525,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 214340,
+      "duracion": 1063
+    },
+    {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 214340,
@@ -5567,12 +5573,6 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 214340,
-      "duracion": 1063
-    },
-    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 215577,
@@ -5591,6 +5591,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 216124,
+      "duracion": 1412
+    },
+    {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 216131,
@@ -5607,12 +5613,6 @@
       "columna": 3,
       "tiempo": 216727,
       "duracion": 299
-    },
-    {
-      "tipo": "hold",
-      "columna": 0,
-      "tiempo": 216124,
-      "duracion": 1412
     },
     {
       "tipo": "hold",
@@ -5687,6 +5687,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 219115,
+      "duracion": 1063
+    },
+    {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 219282,
@@ -5723,12 +5729,6 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 0,
-      "tiempo": 219115,
-      "duracion": 1063
-    },
-    {
       "tipo": "tap",
       "columna": 0,
       "tiempo": 220346,
@@ -5751,6 +5751,12 @@
       "columna": 3,
       "tiempo": 220607,
       "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 220905,
+      "duracion": 1449
     },
     {
       "tipo": "tap",
@@ -5793,12 +5799,6 @@
       "columna": 1,
       "tiempo": 222142,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 220905,
-      "duracion": 1449
     },
     {
       "tipo": "tap",
@@ -5861,6 +5861,12 @@
       "duracion": 0
     },
     {
+      "tipo": "hold",
+      "columna": 3,
+      "tiempo": 223889,
+      "duracion": 1063
+    },
+    {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 223889,
@@ -5903,12 +5909,6 @@
       "duracion": 0
     },
     {
-      "tipo": "hold",
-      "columna": 3,
-      "tiempo": 223889,
-      "duracion": 1063
-    },
-    {
       "tipo": "tap",
       "columna": 0,
       "tiempo": 225164,
@@ -5919,6 +5919,12 @@
       "columna": 2,
       "tiempo": 225164,
       "duracion": 0
+    },
+    {
+      "tipo": "hold",
+      "columna": 0,
+      "tiempo": 225456,
+      "duracion": 1417
     },
     {
       "tipo": "tap",
@@ -5949,12 +5955,6 @@
       "columna": 1,
       "tiempo": 226618,
       "duracion": 0
-    },
-    {
-      "tipo": "hold",
-      "columna": 0,
-      "tiempo": 225456,
-      "duracion": 1417
     }
   ]
 }

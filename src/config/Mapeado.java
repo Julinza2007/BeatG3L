@@ -94,21 +94,8 @@ public class Mapeado {
     
 
     public void iniciar() {
-        // 1) Reproducir audio
-    	try {
-    		Thread.sleep(1000);
-    	}
-    	catch(InterruptedException e){
-    		System.err.println(e);
-    	}
-    	
+        // 1) Música de menú off
         Sonido.detenerMusica();
-        Sonido.reproducirCancion(rutaAudio);
-        try {
-            Thread.sleep(300); // compensación
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
 
         // 2) Cargar mapa
         List<EventoNota> mapaDeNotas = cargarMapaDesdeJson();
@@ -118,6 +105,7 @@ public class Mapeado {
             return;
         }
 
+        // Orden por seguridad (si el JSON vino desordenado)
         mapaDeNotas.sort(Comparator.comparingLong(n -> n.tiempo));
         cancionBase.tiempoUltimaNotaMs = mapaDeNotas.get(mapaDeNotas.size() - 1).tiempo;
 
@@ -130,23 +118,51 @@ public class Mapeado {
         final int yAparicion = -resolucion.escalarY(200);
         final int distanciaPx = Math.max(1, yImpacto - yAparicion);
         final long anticipacionMs = Math.round(distanciaPx / velocidadPxPorMs);
-        final long offsetMs = 10;
 
+        // 4) Arrancar movimiento y AUDIO antes del spawner
         cancionBase.iniciarMovimientoNotas();
+        
+        switch (rutaAudio) {
+        case "src/GUI/canciones/Cancion1/audio.mp3" -> Sonido.setearOffset(0);
+        case "src/GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(-2300);
+//        case "src/GUI/canciones/Cancion6/audio.mp3" -> Sonido.setearOffset(150);
+        default -> Sonido.setearOffset(0);
+    }
 
-        // 4) Crear notas en hilo
-        final long tiempoInicioNs = System.nanoTime();
+    Sonido.reproducirCancion(rutaAudio);
+
+
+        
+        
+        Sonido.reproducirCancion(rutaAudio);
+
+        // Esperar a que el audio realmente arranque
+        while (!Sonido.cancionActiva() || Sonido.getPosMs() == 0) {
+            Thread.onSpinWait();
+        }
+
+        // Tomar tiempo base (cuando el audio empezó)
+        final long t0AudioMs = Sonido.getPosMs();
+
+        // 5) Crear notas en hilo, sincronizado al reloj del audio
         hiloCreador = new Thread(() -> {
             try {
                 SwingUtilities.invokeLater(() -> cancionBase.notasGeneradas = false);
+
                 for (EventoNota ev : mapaDeNotas) {
                     int columna = Math.max(0, Math.min(3, ev.columna));
-                    long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs + offsetMs);
+                    long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs);
 
-                    while ((System.nanoTime() - tiempoInicioNs) / 1_000_000L < momentoAparicionMs)
-                        Thread.sleep(1);
+                    // Esperar usando el reloj real del audio
+                    while (true) {
+                        long now = Sonido.getPosMs() - t0AudioMs;
+                        long diff = momentoAparicionMs - now;
+                        if (diff <= 0) break;
+                        if (diff > 3) Thread.sleep(1);
+                        else Thread.onSpinWait();
+                    }
 
-                    int ladoTemporal = resolucion.escalarUniformeMin(157/2, 80);
+                    int ladoTemporal = resolucion.escalarUniformeMin(157 / 2, 80);
                     int xColumna = cancionBase.getColumnXForWidth(columna, ladoTemporal);
 
                     if ("hold".equalsIgnoreCase(ev.tipo)) {
@@ -158,11 +174,15 @@ public class Mapeado {
                     }
                 }
             } catch (InterruptedException ignored) {
+                // salida limpia del hilo
             }
         }, "Mapeado-Hilo");
+
         hiloCreador.setDaemon(true);
         hiloCreador.start();
     }
+
+
 
     public void detener() {
         if (hiloCreador != null && hiloCreador.isAlive()) {

@@ -60,12 +60,14 @@ public class TraductorSM {
                     }
                     cambios.sort(Comparator.comparingDouble(b -> b.beat));
                     if (cambios.isEmpty()) cambios.add(new BpmChange(0.0, 120.0));
+                    mapa.bpm = cambios.get(0).bpm; // exporta el BPM real al JSON
+
                 }
 
                 // bloque de notas
                 else if (linea.startsWith("#NOTES:")) {
                     leyendoNotas = true;
-                    for (int i = 0; i < 6; i++) br.readLine(); // saltar metadatos
+                    for (int i = 0; i < 5; i++) br.readLine(); // estilo, autor, diff, meter, radar
                     compas = 0;
                     filasCompas.clear();
                     inicioHold = null;
@@ -124,73 +126,59 @@ public class TraductorSM {
             int compas,
             double offsetSeg,
             List<BpmChange> cambios,
-            long[] inicioHold,
-            boolean[] holdActivo
+            long[] inicioHold,        // tamaño 4 o null
+            boolean[] holdActivo      // tamaño 4 o null
     ) {
-        if (filasCompas.isEmpty()) return;
-        final int filas = filasCompas.size();
-        for (int fila = 0; fila < filas; fila++) {
-            String row = filasCompas.get(fila);
-            int columnas = row.length();
-            for (int col = 0; col < columnas; col++) {
-                char c = row.charAt(col);
+        int filas = filasCompas.size();
+        if (filas == 0) return;
 
-                double frac = (double) fila / (double) filas;
-                double beat = compas * 4.0 + frac * 4.0;
-                long tiempoMs = beatToMs(beat, cambios) + Math.round(offsetSeg * 1000.0);
+        if (inicioHold == null) inicioHold = new long[4];
+        if (holdActivo == null) holdActivo = new boolean[4];
+
+        for (int f = 0; f < filas; f++) {
+            String fila = filasCompas.get(f);
+            if (fila.length() < 4) continue; // esperamos 4 columnas
+
+            double beat = beatDeFila(compas, filas, f);
+            long tMs = msAtBeat(beat, cambios) + Math.round(offsetSeg * 1000.0);
+
+            for (int col = 0; col < 4; col++) {
+                char c = fila.charAt(col);
 
                 if (c == '1') {
-                    boolean dentroDeHold = false;
+                    // TAP
+                    Nota n = new Nota();
+                    n.tipo = "tap";
+                    n.columna = col;
+                    n.tiempo = tMs;
+                    n.duracion = 0;
+                    mapa.notas.add(n);
 
-                    // verificar hold activo
-                    if (holdActivo[col]) {
-                        long inicio = inicioHold[col];
-                        if (tiempoMs >= inicio - 50 && tiempoMs <= inicio + 50) {
-                            dentroDeHold = true;
-                        }
-                    }
-
-                    // verificar holds ya cerrados
-                    if (!dentroDeHold) {
-                        for (Nota nota : mapa.notas) {
-                            if ("hold".equals(nota.tipo) && nota.columna == col) {
-                                long inicio = nota.tiempo;
-                                long fin = nota.tiempo + nota.duracion;
-                                if (tiempoMs >= inicio && tiempoMs <= fin) {
-                                    dentroDeHold = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    if (!dentroDeHold) {
-                        Nota n = new Nota();
-                        n.tipo = "tap";
-                        n.columna = col;
-                        n.tiempo = tiempoMs;
-                        n.duracion = 0;
-                        mapa.notas.add(n);
-                    }
-
-                } else if (c == '2') {
+                } else if (c == '2' || c == '4') {
+                    // HEAD de HOLD o ROLL
                     holdActivo[col] = true;
-                    inicioHold[col] = tiempoMs;
+                    inicioHold[col] = tMs;
 
                 } else if (c == '3') {
+                    // TAIL de HOLD
                     if (holdActivo[col]) {
                         Nota n = new Nota();
                         n.tipo = "hold";
                         n.columna = col;
                         n.tiempo = inicioHold[col];
-                        n.duracion = Math.max(0, tiempoMs - inicioHold[col]);
+                        n.duracion = Math.max(1, tMs - inicioHold[col]); // ≥1 ms
                         mapa.notas.add(n);
                         holdActivo[col] = false;
                     }
                 }
+                // '0' => vacío; otros tokens de SM (mines, etc.) se ignoran por ahora
             }
         }
+
+        // limpiar para el próximo compás
+        filasCompas.clear();
     }
+
 
     public static void limpiarNotasTapDentroDeHold(Mapa mapa) {
         List<Nota> filtradas = new ArrayList<>();
@@ -214,14 +202,48 @@ public class TraductorSM {
         }
         mapa.notas = filtradas;
     }
+    
+    private static long msAtBeat(double beat, List<BpmChange> cambios) {
+        // Integración por tramos: suma tiempo en cada segmento de BPM hasta 'beat'
+        double ms = 0.0;
+        for (int i = 0; i < cambios.size(); i++) {
+            double b0 = cambios.get(i).beat;
+            double bpm = cambios.get(i).bpm;
+            double b1 = (i + 1 < cambios.size()) ? cambios.get(i + 1).beat : beat;
+            double hasta = Math.min(beat, b1);
+            if (hasta <= b0) break;
+            double beatsEnTramo = hasta - b0;
+            ms += (60000.0 / bpm) * beatsEnTramo; // 1 beat = 60k/BPM ms
+            if (beat <= b1) break;
+        }
+        return Math.round(ms);
+    }
+
+    private static double beatDeFila(int compas, int filasEnCompas, int filaIndex) {
+        // En StepMania un compás = 4 beats (negras)
+        // Cada fila subdivide equidistantemente el compás
+        double dentro = (filasEnCompas == 0) ? 0.0 : (4.0 * filaIndex / filasEnCompas);
+        return compas * 4.0 + dentro;
+    }
+
+    
 
     public static void guardarComoJSON(Mapa mapa, String ruta) throws IOException {
+        // Asegurar orden estable (tiempo asc; holds antes que taps si empatan)
+        if (mapa != null && mapa.notas != null) {
+            mapa.notas.sort(
+                java.util.Comparator
+                    .comparingLong((Nota n) -> n.tiempo)
+                    .thenComparing(n -> "hold".equalsIgnoreCase(n.tipo) ? 0 : 1)
+            );
+        }
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(mapa);
         try (FileWriter fw = new FileWriter(ruta)) {
             fw.write(json);
         }
     }
+
 }
 
 // ===== Clases auxiliares =====

@@ -28,3 +28,5 @@ Jugador,844250
 lol,211700
 Jugador,388300
 Jugador,835750
+Jugador,772200
+Jugador,832950

@@ -129,14 +129,50 @@ public class Sonido {
             AudioInputStream din = AudioSystem.getAudioInputStream(decoded, in);
 
             DataLine.Info info = new DataLine.Info(SourceDataLine.class, decoded);
-            lineaCancion = (SourceDataLine) AudioSystem.getLine(info);
-            lineaCancion.open(decoded);
-            aplicarVolumen(lineaCancion);
+            try {
+                lineaCancion = (SourceDataLine) AudioSystem.getLine(info);
+                lineaCancion.open(decoded);
+                aplicarVolumen(lineaCancion);
+            } catch (Exception e) {
+                System.err.println("[Sonido] ❌ Error al abrir línea de audio: " + e.getMessage());
+                lineaCancion = null;
+                return; // salir del método antes de crear el hilo
+            }
 
-            // reproducir en thread para no bloquear EDT
+            // 🔹 Offset negativo: retrasar inicio del audio
+            if (offsetMs < 0) {
+                System.out.println("[Sonido] Offset negativo, esperando " + Math.abs(offsetMs) + " ms antes de reproducir...");
+                Thread.sleep(Math.abs(offsetMs));
+            }
+
+            // 🔹 Reproducir en hilo separado
             hiloCancion = new Thread(() -> {
+            	
+            	 if (lineaCancion == null) {
+            	        System.err.println("[Sonido] Línea de audio no disponible, abortando hilo.");
+            	        return;
+            	    }
+            	
+            	
                 try (AudioInputStream stream = din) {
                     lineaCancion.start();
+
+                    // 🔹 Offset positivo: adelantar inicio descartando bytes
+                    if (offsetMs > 0) {
+                        long bytesPorMs = (long) ((decoded.getFrameRate() * decoded.getFrameSize()) / 1000.0);
+                        long bytesAAvanzar = offsetMs * bytesPorMs;
+                        byte[] basura = new byte[8192];
+                        long leidos = 0;
+                        while (leidos < bytesAAvanzar) {
+                            long faltan = bytesAAvanzar - leidos;
+                            int n = stream.read(basura, 0, (int) Math.min(basura.length, faltan));
+                            if (n == -1) break;
+                            leidos += n;
+                        }
+                        System.out.println("[Sonido] Offset positivo aplicado (descartando " + offsetMs + " ms de audio)...");
+                    }
+
+                    // 🔹 Bucle principal de reproducción
                     byte[] buffer = new byte[8192];
                     int n;
                     while (!Thread.currentThread().isInterrupted()
@@ -150,6 +186,7 @@ public class Sonido {
                     detenerCancion();
                 }
             }, "MP3-Streaming");
+
             hiloCancion.setDaemon(true);
             hiloCancion.start();
 
@@ -157,6 +194,24 @@ public class Sonido {
             e.printStackTrace();
         }
     }
+
+    
+    
+    public static synchronized long getPosMs() {
+        return (lineaCancion != null) ? (lineaCancion.getMicrosecondPosition() / 1000L) : 0L;
+    }
+    
+    private static long offsetMs = 0;
+
+    public static synchronized void setearOffset(long nuevoOffsetMs) {
+        offsetMs = nuevoOffsetMs;
+        System.out.println("[Sonido] Offset configurado en " + offsetMs + " ms");
+    }
+    
+    public static synchronized long getOffset() {
+        return offsetMs;
+    }
+
 
     public static synchronized boolean cancionActiva() {
         return lineaCancion != null && lineaCancion.isActive();
