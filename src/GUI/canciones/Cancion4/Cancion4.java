@@ -1,4 +1,4 @@
-package GUI.canciones.Cancion1;
+package GUI.canciones.Cancion4;
 
 import org.w3c.dom.events.EventException;
 
@@ -6,12 +6,12 @@ import config.CancionBase;
 import config.Mapeado;
 import config.ResolucionManager;
 
-public class Cancion1 extends CancionBase {
+public class Cancion4 extends CancionBase {
 
     private static final long serialVersionUID = 1L;
     private Mapeado mapeado;
 
-    public Cancion1(ResolucionManager resolucion) {
+    public Cancion4(ResolucionManager resolucion) {
         super(resolucion);
     }
 

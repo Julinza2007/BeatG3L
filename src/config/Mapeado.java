@@ -123,8 +123,8 @@ public class Mapeado {
         cancionBase.iniciarMovimientoNotas();
         
         switch (rutaAudio) {
-        case "src/GUI/canciones/Cancion1/audio.mp3" -> Sonido.setearOffset(0);
-        case "src/GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(-2300);
+        case "GUI/canciones/Cancion1/audio.mp3" -> Sonido.setearOffset(0);
+        case "GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(-2300);
 //        case "src/GUI/canciones/Cancion6/audio.mp3" -> Sonido.setearOffset(150);
         default -> Sonido.setearOffset(0);
     }
