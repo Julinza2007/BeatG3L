@@ -113,12 +113,11 @@ public class Mapeado {
         final long anticipacionMs = Math.round(distanciaPx / velocidadPxPorMs);
 
         // 4) Arrancar caída y audio (una sola vez)
-        cancionBase.iniciarMovimientoNotas();
 
         // Offset por canción (ajustá las rutas a tus nombres reales)
         switch (rutaAudio) {
             case "GUI/canciones/Cancion4/audio.mp3" -> Sonido.setearOffset(0);
-            case "GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(-2300);
+            case "GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(0);
             default -> Sonido.setearOffset(0);
         }
         Sonido.reproducirCancion(rutaAudio); // respeta offset (+/-)
@@ -127,6 +126,9 @@ public class Mapeado {
         while (Sonido.cancionActiva() && Sonido.getClockMs() == 0L) {
             Thread.onSpinWait();
         }
+        
+        cancionBase.iniciarMovimientoNotas();
+
 
         // 5) Crear notas en hilo, sincronizado al reloj lógico (pausa-friendly)
         hiloCreador = new Thread(() -> {
@@ -168,6 +170,30 @@ public class Mapeado {
 
         hiloCreador.setDaemon(true);
         hiloCreador.start();
+        
+        System.out.println("[Cancion] Rutas: JSON=" + rutaJson + " | MP3=" + rutaAudio);
+
+        System.out.println("[Cancion] #notas = " + mapaDeNotas.size());
+        mapaDeNotas.stream().limit(12).forEach(ev ->
+            System.out.printf("[Cancion] t=%d  tipo=%s  dur=%d  col=%d%n",
+                ev.tiempo, ev.tipo, ev.duracion, ev.columna)
+        );
+
+        long maxT = mapaDeNotas.stream().mapToLong(n -> n.tiempo).max().orElse(-1);
+        long minDelta = Long.MAX_VALUE;
+        long prev = Long.MIN_VALUE;
+        for (var ev : mapaDeNotas) {
+            if (prev != Long.MIN_VALUE) {
+                long d = ev.tiempo - prev;
+                if (d > 0 && d < minDelta) minDelta = d;
+            }
+            prev = ev.tiempo;
+        }
+        System.out.printf("[Cancion] maxT=%d ms  |  minDelta=%s ms%n",
+            maxT, (minDelta==Long.MAX_VALUE?"NA":String.valueOf(minDelta)));
+        System.out.println("[Cancion] anticipacionMs=" + anticipacionMs);
+        
+        
     }
 
     public void detener() {
