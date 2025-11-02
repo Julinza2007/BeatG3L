@@ -209,7 +209,7 @@ public class Mapeado {
             javax.swing.Timer t = new javax.swing.Timer(faltante, ev -> {
                 javax.swing.JPanel panel = null;
                 switch (cancion) {
-                    case 1 -> panel = new GUI.canciones.Cancion1.Cancion1(resolucion);
+//                    case 1 -> panel = new GUI.canciones.Cancion1.Cancion1(resolucion);
 //                    case 2 -> panel = new GUI.canciones.Cancion2.Cancion2(resolucion);
 //                    case 3 -> panel = new GUI.canciones.Cancion3.Cancion3(resolucion);
 //                    case 4 -> panel = new GUI.canciones.Cancion4.Cancion4(resolucion);
