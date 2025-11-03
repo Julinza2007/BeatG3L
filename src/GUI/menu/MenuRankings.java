@@ -14,7 +14,7 @@ import javax.swing.JPanel;
 
 import GUI.Componentes;
 import GUI.Fondo;
-import GUI.canciones.Cancion1.Cancion1;
+import GUI.canciones.Cancion4.Cancion4;
 import config.ResolucionManager;
 
 public class MenuRankings extends JPanel {

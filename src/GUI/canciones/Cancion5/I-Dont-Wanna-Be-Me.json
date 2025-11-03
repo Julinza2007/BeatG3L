@@ -76,12 +76,12 @@
       "tiempo": 11295,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 3,
       "tiempo": 11550,
       "duracion": 429
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -130,12 +130,12 @@
       "tiempo": 15603,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 0,
       "tiempo": 16070,
       "duracion": 640
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -760,36 +760,36 @@
       "tiempo": 37853,
       "duracion": 0
     },*/
-    {
+    /*{
       "tipo": "hold",
       "columna": 0,
       "tiempo": 38027,
       "duracion": 423
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 38195,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 3,
       "tiempo": 38450,
       "duracion": 429
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 38661,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 0,
       "tiempo": 38879,
       "duracion": 466
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -1336,12 +1336,12 @@
       "tiempo": 56820,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 0,
       "tiempo": 56951,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -1360,12 +1360,12 @@
       "tiempo": 57293,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 0,
       "tiempo": 58443,
       "duracion": 1405
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -1408,12 +1408,12 @@
       "tiempo": 59338,
       "duracion": 0
     },*/
-    {
+    /*{
       "tipo": "hold",
       "columna": 3,
       "tiempo": 61427,
       "duracion": 1063
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -1474,24 +1474,24 @@
       "tiempo": 63385,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 3,
       "tiempo": 63814,
       "duracion": 299
-    },
+    },*/
     {
       "tipo": "hold",
       "columna": 1,
       "tiempo": 64113,
       "duracion": 509
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 0,
       "tiempo": 66201,
       "duracion": 1064
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -1546,12 +1546,12 @@
       "tiempo": 68160,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 0,
       "tiempo": 68290,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -1576,12 +1576,12 @@
       "tiempo": 68887,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 3,
       "tiempo": 70976,
       "duracion": 1063
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -1594,12 +1594,12 @@
       "tiempo": 71144,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 0,
       "tiempo": 71274,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -1618,12 +1618,12 @@
       "tiempo": 71616,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 0,
       "tiempo": 72549,
       "duracion": 1417
-    },
+    },*/
     /*{
       "tipo": "tap",
       "columna": 1,
@@ -1642,30 +1642,30 @@
       "tiempo": 72978,
       "duracion": 0
     },*/
-    {
+    /*{
       "tipo": "hold",
       "columna": 3,
       "tiempo": 73407,
       "duracion": 298
-    },
+    },*/
     {
       "tipo": "hold",
       "columna": 1,
       "tiempo": 73705,
       "duracion": 255
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 3,
       "tiempo": 74557,
       "duracion": 0
-    },
-    {
+    },*/
+    /*{
       "tipo": "tap",
       "columna": 0,
       "tiempo": 74855,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -1678,12 +1678,12 @@
       "tiempo": 75154,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 3,
       "tiempo": 75154,
       "duracion": 0
-    },
+    },*/  
     {
       "tipo": "tap",
       "columna": 2,
@@ -1708,12 +1708,12 @@
       "tiempo": 75583,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 3,
       "tiempo": 75794,
       "duracion": 1193
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -1744,12 +1744,12 @@
       "tiempo": 76689,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 0,
       "tiempo": 76987,
       "duracion": 1194
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -1828,24 +1828,24 @@
       "tiempo": 79972,
       "duracion": 0
     },*/
-    {
+    /*{
       "tipo": "tap",
       "columna": 0,
       "tiempo": 80270,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 80270,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 3,
       "tiempo": 80568,
       "duracion": 1194
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -1876,12 +1876,12 @@
       "tiempo": 81464,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 0,
       "tiempo": 81762,
       "duracion": 1194
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -1906,12 +1906,12 @@
       "tiempo": 82657,
       "duracion": 0
     },*/
-    {
+    /*{
       "tipo": "hold",
       "columna": 3,
       "tiempo": 82956,
       "duracion": 1193
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -1978,12 +1978,12 @@
       "tiempo": 85044,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 3,
       "tiempo": 85343,
       "duracion": 1193
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -2014,12 +2014,12 @@
       "tiempo": 86238,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 0,
       "tiempo": 86536,
       "duracion": 1194
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -2044,12 +2044,12 @@
       "tiempo": 87432,
       "duracion": 0
     },*/
-    {
+    /*{
       "tipo": "hold",
       "columna": 3,
       "tiempo": 87730,
       "duracion": 1150
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -2176,12 +2176,12 @@
       "tiempo": 92206,
       "duracion": 0
     },*/
-    {
+    /*{
       "tipo": "hold",
       "columna": 3,
       "tiempo": 92504,
       "duracion": 1194
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -2410,12 +2410,12 @@
       "tiempo": 107294,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 3,
       "tiempo": 107294,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -2452,12 +2452,12 @@
       "tiempo": 110154,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 0,
       "tiempo": 110620,
       "duracion": 342
-    },
+    },*/
     {
       "tipo": "hold",
       "columna": 0,
@@ -2596,12 +2596,12 @@
       "tiempo": 118975,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 0,
       "tiempo": 119106,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -2674,12 +2674,12 @@
       "tiempo": 123750,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 3,
       "tiempo": 123880,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -2716,12 +2716,12 @@
       "tiempo": 125540,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 0,
       "tiempo": 125671,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -2820,7 +2820,7 @@
     },
     {
       "tipo": "hold",
-      "columna": 3,
+      "columna": 2,
       "tiempo": 131086,
       "duracion": 254
     },
@@ -2908,12 +2908,12 @@
       "tiempo": 134026,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 0,
       "tiempo": 134324,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -3076,12 +3076,12 @@
       "tiempo": 140802,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 3,
       "tiempo": 140802,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -3748,36 +3748,36 @@
       "tiempo": 158837,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 0,
       "tiempo": 159136,
       "duracion": 0
-    },
-    {
+    },*/
+    /*{
       "tipo": "tap",
       "columna": 3,
       "tiempo": 159136,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
       "tiempo": 159434,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 3,
       "tiempo": 159434,
       "duracion": 0
-    },
-    {
+    },*/
+    /*{
       "tipo": "tap",
       "columna": 0,
       "tiempo": 159732,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -3820,12 +3820,12 @@
       "tiempo": 161224,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 1,
       "tiempo": 161523,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "hold",
       "columna": 1,
@@ -3838,18 +3838,18 @@
       "tiempo": 162120,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "hold",
       "columna": 3,
       "tiempo": 162418,
       "duracion": 597
-    },
-    {
+    },*/
+    /*{
       "tipo": "tap",
       "columna": 1,
       "tiempo": 162716,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "hold",
       "columna": 0,
@@ -4096,18 +4096,18 @@
       "tiempo": 168995,
       "duracion": 2220
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 3,
       "tiempo": 169449,
       "duracion": 0
-    },
-    {
+    },*/
+    /*{
       "tipo": "tap",
       "columna": 0,
       "tiempo": 169878,
       "duracion": 0
-    },
+    },*/
     /*{
       "tipo": "tap",
       "columna": 3,
@@ -4324,24 +4324,24 @@
       "tiempo": 179042,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 3,
       "tiempo": 179042,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
       "tiempo": 179464,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 3,
       "tiempo": 179464,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -4456,12 +4456,12 @@
       "tiempo": 183859,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 0,
       "tiempo": 184239,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,
@@ -4696,12 +4696,12 @@
       "tiempo": 190934,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 0,
       "tiempo": 191102,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 2,
@@ -5032,12 +5032,12 @@
       "tiempo": 200185,
       "duracion": 0
     },
-    {
+    /*{
       "tipo": "tap",
       "columna": 3,
       "tiempo": 200315,
       "duracion": 0
-    },
+    },*/
     {
       "tipo": "tap",
       "columna": 1,

@@ -31,3 +31,5 @@ Jugador,835750
 Jugador,772200
 Jugador,832950
 elu,305500
+Jugador,491100
+Jugador,2163750
