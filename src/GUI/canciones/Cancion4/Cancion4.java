@@ -17,7 +17,7 @@ public class Cancion4 extends CancionBase {
     protected void construirCancion(ResolucionManager resolucion) {
     	
         mapeado = new Mapeado(this, resolucion,
-            "GUI/canciones/Cancion4/my-8-bit-hero-301280.mp3",
+            "GUI/canciones/Cancion4/audio.mp3",
             "/GUI/canciones/Cancion4/my-8-bit-hero-301280.json");
      // Después (no bloquea el EDT):
         new Thread(mapeado::iniciar, "inicio-cancion").start();
