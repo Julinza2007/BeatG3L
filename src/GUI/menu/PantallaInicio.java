@@ -47,7 +47,9 @@ public class PantallaInicio extends JPanel {
         // Timer para cambiar a MenuInicio
         new Timer(7000, e -> {
             SwingUtilities.invokeLater(() -> cambiarAMenu(resolucion));
-        }) {{
+        }) {private static final long serialVersionUID = 1L;
+
+		{
             setRepeats(false);
             start();
         }};

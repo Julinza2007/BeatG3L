@@ -8,16 +8,17 @@ import config.ResolucionManager;
 import GUI.menu.MenuJuego;
 
 public class Dialogos extends JPanel implements ActionListener {
-    private JFrame ventana;
-    private ResolucionManager resolucion;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private ResolucionManager resolucion;
     private ArrayList<ImageIcon> imagenes;  
     private int indice = 0;
     private JLabel imagenLabel;
-    private Timer timer;
     private boolean listoParaContinuar = true;
 
     public Dialogos(JFrame ventana, ResolucionManager resolucion) {
-        this.ventana = ventana;
         this.resolucion = resolucion; 
 
         setLayout(null);

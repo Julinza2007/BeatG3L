@@ -36,10 +36,10 @@ public class Nota extends JPanel {
         // Rutas por columna
         String headPath, bodyPath = null, tailPath = null;
         switch (this.columna) {
-            case 0 -> { headPath="/img/notas/izquierda.png";  bodyPath="/img/notas/izquierdaHold.png";  tailPath="/img/notas/izquierdaHoldTermina.png"; }
-            case 1 -> { headPath="/img/notas/abajo.png";       bodyPath="/img/notas/abajoHold.png";      tailPath="/img/notas/abajoHoldTermina.png"; }
-            case 2 -> { headPath="/img/notas/arriba.png";      bodyPath="/img/notas/arribaHold.png";     tailPath="/img/notas/arribaHoldTermina.png"; }
-            default -> { headPath="/img/notas/derecha.png";    bodyPath="/img/notas/derechaHold.png";    tailPath="/img/notas/derechaHoldTermina.png"; }
+            case 0 -> { headPath="/img/notas/izquierda.png";  bodyPath="/img/notas/izquierdaHold.png";  tailPath="/img/notas/izquierdaHoldTermina2.png"; }
+            case 1 -> { headPath="/img/notas/abajo.png";       bodyPath="/img/notas/abajoHold.png";      tailPath="/img/notas/abajoHoldTermina2.png"; }
+            case 2 -> { headPath="/img/notas/arriba.png";      bodyPath="/img/notas/arribaHold.png";     tailPath="/img/notas/arribaHoldTermina2.png"; }
+            default -> { headPath="/img/notas/derecha.png";    bodyPath="/img/notas/derechaHold.png";    tailPath="/img/notas/derechaHoldTermina2.png"; }
         }
 
         // Cargar imágenes
@@ -111,9 +111,7 @@ public class Nota extends JPanel {
             return;
         }
 
-     // --- Hold: COLA ARRIBA (invertida), CUERPO TILEADO, CABEZA ABAJO ---
-        final int overlap = 0; // <-- Cambiar a 0 para eliminar la causa del artefacto visual.
-        int y = 0;
+     int y = 0;
 
         // 1) COLA (arriba) — FLIP VERTICAL
         int tailSrcW = imgTail.getWidth(null);

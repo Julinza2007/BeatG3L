@@ -5,39 +5,47 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
+
 import GUI.Fondo;
 import GUI.Nota;
 import GUI.NotasUsuario;
-import GUI.PantallaFinCancion;
 import GUI.PrecisionPuntaje;
 
 public abstract class CancionBase extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
+    // --- UI / Estado general ---
     protected NotasUsuario notaD, notaF, notaJ, notaK;
     protected JPanel panelJuego;
-    protected List<Nota> notasActivas = new ArrayList<>();
-    protected boolean nivelSuperado = false;
-    protected ResolucionManager resolucion;
-    private Timer timerNotas;
     protected PrecisionPuntaje precision;
+    protected ResolucionManager resolucion;
+
+    protected final List<Nota> notasActivas = new ArrayList<>();
+    protected boolean nivelSuperado = false;
     protected boolean notasGeneradas = true;
 
-    private long tiempoInicioNotasMs = 0;
-    protected long tiempoUltimaNotaMs = 0; // tiempo relativo desde inicio
+    private Timer timerNotas;
+    private boolean enPausa = false;
+    private JLabel textoPausa;
+    private JPanel capaOpaca;
 
-    // base (1920x1080)
+    private long tiempoInicioNotasMs = 0;
+    protected long tiempoUltimaNotaMs = 0; // tiempo relativo desde inicio (lo setea Mapeado)
+
+    // Escalado base (1920x1080)
     private static final int BASE_SEPARACION_X = 120;
     private static final int BASE_MARGIN_BOTTOM = 180;
 
+    // Centros de columna (x en panelJuego)
     private final int[] centrosCol = new int[4];
 
-    protected int yImpacto = 0; // línea de hit vertical
+    // Línea de hit y estado de holds
+    protected int yImpacto = 0;
     private final boolean[] teclaActiva = new boolean[4];
     private final long[] ultimoTickHoldMs = new long[4];
 
-    private boolean columnasListas = false;
+    private boolean columnasListas = false; // dispara construirCancion una sola vez
 
     public CancionBase(ResolucionManager resolucion) {
         this.resolucion = resolucion;
@@ -59,20 +67,28 @@ public abstract class CancionBase extends JPanel {
         SwingUtilities.invokeLater(() -> {
             crearTeclasJugador();
             layoutColumnasYAnclarAbajo();
+            requestFocusInWindow();
         });
 
+        // Reacomodar columnas/notes al redimensionar
         panelJuego.addComponentListener(new ComponentAdapter() {
-            @Override public void componentResized(ComponentEvent e) { layoutColumnasYAnclarAbajo(); realinearNotasActivas(); }
-            @Override public void componentShown(ComponentEvent e) { layoutColumnasYAnclarAbajo(); realinearNotasActivas(); }
+            @Override public void componentResized(ComponentEvent e) { layoutColumnasYAnclarAbajo(); realinearNotasActivas(); ajustarOverlay(); }
+            @Override public void componentShown(ComponentEvent e)   { layoutColumnasYAnclarAbajo(); realinearNotasActivas(); ajustarOverlay(); }
         });
         addHierarchyBoundsListener(new HierarchyBoundsAdapter() {
-            @Override public void ancestorResized(HierarchyEvent e) { layoutColumnasYAnclarAbajo(); realinearNotasActivas(); }
+            @Override public void ancestorResized(HierarchyEvent e) { layoutColumnasYAnclarAbajo(); realinearNotasActivas(); ajustarOverlay(); }
         });
 
+        // Input
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (nivelSuperado) return;
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    alternarPausa();
+                    return;
+                }
+                if (nivelSuperado || enPausa) return;
+
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_D -> presionar(0, notaD);
                     case KeyEvent.VK_F -> presionar(1, notaF);
@@ -82,7 +98,7 @@ public abstract class CancionBase extends JPanel {
             }
             @Override
             public void keyReleased(KeyEvent e) {
-                if (nivelSuperado) return;
+                if (nivelSuperado || enPausa) return;
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_D -> soltar(0, notaD);
                     case KeyEvent.VK_F -> soltar(1, notaF);
@@ -95,28 +111,28 @@ public abstract class CancionBase extends JPanel {
 
     private void crearTeclasJugador() {
         notaD = new NotasUsuario("/img/notas/notasUsuario/izquierda.png",
-                                 "/img/notas/notasUsuario/izquierdaPresion.png",
-                                 0, 0,
-                                 resolucion.escalarXMin(125/2, 80),
-                                 resolucion.escalarYMin(175/2, 110));
+                "/img/notas/notasUsuario/izquierdaPresion.png",
+                0, 0,
+                resolucion.escalarXMin(125/2, 80),
+                resolucion.escalarYMin(175/2, 110));
 
         notaF = new NotasUsuario("/img/notas/notasUsuario/abajo.png",
-                                 "/img/notas/notasUsuario/abajoPresion.png",
-                                 0, 0,
-                                 resolucion.escalarXMin(125/2, 80),
-                                 resolucion.escalarYMin(175/2, 110));
+                "/img/notas/notasUsuario/abajoPresion.png",
+                0, 0,
+                resolucion.escalarXMin(125/2, 80),
+                resolucion.escalarYMin(175/2, 110));
 
         notaJ = new NotasUsuario("/img/notas/notasUsuario/arriba.png",
-                                 "/img/notas/notasUsuario/arribaPresion.png",
-                                 0, 0,
-                                 resolucion.escalarXMin(125/2, 80),
-                                 resolucion.escalarYMin(175/2, 110));
+                "/img/notas/notasUsuario/arribaPresion.png",
+                0, 0,
+                resolucion.escalarXMin(125/2, 80),
+                resolucion.escalarYMin(175/2, 110));
 
         notaK = new NotasUsuario("/img/notas/notasUsuario/derecha.png",
-                                 "/img/notas/notasUsuario/derechaPresion.png",
-                                 0, 0,
-                                 resolucion.escalarXMin(125/2, 80),
-                                 resolucion.escalarYMin(175/2, 110));
+                "/img/notas/notasUsuario/derechaPresion.png",
+                0, 0,
+                resolucion.escalarXMin(125/2, 80),
+                resolucion.escalarYMin(175/2, 110));
 
         panelJuego.add(notaD);
         panelJuego.add(notaF);
@@ -197,13 +213,13 @@ public abstract class CancionBase extends JPanel {
             Nota n = notasActivas.get(i);
 
             int centroUsuarioY = hitUsuario.y + hitUsuario.height / 2;
-            int centroNotaY = n.getY() + n.getHeight() / 2;
-            int diferencia = Math.abs(centroUsuarioY - centroNotaY);
+            int centroNotaY    = n.getY() + n.getHeight() / 2;
+            int diferencia     = Math.abs(centroUsuarioY - centroNotaY);
 
-            int centroUsuario = hitUsuario.x + hitUsuario.width / 2;
-            int centroNota = n.getX() + n.getWidth() / 2;
+            int centroUsuarioX = hitUsuario.x + hitUsuario.width / 2;
+            int centroNotaX    = n.getX() + n.getWidth() / 2;
 
-            if (Math.abs(centroUsuario - centroNota) > tolX) continue;
+            if (Math.abs(centroUsuarioX - centroNotaX) > tolX) continue;
 
             if (n.getBounds().intersects(hitUsuario)) {
                 if (diferencia > 30) {
@@ -270,7 +286,6 @@ public abstract class CancionBase extends JPanel {
 
         for (Nota n : notasActivas) {
             if (!n.esHold) continue;
-
             int col = n.getColumna();
             if (!teclaActiva[col]) continue;
 
@@ -299,7 +314,6 @@ public abstract class CancionBase extends JPanel {
         }
 
         if (n.getY() > bordeInferior + margen) {
-            long ahora = System.currentTimeMillis();
             precision.Miss();
             precision.setForeground(Color.RED);
             panelJuego.remove(n);
@@ -313,25 +327,73 @@ public abstract class CancionBase extends JPanel {
         panelJuego.add(nota, 0);
         notasActivas.add(nota);
         panelJuego.setComponentZOrder(nota, 0);
-
-        this.revalidate();
-        this.repaint();
+        revalidate();
+        repaint();
     }
 
     protected void finalizarCancion() {
         detenerMovimientoNotas();
         nivelSuperado = true;
 
-        int puntajeFinal = precision.getPuntos();
+        precision.getPuntos();
 
         SwingUtilities.invokeLater(() -> {
             JFrame ventana = (JFrame) SwingUtilities.getWindowAncestor(CancionBase.this);
             if (ventana != null) {
-                ventana.setContentPane(new PantallaFinCancion(puntajeFinal, resolucion));
+                ventana.setContentPane(new RankingPanel(resolucion));
                 ventana.revalidate();
                 ventana.repaint();
             }
         });
+    }
+
+    // ===== Pausa unificada =====
+    private void alternarPausa() {
+        enPausa = !enPausa;
+        if (enPausa) {
+            detenerMovimientoNotas();
+            Sonido.pausarCancion();
+            mostrarOverlayPausa();
+        } else {
+            ocultarOverlayPausa();
+            Sonido.reanudarCancion();
+            if (timerNotas == null || !timerNotas.isRunning()) iniciarMovimientoNotas();
+        }
+    }
+
+    private void mostrarOverlayPausa() {
+        if (capaOpaca != null) return;
+        capaOpaca = new JPanel(null);
+        capaOpaca.setBackground(new Color(0, 0, 0, 110));
+        capaOpaca.setBounds(0, 0, panelJuego.getWidth(), panelJuego.getHeight());
+
+        textoPausa = new JLabel("PAUSA", SwingConstants.CENTER);
+        textoPausa.setFont(new Font("Arial", Font.BOLD, 60));
+        textoPausa.setForeground(Color.WHITE);
+        textoPausa.setBounds(panelJuego.getWidth()/2 - 200, panelJuego.getHeight()/2 - 60, 400, 120);
+
+        capaOpaca.add(textoPausa);
+        panelJuego.add(capaOpaca);
+        panelJuego.setComponentZOrder(capaOpaca, 0);
+        panelJuego.repaint();
+    }
+
+    private void ajustarOverlay() {
+        if (capaOpaca != null) {
+            capaOpaca.setBounds(0, 0, panelJuego.getWidth(), panelJuego.getHeight());
+            if (textoPausa != null) {
+                textoPausa.setBounds(panelJuego.getWidth()/2 - 200, panelJuego.getHeight()/2 - 60, 400, 120);
+            }
+        }
+    }
+
+    private void ocultarOverlayPausa() {
+        if (capaOpaca != null) {
+            panelJuego.remove(capaOpaca);
+            capaOpaca = null;
+            textoPausa = null;
+            panelJuego.repaint();
+        }
     }
 
     protected abstract void construirCancion(ResolucionManager resolucion);
