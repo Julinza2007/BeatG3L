@@ -86,6 +86,12 @@ public class MenuJuego extends JPanel {
 		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion6);
 		panelCentral.add(Box.createVerticalGlue());
+		
+		JButton btnCancion9 = Componentes.crearBotonConImagen("cancion 9", btnBase, resolucion);
+		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+		panelCentral.add(Box.createVerticalGlue());
+		panelCentral.add(btnCancion9);
+		panelCentral.add(Box.createVerticalGlue());
 
 
 		JPanel panelBotones = new JPanel();
@@ -168,6 +174,20 @@ public class MenuJuego extends JPanel {
 		    new javax.swing.Timer(800, ev2 -> btnCancion6.setEnabled(true)).start();
 		});
 
+		btnCancion9.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    // (Opcional) anti-doble click
+		    btnCancion9.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(9, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion9.setEnabled(true)).start();
+		});
+		
 		
 		btnRankings.addActionListener(e -> {
 			JFrame ventana = (JFrame) this.getTopLevelAncestor();
