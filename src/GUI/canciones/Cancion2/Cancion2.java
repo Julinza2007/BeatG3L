@@ -1,15 +1,15 @@
-package GUI.canciones.Cancion7;
+package GUI.canciones.Cancion2;
 
 import config.CancionBase;
 import config.Mapeado;
 import config.ResolucionManager;
 
-public class Cancion7 extends CancionBase {
+public class Cancion2 extends CancionBase {
 
     private static final long serialVersionUID = 1L;
     private Mapeado mapeado;
 
-    public Cancion7(ResolucionManager resolucion) {
+    public Cancion2(ResolucionManager resolucion) {
         super(resolucion);
     }
 
@@ -17,8 +17,8 @@ public class Cancion7 extends CancionBase {
     protected void construirCancion(ResolucionManager resolucion) {
     	
         mapeado = new Mapeado(this, resolucion,
-            "GUI/canciones/Cancion7/audio.mp3",
-            "/GUI/canciones/Cancion7/Pierce The Veil - A Match Into Water (puxtu).json");
+            "GUI/canciones/Cancion1/soda stereo - la historia de soda estereo - de musica ligera.mp3",
+            "/GUI/canciones/Cancion3/soda stereo - la historia de soda estereo - de musica ligera.json");
      // Después (no bloquea el EDT):
         new Thread(mapeado::iniciar, "inicio-cancion").start();
 

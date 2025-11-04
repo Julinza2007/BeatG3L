@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import GUI.Componentes;
 import GUI.Fondo;
+import config.Mapeado;
 import config.ResolucionManager;
 
 public class MenuJuego extends JPanel {
@@ -70,6 +71,12 @@ public class MenuJuego extends JPanel {
 //		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion1);
 //		panelCentral.add(Box.createVerticalGlue());
+		
+		JButton btnCancion2 = Componentes.crearBotonConImagen("cancion 2", btnBase, resolucion);
+		panelCentral.add(btnCancion2);
+		
+		JButton btnCancion3 = Componentes.crearBotonConImagen("cancion 3", btnBase, resolucion);
+		panelCentral.add(btnCancion3);
 		
 		JButton btnCancion4 = Componentes.crearBotonConImagen("cancion 4", btnBase, resolucion);
 //		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
@@ -145,6 +152,37 @@ public class MenuJuego extends JPanel {
 		    // Rehabilitar el botón un poquito después para evitar spam
 		    new javax.swing.Timer(800, ev2 -> btnCancion1.setEnabled(true)).start();
 		});
+		
+		btnCancion2.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    // (Opcional) anti-doble click
+		    btnCancion2.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(2, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion2.setEnabled(true)).start();
+		});
+		
+		btnCancion3.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    // (Opcional) anti-doble click
+		    btnCancion3.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(3, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion3.setEnabled(true)).start();
+		});
+		
+		
+		
 		
 		btnCancion4.addActionListener(e -> {
 		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
