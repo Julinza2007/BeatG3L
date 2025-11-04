@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -48,11 +49,13 @@ public class MenuJuego extends JPanel {
 		titulo.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(36), 20)));
 		titulo.setForeground(Color.WHITE);
 
+		/*
 		JButton btnRankings = Componentes.crearBotonConImagen("Rankings", btnBase, resolucion);
+		*/
 
 		panelNorte.add(titulo);
 		panelNorte.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(75))));
-		panelNorte.add(btnRankings);
+		/*panelNorte.add(btnRankings);*/
 
 		contenedorJuego.add(panelNorte);
 		contentPane.add(contenedorJuego, BorderLayout.NORTH);
@@ -60,50 +63,50 @@ public class MenuJuego extends JPanel {
 		// Panel central con Botones de canciones
 		JPanel panelCentral = new JPanel();
 		panelCentral.setOpaque(false);
-		panelCentral.setLayout(new BoxLayout(panelCentral, BoxLayout.Y_AXIS));
+		panelCentral.setLayout(new GridLayout(0, 3, 20, 20)); // 3 columnas, espacio entre botones
 		contentPane.add(panelCentral, BorderLayout.CENTER);
 
-//		JButton btnCancion1 = Componentes.crearBotonConImagen("cancion 1", btnBase, resolucion);
+		JButton btnCancion1 = Componentes.crearBotonConImagen("cancion 1", btnBase, resolucion);
 //		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
 //		panelCentral.add(Box.createVerticalGlue());
-//		panelCentral.add(btnCancion1);
+		panelCentral.add(btnCancion1);
 //		panelCentral.add(Box.createVerticalGlue());
-//		
+		
 		JButton btnCancion4 = Componentes.crearBotonConImagen("cancion 4", btnBase, resolucion);
-		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
-		panelCentral.add(Box.createVerticalGlue());
+//		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+//		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion4);
-		panelCentral.add(Box.createVerticalGlue());
-//		
-//		JButton btnCancion5 = Componentes.crearBotonConImagen("cancion 5", btnBase, resolucion);
+//		panelCentral.add(Box.createVerticalGlue());
+		
+		JButton btnCancion5 = Componentes.crearBotonConImagen("cancion 5", btnBase, resolucion);
 //		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
 //		panelCentral.add(Box.createVerticalGlue());
-//		panelCentral.add(btnCancion5);
+		panelCentral.add(btnCancion5);
 //		panelCentral.add(Box.createVerticalGlue());
-//		
-//		JButton btnCancion6 = Componentes.crearBotonConImagen("cancion 6", btnBase, resolucion);
+		
+		JButton btnCancion6 = Componentes.crearBotonConImagen("cancion 6", btnBase, resolucion);
 //		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
 //		panelCentral.add(Box.createVerticalGlue());
-//		panelCentral.add(btnCancion6);
+		panelCentral.add(btnCancion6);
 //		panelCentral.add(Box.createVerticalGlue());
 		
 		JButton btnCancion7 = Componentes.crearBotonConImagen("cancion 7", btnBase, resolucion);
-		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
-		panelCentral.add(Box.createVerticalGlue());
+//		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+//		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion7);
-		panelCentral.add(Box.createVerticalGlue());
+//		panelCentral.add(Box.createVerticalGlue());
 		
 		JButton btnCancion8 = Componentes.crearBotonConImagen("cancion 8", btnBase, resolucion);
-		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
-		panelCentral.add(Box.createVerticalGlue());
+//		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+//		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion8);
-		panelCentral.add(Box.createVerticalGlue());
+//		panelCentral.add(Box.createVerticalGlue());
 		
 		JButton btnCancion9 = Componentes.crearBotonConImagen("cancion 9", btnBase, resolucion);
-		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
-		panelCentral.add(Box.createVerticalGlue());
+//		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+//		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion9);
-		panelCentral.add(Box.createVerticalGlue());
+//		panelCentral.add(Box.createVerticalGlue());
 
 
 		JPanel panelBotones = new JPanel();
@@ -130,61 +133,61 @@ public class MenuJuego extends JPanel {
 			boton.setMaximumSize(tamBoton);
 		}
 
-//		btnCancion1.addActionListener(e -> {
-//		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
-//		    if (ventana == null) return;
-//
-//		    // (Opcional) anti-doble click
-//		    btnCancion1.setEnabled(false);
-//
-//		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
-//		    config.Mapeado.esperarCarga(1, ventana, resolucion);
-//
-//		    // Rehabilitar el botón un poquito después para evitar spam
-//		    new javax.swing.Timer(800, ev2 -> btnCancion1.setEnabled(true)).start();
-//		});
-//		
-//		btnCancion4.addActionListener(e -> {
-//		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
-//		    if (ventana == null) return;
-//
-//		    // (Opcional) anti-doble click
-//		    btnCancion4.setEnabled(false);
-//
-//		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
-//		    Mapeado.esperarCarga(4, ventana, resolucion);
-//
-//		    // Rehabilitar el botón un poquito después para evitar spam
-//		    new javax.swing.Timer(800, ev2 -> btnCancion4.setEnabled(true)).start();
-//		});
+		btnCancion1.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
 
-//		btnCancion5.addActionListener(e -> {
-//		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
-//		    if (ventana == null) return;
-//
-//		    // (Opcional) anti-doble click
-//		    btnCancion5.setEnabled(false);
-//
-//		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
-//		    config.Mapeado.esperarCarga(5, ventana, resolucion);
-//
-//		    // Rehabilitar el botón un poquito después para evitar spam
-//		    new javax.swing.Timer(800, ev2 -> btnCancion5.setEnabled(true)).start();
-//		});
-//		
-//		btnCancion6.addActionListener(e -> {
-//		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
-//		    if (ventana == null) return;
-//
-//		    // (Opcional) anti-doble click
-//		    btnCancion6.setEnabled(false);
-//
-//		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
-//		    config.Mapeado.esperarCarga(6, ventana, resolucion);
-//
-//		    // Rehabilitar el botón un poquito después para evitar spam
-//		    new javax.swing.Timer(800, ev2 -> btnCancion6.setEnabled(true)).start();
-//		});
+		    // (Opcional) anti-doble click
+		    btnCancion1.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(1, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion1.setEnabled(true)).start();
+		});
+		
+		btnCancion4.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    // (Opcional) anti-doble click
+		    btnCancion4.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    Mapeado.esperarCarga(4, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion4.setEnabled(true)).start();
+		});
+
+		btnCancion5.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    // (Opcional) anti-doble click
+		    btnCancion5.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(5, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion5.setEnabled(true)).start();
+		});
+		
+		btnCancion6.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    // (Opcional) anti-doble click
+		    btnCancion6.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(6, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion6.setEnabled(true)).start();
+		});
 		
 		
 		btnCancion7.addActionListener(e -> {
@@ -233,13 +236,14 @@ public class MenuJuego extends JPanel {
 		});
 		
 		
-		btnRankings.addActionListener(e -> {
+		/*
+		 btnRankings.addActionListener(e -> {
 			JFrame ventana = (JFrame) this.getTopLevelAncestor();
 			MenuRankings rankings = new MenuRankings(resolucion);
 			ventana.setContentPane(rankings);
 			ventana.revalidate();
 			ventana.repaint();
-		});
+		});*/
 
 		btnVolver.addActionListener(e -> {
 			JFrame ventana = (JFrame) this.getTopLevelAncestor();
