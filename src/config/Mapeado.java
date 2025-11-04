@@ -242,8 +242,10 @@ public class Mapeado {
             javax.swing.Timer t = new javax.swing.Timer(faltante, ev -> {
                 javax.swing.JPanel panel = null;
                 switch (cancion) {
-                     case 4 -> panel = new GUI.canciones.Cancion4.Cancion4(resolucion);
+                	case 1 -> panel = new GUI.canciones.Cancion1.Cancion1(resolucion);
+                    case 4 -> panel = new GUI.canciones.Cancion4.Cancion4(resolucion);
                     case 5 -> panel = new GUI.canciones.Cancion5.Cancion5(resolucion);
+                    case 6 -> panel = new GUI.canciones.Cancion6.Cancion6(resolucion);
                     default -> { /* nada */ }
                 }
 
