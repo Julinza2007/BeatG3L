@@ -8,8 +8,8 @@ import com.google.gson.GsonBuilder;
 public class TraductorSM {
 
     public static void main(String[] args) {
-        String rutaSM = "src/GUI/canciones/Cancion5/I-Dont-Wanna-Be-Me.sm";
-        String rutaJSON = "src/GUI/canciones/Cancion5/I-Dont-Wanna-Be-Me.json";
+        String rutaSM = "src/GUI/canciones/Cancion6/Artic Monkeys - 505 (aadurite).sm";
+        String rutaJSON = "src/GUI/canciones/Cancion6/Artic Monkeys - 505 (aadurite).json";
 
         try {
             Mapa mapa = leerArchivoSM(rutaSM);
