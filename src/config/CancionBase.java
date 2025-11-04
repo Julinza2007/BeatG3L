@@ -61,7 +61,7 @@ public abstract class CancionBase extends JPanel {
         fondo.add(panelJuego, BorderLayout.CENTER);
 
         precision = new PrecisionPuntaje(0, resolucion);
-        precision.setBounds(resolucion.escalarX(1375), resolucion.escalarY(50), 600, 30);
+        precision.setBounds(resolucion.escalarX(1375), resolucion.escalarY(250), 600, 500);
         panelJuego.add(precision);
 
         SwingUtilities.invokeLater(() -> {
@@ -222,13 +222,16 @@ public abstract class CancionBase extends JPanel {
             if (Math.abs(centroUsuarioX - centroNotaX) > tolX) continue;
 
             if (n.getBounds().intersects(hitUsuario)) {
-                if (diferencia > 30) {
+            	if (diferencia > 50 && diferencia < 100) {
+                    precision.Bad();
+                    precision.setForeground(Color.LIGHT_GRAY);
+                } else if (diferencia > 30 && diferencia < 50) {
                     precision.Good();
                     precision.setForeground(Color.GREEN);
-                } else {
+                } else if (diferencia <= 30) {
                     precision.Perfect();
                     precision.setForeground(Color.YELLOW);
-                }
+                } 
 
                 if (n.esHold) {
                     n.marcarResuelta();
@@ -236,6 +239,7 @@ public abstract class CancionBase extends JPanel {
                     return;
                 }
 
+                n.marcarResuelta();
                 panelJuego.remove(n);
                 notasActivas.remove(i);
                 panelJuego.repaint();
