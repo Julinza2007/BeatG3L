@@ -66,7 +66,7 @@ public class Mapeado {
         for (String r : rutas) {
             try {
                 java.net.URL u = Mapeado.class.getResource(r);
-                if (u != null) new javax.swing.ImageIcon(u).getImage(); // fuerza decodificación PNG
+                if (u != null) new javax.swing.ImageIcon(u).getImage();
             } catch (Exception ignorar) {}
         }
     }
@@ -87,22 +87,23 @@ public class Mapeado {
 
     // ===== Iniciar canción / spawner sincronizado al reloj lógico =====
     public void iniciar() {
-        // 1) Música de menú off
         Sonido.detenerMusica();
 
-        // 2) Cargar mapa
-        List<EventoNota> mapaDeNotas = cargarMapaDesdeJson();
-        if (mapaDeNotas == null || mapaDeNotas.isEmpty()) {
+        List<EventoNota> mapaOriginal = cargarMapaDesdeJson();
+        if (mapaOriginal == null || mapaOriginal.isEmpty()) {
             System.err.println("No se pudieron cargar notas del JSON.");
             cancionBase.iniciarMovimientoNotas();
             return;
         }
 
+        // 🧹 Limpieza avanzada de duplicados y solapamientos
+        List<EventoNota> mapaDeNotas = limpiarMapa(mapaOriginal);
+
         // Orden por seguridad
         mapaDeNotas.sort(Comparator.comparingLong(n -> n.tiempo));
         cancionBase.tiempoUltimaNotaMs = mapaDeNotas.get(mapaDeNotas.size() - 1).tiempo;
 
-        // 3) Parámetros de caída
+        // Parámetros de caída
         final int tickMs = 10;
         final int velocidadPxPorTick = resolucion.escalarY(5);
         final double velocidadPxPorMs = velocidadPxPorTick / (double) tickMs;
@@ -112,25 +113,21 @@ public class Mapeado {
         final int distanciaPx = Math.max(1, yImpacto - yAparicion);
         final long anticipacionMs = Math.round(distanciaPx / velocidadPxPorMs);
 
-        // 4) Arrancar caída y audio (una sola vez)
-
-        // Offset por canción (ajustá las rutas a tus nombres reales)
+        // Offset por canción
         switch (rutaAudio) {
-            case "GUI/canciones/Cancion4/audio.mp3" -> Sonido.setearOffset(0);
-            case "GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(0);
-            default -> Sonido.setearOffset(0);
-        }
-        Sonido.reproducirCancion(rutaAudio); // respeta offset (+/-)
+        case "GUI/canciones/Cancion4/audio.mp3" -> Sonido.setearOffset(0);
+        case "GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(0);
+        default -> Sonido.setearOffset(0);
+    }
+        Sonido.reproducirCancion(rutaAudio);
 
-        // Esperar a que el reloj lógico comience (>0) o el hilo audio muera
-        while (Sonido.cancionActiva() && Sonido.getClockMs() == 0L) {
-            Thread.onSpinWait();
-        }
-        
+        while (Sonido.cancionActiva() && Sonido.getClockMs() == 0L) Thread.onSpinWait();
+
         cancionBase.iniciarMovimientoNotas();
 
+        final long EPS_MS = 3;
+        final Map<Integer, Long> ultimoSpawnMsPorCol = new HashMap<>();
 
-        // 5) Crear notas en hilo, sincronizado al reloj lógico (pausa-friendly)
         hiloCreador = new Thread(() -> {
             try {
                 SwingUtilities.invokeLater(() -> cancionBase.notasGeneradas = false);
@@ -141,59 +138,57 @@ public class Mapeado {
                     int columna = Math.max(0, Math.min(3, ev.columna));
                     long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs);
 
-                    // Esperar usando Sonido.getClockMs() (se congela en pausa)
                     while (true) {
                         if (Thread.currentThread().isInterrupted()) return;
-                        long now = Sonido.getClockMs(); // reloj lógico desde start (ms)
+                        long now = Sonido.getClockMs();
                         long diff = momentoAparicionMs - now;
                         if (diff <= 0) break;
                         if (diff > 3) {
                             try { Thread.sleep(1); } catch (InterruptedException ie) { return; }
-                        } else {
-                            Thread.onSpinWait();
-                        }
+                        } else Thread.onSpinWait();
                     }
 
-                    int ladoTemporal = resolucion.escalarUniformeMin(157 / 2, 80);
-                    int xColumna = cancionBase.getColumnXForWidth(columna, ladoTemporal);
+                    Long last = ultimoSpawnMsPorCol.get(columna);
+                    if (last != null && Math.abs(last - momentoAparicionMs) <= EPS_MS) continue;
+                    ultimoSpawnMsPorCol.put(columna, momentoAparicionMs);
 
-                    Nota n = ("hold".equalsIgnoreCase(ev.tipo))
-                            ? new Nota(xColumna, yAparicion, columna, true, ev.duracion, velocidadPxPorMs, resolucion)
-                            : new Nota(xColumna, yAparicion, columna, false, 0L,          velocidadPxPorMs, resolucion);
+                    Nota n;
+                    if ("hold".equalsIgnoreCase(ev.tipo)) {
+                        n = new Nota(0, yAparicion, columna, true, ev.duracion, velocidadPxPorMs, resolucion);
+                    } else {
+                        n = new Nota(0, yAparicion, columna, false, 0L, velocidadPxPorMs, resolucion);
+                    }
 
-                    SwingUtilities.invokeLater(() -> cancionBase.agregarNota(n));
+                    int anchoNota = n.getWidth();
+                    int xColumna = cancionBase.getColumnXForWidth(columna, anchoNota);
+
+                    // 👉 Ajuste clave: para holds, subimos el spawn según el offset de la cabeza
+                    int yInicial;
+                    if (n.esHold) {
+                        int headOffset = n.getHeadOffsetFromTop(); // cola + cuerpo (en px)
+                        yInicial = yAparicion - headOffset;        // spawnear más arriba
+                    } else {
+                        yInicial = yAparicion - 1;                  // como ya tenías
+                    }
+
+                    final int yIni = yInicial;
+                    SwingUtilities.invokeLater(() -> {
+                        n.setLocation(xColumna, yIni);
+                        cancionBase.agregarNota(n);
+                    });
+
+                    SwingUtilities.invokeLater(() -> {
+                        n.setLocation(xColumna, yInicial);
+                        cancionBase.agregarNota(n);
+                    });
                 }
-            } catch (Exception ignored) {
-                // salida limpia del hilo
-            }
+            } catch (Exception ignored) {}
         }, "Mapeado-Hilo");
 
         hiloCreador.setDaemon(true);
         hiloCreador.start();
-        
-        System.out.println("[Cancion] Rutas: JSON=" + rutaJson + " | MP3=" + rutaAudio);
 
-        System.out.println("[Cancion] #notas = " + mapaDeNotas.size());
-        mapaDeNotas.stream().limit(12).forEach(ev ->
-            System.out.printf("[Cancion] t=%d  tipo=%s  dur=%d  col=%d%n",
-                ev.tiempo, ev.tipo, ev.duracion, ev.columna)
-        );
-
-        long maxT = mapaDeNotas.stream().mapToLong(n -> n.tiempo).max().orElse(-1);
-        long minDelta = Long.MAX_VALUE;
-        long prev = Long.MIN_VALUE;
-        for (var ev : mapaDeNotas) {
-            if (prev != Long.MIN_VALUE) {
-                long d = ev.tiempo - prev;
-                if (d > 0 && d < minDelta) minDelta = d;
-            }
-            prev = ev.tiempo;
-        }
-        System.out.printf("[Cancion] maxT=%d ms  |  minDelta=%s ms%n",
-            maxT, (minDelta==Long.MAX_VALUE?"NA":String.valueOf(minDelta)));
-        System.out.println("[Cancion] anticipacionMs=" + anticipacionMs);
-        
-        
+        System.out.println("[Cancion] #notas limpias = " + mapaDeNotas.size());
     }
 
     public void detener() {
@@ -202,6 +197,51 @@ public class Mapeado {
             hiloCreador = null;
         }
         Sonido.detenerCancion();
+    }
+
+    // ===== Limpieza avanzada =====
+    private List<EventoNota> limpiarMapa(List<EventoNota> lista) {
+        Map<Integer, List<EventoNota>> porColumna = new HashMap<>();
+        for (EventoNota ev : lista) porColumna.computeIfAbsent(ev.columna, c -> new ArrayList<>()).add(ev);
+
+        List<EventoNota> limpio = new ArrayList<>();
+
+        for (var entry : porColumna.entrySet()) {
+            List<EventoNota> notas = entry.getValue();
+            notas.sort(Comparator.comparingLong(n -> n.tiempo));
+
+            List<EventoNota> filtradas = new ArrayList<>();
+            EventoNota holdActivo = null;
+
+            for (EventoNota ev : notas) {
+                if ("hold".equalsIgnoreCase(ev.tipo)) {
+                    long inicio = ev.tiempo;
+                    long fin = ev.tiempo + ev.duracion;
+
+                    // Elimina hold duplicado o muy solapado con anterior
+                    if (holdActivo != null) {
+                        long anteriorFin = holdActivo.tiempo + holdActivo.duracion;
+                        if (inicio < anteriorFin - 20) {
+                            double solap = (double)(anteriorFin - inicio) / ev.duracion;
+                            if (solap > 0.7) continue; // se superponen demasiado
+                        }
+                    }
+                    filtradas.add(ev);
+                    holdActivo = ev;
+                } else { // tap
+                    if (holdActivo != null) {
+                        long inicioHold = holdActivo.tiempo;
+                        long finHold = holdActivo.tiempo + holdActivo.duracion;
+                        if (ev.tiempo >= inicioHold && ev.tiempo <= finHold) continue;
+                    }
+                    filtradas.add(ev);
+                }
+            }
+            limpio.addAll(filtradas);
+        }
+
+        limpio.sort(Comparator.comparingLong(n -> n.tiempo));
+        return limpio;
     }
 
     // ===== Loader de JSON =====
@@ -216,22 +256,23 @@ public class Mapeado {
             e.printStackTrace();
             return Collections.emptyList();
         }
+        
+        
+        
     }
 
     private static class EventoNota {
-        String tipo;   // "tap" o "hold"
-        int columna;   // 0..3
-        long tiempo;   // ms desde inicio
-        long duracion; // ms (solo hold)
+        String tipo;
+        int columna;
+        long tiempo;
+        long duracion;
     }
 
-    // ===== Pantalla de carga (igual) =====
+    // ===== Pantalla de carga =====
     public static void esperarCarga(int cancion, javax.swing.JFrame ventana, ResolucionManager resolucion) {
         if (ventana == null) return;
-
         GUI.Animaciones.mostrarCargando(ventana);
         ventana.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
-
         final long inicioNs = System.nanoTime();
         final int minimoMs = 5000;
 
@@ -242,18 +283,15 @@ public class Mapeado {
             javax.swing.Timer t = new javax.swing.Timer(faltante, ev -> {
                 javax.swing.JPanel panel = null;
                 switch (cancion) {
-                     case 4 -> panel = new GUI.canciones.Cancion4.Cancion4(resolucion);
+                    case 4 -> panel = new GUI.canciones.Cancion4.Cancion4(resolucion);
                     case 5 -> panel = new GUI.canciones.Cancion5.Cancion5(resolucion);
-                    default -> { /* nada */ }
                 }
-
                 if (panel != null) {
                     ventana.setContentPane(panel);
                     ventana.revalidate();
                     ventana.repaint();
                     javax.swing.SwingUtilities.invokeLater(panel::requestFocusInWindow);
                 }
-
                 GUI.Animaciones.ocultarCargando(ventana);
                 ventana.setCursor(java.awt.Cursor.getDefaultCursor());
             });

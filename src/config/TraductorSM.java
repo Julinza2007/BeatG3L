@@ -132,8 +132,10 @@ public class TraductorSM {
                     n.tiempo = tMs;
                     mapa.notas.add(n);
                 } else if (c == '2' || c == '4') {
-                    holdActivo[col] = true;
-                    inicioHold[col] = tMs;
+                	if (!holdActivo[col]) {
+                        holdActivo[col] = true;
+                        inicioHold[col] = tMs;
+                    }
                 } else if (c == '3') {
                     if (holdActivo[col]) {
                         Nota n = new Nota();

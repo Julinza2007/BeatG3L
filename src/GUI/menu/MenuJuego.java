@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import GUI.Componentes;
 import GUI.Fondo;
+import config.Mapeado;
 import config.ResolucionManager;
 
 public class MenuJuego extends JPanel {
@@ -106,7 +107,7 @@ public class MenuJuego extends JPanel {
 		    btnCancion4.setEnabled(false);
 
 		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
-		    config.Mapeado.esperarCarga(4, ventana, resolucion);
+		    Mapeado.esperarCarga(4, ventana, resolucion);
 
 		    // Rehabilitar el botón un poquito después para evitar spam
 		    new javax.swing.Timer(800, ev2 -> btnCancion4.setEnabled(true)).start();

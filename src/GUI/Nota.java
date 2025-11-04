@@ -8,7 +8,7 @@ public class Nota extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    // Parámetros básicos (mantengo simple)
+    // Parámetros básicos
     private int columna = 0;             // 0=izq, 1=abajo, 2=arriba, 3=der
     public  boolean esHold = false;      // CancionBase lo lee directo
     private boolean headScored = false;  // evitar doble score de cabeza
@@ -19,21 +19,19 @@ public class Nota extends JPanel {
     private Image imgTail;  // cola  (hold)
 
     // Tamaños y cache de proporciones
-    private int lado;       // ancho destino de la nota (cabeza/cuerpo/cola)
-    private int headH;      // alto destino de cabeza (mantiene proporción del PNG)
-    private int tailH;      // alto destino de cola   (mantiene proporción del PNG)
-    private int bodySrcH;   // alto original del body (para “tilear”)
-    private int bodySrcW;   // ancho original del body
+    private int lado;       // ancho destino de la nota
+    private int headH;      // alto destino de cabeza
+    private int tailH;      // alto destino de cola
+    private int bodySrcH;   // alto original de body
+    private int bodySrcW;   // ancho original de body
 
     public Nota(int x, int y, int columna, boolean esHold, long duracionMs, double velocidadPxPorMs, ResolucionManager resolucion) {
         this.columna = Math.max(0, Math.min(3, columna));
         this.esHold = esHold;
 
-        // base ~157px; uso mitad + escalado mínimo que ya venís usando
         int base = 157 / 2;
         this.lado = resolucion.escalarUniformeMin(base, 80);
 
-        // Rutas por columna
         String headPath, bodyPath = null, tailPath = null;
         switch (this.columna) {
             case 0 -> { headPath="/img/notas/izquierda.png";  bodyPath="/img/notas/izquierdaHold.png";  tailPath="/img/notas/izquierdaHoldTermina2.png"; }
@@ -42,14 +40,12 @@ public class Nota extends JPanel {
             default -> { headPath="/img/notas/derecha.png";    bodyPath="/img/notas/derechaHold.png";    tailPath="/img/notas/derechaHoldTermina2.png"; }
         }
 
-        // Cargar imágenes
         imgHead = new ImageIcon(getClass().getResource(headPath)).getImage();
         if (esHold) {
             imgBody = new ImageIcon(getClass().getResource(bodyPath)).getImage();
             imgTail = new ImageIcon(getClass().getResource(tailPath)).getImage();
         }
 
-        // Calcular alturas respetando proporciones del PNG
         headH = escalarAltoPorAncho(imgHead, lado);
         if (esHold) {
             tailH = escalarAltoPorAncho(imgTail, lado);
@@ -58,14 +54,12 @@ public class Nota extends JPanel {
             if (bodySrcW <= 0 || bodySrcH <= 0) { bodySrcW = 1; bodySrcH = 1; }
         }
 
-        // Altura final del componente
         int altoPx;
         if (esHold) {
-            // altura = cuerpo(según duración) + head + tail
             int cuerpoPx = (int)Math.round(Math.max(0, duracionMs) * velocidadPxPorMs);
             altoPx = cuerpoPx + headH + tailH;
         } else {
-            altoPx = headH; // el tap usa el alto proporcional de su PNG
+            altoPx = headH;
         }
 
         setOpaque(false);
@@ -75,18 +69,17 @@ public class Nota extends JPanel {
     private static int escalarAltoPorAncho(Image img, int anchoDestino) {
         int w = img.getWidth(null);
         int h = img.getHeight(null);
-        if (w <= 0 || h <= 0) return anchoDestino; // fallback cuadrado
-        // Mantener proporción: alto = anchoDestino * (h/w)
+        if (w <= 0 || h <= 0) return anchoDestino;
         return Math.max(1, Math.round(anchoDestino * (h / (float) w)));
     }
 
     public int getColumna() { return columna; }
-    
+
     private boolean resuelta = false;
     public boolean fueResuelta() { return resuelta; }
     public void marcarResuelta() { resuelta = true; }
 
-    /** Marca cabeza de hold una sola vez; devuelve true si fue la primera. */
+    /** Marca cabeza de hold una sola vez. */
     public boolean marcarHeadSiNoFue() {
         if (headScored) return false;
         headScored = true;
@@ -106,36 +99,30 @@ public class Nota extends JPanel {
         int H = getHeight();
 
         if (!esHold) {
-            // Tap simple
             g.drawImage(imgHead, 0, 0, W, H, this);
             return;
         }
 
-     int y = 0;
+        int y = 0;
 
-        // 1) COLA (arriba) — FLIP VERTICAL
+        // COLA (arriba) — flip vertical
         int tailSrcW = imgTail.getWidth(null);
         int tailSrcH = imgTail.getHeight(null);
-        // Usar un destino exacto: y + tailH, sin el + overlap
         g.drawImage(imgTail,
-                0, y, W, y + tailH, // <-- Cambiar y + tailH + overlap a y + tailH
+                0, y, W, y + tailH,
                 0, tailSrcH, tailSrcW, 0,
                 this);
-        y += tailH; // avanzamos sin restar overlap para mantener alto total
+        y += tailH;
 
-        // 2) CUERPO TILEADO (sin estirar verticalmente)
+        // CUERPO tileado
         int alturaCuerpoDisponible = Math.max(0, H - tailH - headH);
         if (alturaCuerpoDisponible > 0) {
-            // ... (variables bodySrcW, bodySrcH)
-
             int dibujado = 0;
             while (dibujado < alturaCuerpoDisponible) {
                 int chunk = Math.min(bodySrcH, alturaCuerpoDisponible - dibujado);
-                
-                // Usar un destino exacto, sin el - overlap ni + overlap
                 g.drawImage(
                     imgBody,
-                    0, y + dibujado, W, y + dibujado + chunk, // <-- Cambiar a destino exacto: y + dibujado, W, y + dibujado + chunk
+                    0, y + dibujado, W, y + dibujado + chunk,
                     0, 0, bodySrcW, chunk,
                     this
                 );
@@ -144,14 +131,19 @@ public class Nota extends JPanel {
             y += alturaCuerpoDisponible;
         }
 
-        // 3) CABEZA (abajo)
-        // Usar un destino exacto: H - headH, sin el - overlap
+        // CABEZA (abajo)
         int headSrcW = imgHead.getWidth(null);
         int headSrcH = imgHead.getHeight(null);
         g.drawImage(imgHead,
-                0, H - headH, W, H, // <-- Cambiar H - headH - overlap a H - headH
+                0, H - headH, W, H,
                 0, 0, headSrcW, headSrcH,
                 this);
     }
+    
+    public int getHeadOffsetFromTop() {
+        // Cantidad de píxeles desde el tope del componente hasta el inicio de la cabeza
+        return getHeight() - headH;
+    }
 
+    
 }

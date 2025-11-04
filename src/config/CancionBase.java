@@ -301,10 +301,32 @@ public abstract class CancionBase extends JPanel {
         }
     }
 
+    /** ÚNICO método de eliminación/miss (corrige duplicado y criterio de holds). */
     private void eliminarNotasPasadas(Nota n) {
         int bordeInferior = panelJuego.getHeight();
         int margen = Math.max(1, resolucion.escalarY(n.getHeight() / 2));
 
+        // Si es hold: “miss” sólo si su cabeza ya pasó la línea de impacto y nunca fue resuelto
+        if (n.esHold) {
+            int headBottomY = n.getY() + resolucion.escalarY( Math.max(1,  n.getHeight() - resolucion.escalarY( (int)(n.getHeight()*0.7) ) ) );
+            // Simplificación: si el "top" del componente supera la línea de impacto + colchón,
+            // y no fue resuelto, contamos Miss una única vez.
+            int umbralMiss = yImpacto + (notaD.getHeight() / 2);
+            if (n.getY() >= umbralMiss && !n.fueResuelta()) {
+                precision.Miss();
+                precision.setForeground(Color.RED);
+                n.marcarResuelta(); // para no contar múltiple
+            }
+            // Eliminación sólo cuando la nota salió por completo de la pantalla:
+            if (n.getY() > bordeInferior + margen) {
+                panelJuego.remove(n);
+                notasActivas.remove(n);
+                panelJuego.repaint();
+            }
+            return;
+        }
+
+        // TAP normal
         if (n.fueResuelta()) {
             if (n.getY() > bordeInferior + margen) {
                 panelJuego.remove(n);
@@ -334,7 +356,6 @@ public abstract class CancionBase extends JPanel {
     protected void finalizarCancion() {
         detenerMovimientoNotas();
         nivelSuperado = true;
-
         precision.getPuntos();
 
         SwingUtilities.invokeLater(() -> {
