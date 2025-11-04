@@ -8,8 +8,8 @@ import com.google.gson.GsonBuilder;
 public class TraductorSM {
 
     public static void main(String[] args) {
-        String rutaSM = "src/GUI/canciones/Cancion7/30 Seconds to Mars - The Kill (Bury Me) (Plutes).sm";
-        String rutaJSON = "src/GUI/canciones/Cancion7/30 Seconds to Mars - The Kill (Bury Me) (Plutes).json";
+        String rutaSM = "src/GUI/canciones/Cancion9/Evanescence - bring me to life (soap osu).sm";
+        String rutaJSON = "src/GUI/canciones/Cancion9/Evanescence - bring me to life (soap osu).json";
 
         try {
             Mapa mapa = leerArchivoSM(rutaSM);
