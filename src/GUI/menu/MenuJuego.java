@@ -16,7 +16,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import GUI.Componentes;
 import GUI.Fondo;
-import config.Mapeado;
 import config.ResolucionManager;
 
 public class MenuJuego extends JPanel {
