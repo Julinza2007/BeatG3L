@@ -39,46 +39,46 @@ import java.awt.*;
 		}
 		
 		
-			public void Perfect() {
-				combo++;
-				aciertos++;
-				totalNotas++;
-				if(combo > maxCombo) maxCombo = combo;
-				if(combo % 10 == 0) multiplicador++;
-				puntos += 100 * multiplicador;
-				estado = "PERFECT";
-				actualizarTexto();
-			}
-			
-			public void Good() {
-				combo++;
-				aciertos++;
-				totalNotas++;
-				if (combo > maxCombo) maxCombo = combo;
-				if(combo % 10 == 0) multiplicador++;
-				puntos += 50 * multiplicador;
-				estado = "GOOD";
-				actualizarTexto();
-			}
-			
-			public void Bad() {
-				combo++;
-				aciertos++;
-				totalNotas++;
-				if (combo > maxCombo) maxCombo = combo;
-				if(combo % 10 == 0 && multiplicador < 8) multiplicador++;
-				puntos += 25 * multiplicador;
-				estado = "BAD";
-				actualizarTexto();
-			}
-			
-			public void Miss() {
-				combo = 0;
-				multiplicador = 1;
-				totalNotas++;
-				estado = "MISS";
-				actualizarTexto();
-			}
+		public void Perfect() {
+			combo++;
+			aciertos++;
+			totalNotas++;
+			if(combo > maxCombo) maxCombo = combo;
+			if(combo % 10 == 0 && multiplicador < 8) multiplicador++;
+			puntos += 100 * multiplicador;
+			estado = "PERFECT";
+			actualizarTexto();
+		}
+		
+		public void Good() {
+			combo++;
+			aciertos++;
+			totalNotas++;
+			if (combo > maxCombo) maxCombo = combo;
+			if(combo % 10 == 0 && multiplicador < 8) multiplicador++;
+			puntos += 50 * multiplicador;
+			estado = "GOOD";
+			actualizarTexto();
+		}
+		
+		public void Bad() {
+			combo++;
+			aciertos++;
+			totalNotas++;
+			if (combo > maxCombo) maxCombo = combo;
+			if(combo % 10 == 0 && multiplicador < 8) multiplicador++;
+			puntos += 25 * multiplicador;
+			estado = "BAD";
+			actualizarTexto();
+		}
+		
+		public void Miss() {
+			combo = 0;
+			multiplicador = 1;
+			totalNotas++;
+			estado = "MISS";
+			actualizarTexto();
+		}
 			
 			public double precision() {
 				if (totalNotas == 0) return 0.0;
