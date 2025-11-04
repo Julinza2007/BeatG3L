@@ -287,6 +287,9 @@ public class Mapeado {
                     case 4 -> panel = new GUI.canciones.Cancion4.Cancion4(resolucion);
                     case 5 -> panel = new GUI.canciones.Cancion5.Cancion5(resolucion);
                     case 6 -> panel = new GUI.canciones.Cancion6.Cancion6(resolucion);
+                    case 7 -> panel = new GUI.canciones.Cancion7.Cancion7(resolucion);
+                    case 8 -> panel = new GUI.canciones.Cancion8.Cancion8(resolucion);
+//                    case 9 -> panel = new GUI.canciones.Cancion9.Cancion9(resolucion);
                     default -> { /* nada */ }
                 }
                 if (panel != null) {
