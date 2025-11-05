@@ -29,13 +29,13 @@ public class Mapeado {
      switch (rutaAudio) {
          case "GUI/canciones/Cancion1/soda stereo - la historia de soda estereo - de musica ligera.mp3": return 1000;
          case "GUI/canciones/Cancion2/audio.mp3": return -1500;
-         case "GUI/canciones/Cancion3/audio.mp3": return 0;
+         case "GUI/canciones/Cancion3/audio.mp3": return -1000;
          case "GUI/canciones/Cancion4/audio.mp3": return 1000;
-         case "GUI/canciones/Cancion5/audio.mp3": return -2300;
-         case "GUI/canciones/Cancion6/audio.mp3": return 0;
-         case "GUI/canciones/Cancion7/audio.mp3": return 0;
-         case "GUI/canciones/Cancion8/audio.mp3": return 0;
-         case "GUI/canciones/Cancion9/audio.mp3": return 0;
+         case "GUI/canciones/Cancion5/audio.mp3": return -1700;
+         case "GUI/canciones/Cancion6/audio.mp3": return -1800;
+         case "GUI/canciones/Cancion7/audio.mp3": return -500;
+         case "GUI/canciones/Cancion8/audio.mp3": return -1200;
+         case "GUI/canciones/Cancion9/audio.mp3": return -2800;
          default: return 0;
      }
  }

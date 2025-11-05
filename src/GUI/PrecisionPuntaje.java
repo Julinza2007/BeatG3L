@@ -34,7 +34,7 @@ import java.awt.*;
 			
 		public void actualizarTexto() {
 			setText(String.format(
-					"<html> | Score: %d | <br> <br> | Combo: %d | <br> <br> | x%d %s | <br> <br> | precision %.2f%% | </html>", puntos, combo, multiplicador, estado, precision()));
+					"<html>  Score: %d  <br> <br>  Combo: %d  <br> <br>  Mult. x%d %s  <br> <br>  Precisión %.2f%%</html>", puntos, combo, multiplicador, estado, precision()));
 		}
 		
 		
