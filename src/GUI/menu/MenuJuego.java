@@ -28,7 +28,7 @@ public class MenuJuego extends JPanel {
 
 	public MenuJuego(ResolucionManager resolucion) {
 //<<<<<<< HEAD
-		ImageIcon btnBase = new ImageIcon(getClass().getResource("/img/fondo/btnEscalado.png"));
+		ImageIcon btnBase = new ImageIcon(getClass().getResource("/img/fondo/botonTransparente.png"));
 
 		setLayout(new BorderLayout());
 
@@ -46,15 +46,16 @@ public class MenuJuego extends JPanel {
 
 		// Panel superior con título
 		JLabel titulo = new JLabel("Canciones", SwingConstants.CENTER);
-		titulo.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(36), 20)));
+		titulo.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(90), 20)));
 		titulo.setForeground(Color.WHITE);
 
 		/*
 		JButton btnRankings = Componentes.crearBotonConImagen("Rankings", btnBase, resolucion);
 		*/
 
-		panelNorte.add(titulo);
 		panelNorte.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(75))));
+		panelNorte.add(titulo);
+		panelNorte.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(25))));
 		/*panelNorte.add(btnRankings);*/
 
 		contenedorJuego.add(panelNorte);
@@ -63,7 +64,7 @@ public class MenuJuego extends JPanel {
 		// Panel central con Botones de canciones
 		JPanel panelCentral = new JPanel();
 		panelCentral.setOpaque(false);
-		panelCentral.setLayout(new GridLayout(0, 3, 20, 20)); // 3 columnas, espacio entre botones
+		panelCentral.setLayout(new GridLayout(0, 3, 5, 5)); // 3 columnas, espacio entre botones
 		contentPane.add(panelCentral, BorderLayout.CENTER);
 
 		JButton btnCancion1 = Componentes.crearBotonConImagen("cancion 1", btnBase, resolucion);
@@ -121,10 +122,11 @@ public class MenuJuego extends JPanel {
 		contentPane.add(panelBotones, BorderLayout.SOUTH);
 
 		JButton btnVolver = new JButton("Volver");
-		panelBotones.add(Box.createRigidArea(new Dimension(resolucion.escalarX(20), 0)));
+		panelBotones.add(Box.createRigidArea(new Dimension(resolucion.escalarX(20), resolucion.escalarY(200))));
 		panelBotones.add(Box.createHorizontalGlue());
 		panelBotones.add(btnVolver);
 		panelBotones.add(Box.createHorizontalGlue());
+		panelBotones.add(Box.createVerticalGlue());
 
 		Font fuenteBotones = new Font("Arial", Font.BOLD, resolucion.escalarY(22));
 		Dimension tamBoton = new Dimension(resolucion.escalarX(200), resolucion.escalarY(60));
