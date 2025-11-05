@@ -1,6 +1,6 @@
 ============================================================
   TODO EL CÓDIGO - Proyecto bajo: /d/Repositorios/workSpaceJava/BeatG3L/src
-  Generado: 2025-11-03 21:52:08
+  Generado: 2025-11-05 16:21:09
 ============================================================
 
 ========== INICIO: ClasePrimaria.java ==========
@@ -83,7 +83,7 @@ public abstract class CancionBase extends JPanel {
         fondo.add(panelJuego, BorderLayout.CENTER);
 
         precision = new PrecisionPuntaje(0, resolucion);
-        precision.setBounds(resolucion.escalarX(1375), resolucion.escalarY(50), 600, 30);
+        precision.setBounds(resolucion.escalarX(1375), resolucion.escalarY(250), 600, 500);
         panelJuego.add(precision);
 
         SwingUtilities.invokeLater(() -> {
@@ -244,13 +244,16 @@ public abstract class CancionBase extends JPanel {
             if (Math.abs(centroUsuarioX - centroNotaX) > tolX) continue;
 
             if (n.getBounds().intersects(hitUsuario)) {
-                if (diferencia > 30) {
+            	if (diferencia > 50 && diferencia < 100) {
+                    precision.Bad();
+                    precision.setForeground(Color.LIGHT_GRAY);
+                } else if (diferencia > 30 && diferencia < 50) {
                     precision.Good();
                     precision.setForeground(Color.GREEN);
-                } else {
+                } else if (diferencia <= 30) {
                     precision.Perfect();
                     precision.setForeground(Color.YELLOW);
-                }
+                } 
 
                 if (n.esHold) {
                     n.marcarResuelta();
@@ -258,6 +261,7 @@ public abstract class CancionBase extends JPanel {
                     return;
                 }
 
+                n.marcarResuelta();
                 panelJuego.remove(n);
                 notasActivas.remove(i);
                 panelJuego.repaint();
@@ -323,26 +327,32 @@ public abstract class CancionBase extends JPanel {
         }
     }
 
+    /** ÚNICO método de eliminación/miss (corrige duplicado y criterio de holds). */
     private void eliminarNotasPasadas(Nota n) {
+        int bordeInferior = panelJuego.getHeight();
+        int margen = Math.max(1, resolucion.escalarY(n.getHeight() / 2));
+
+        // Si es hold: “miss” sólo si su cabeza ya pasó la línea de impacto y nunca fue resuelto
         if (n.esHold) {
-            int umbral = yImpacto + (notaD.getHeight() / 2);
-            if (n.getY() >= umbral) {
-                if (!n.fueResuelta()) {
-                    precision.Miss();
-                    precision.setForeground(Color.RED);
-                }
+            int headBottomY = n.getY() + resolucion.escalarY( Math.max(1,  n.getHeight() - resolucion.escalarY( (int)(n.getHeight()*0.7) ) ) );
+            // Simplificación: si el "top" del componente supera la línea de impacto + colchón,
+            // y no fue resuelto, contamos Miss una única vez.
+            int umbralMiss = yImpacto + (notaD.getHeight() / 2);
+            if (n.getY() >= umbralMiss && !n.fueResuelta()) {
+                precision.Miss();
+                precision.setForeground(Color.RED);
+                n.marcarResuelta(); // para no contar múltiple
+            }
+            // Eliminación sólo cuando la nota salió por completo de la pantalla:
+            if (n.getY() > bordeInferior + margen) {
                 panelJuego.remove(n);
                 notasActivas.remove(n);
                 panelJuego.repaint();
             }
             return;
         }
-    }
-    
-    private void eliminarNotasPasadas(Nota n) {
-        int bordeInferior = panelJuego.getHeight();
-        int margen = Math.max(1, resolucion.escalarY(n.getHeight() / 2));
 
+        // TAP normal
         if (n.fueResuelta()) {
             if (n.getY() > bordeInferior + margen) {
                 panelJuego.remove(n);
@@ -360,7 +370,6 @@ public abstract class CancionBase extends JPanel {
 
         panelJuego.repaint();
     }
-        
 
     public void agregarNota(Nota nota) {
         panelJuego.add(nota, 0);
@@ -373,7 +382,6 @@ public abstract class CancionBase extends JPanel {
     protected void finalizarCancion() {
         detenerMovimientoNotas();
         nivelSuperado = true;
-
         precision.getPuntos();
 
         SwingUtilities.invokeLater(() -> {
@@ -464,11 +472,30 @@ public class Mapeado {
 
     // ===== Precarga mínima, una sola vez =====
     private static volatile boolean primeraVezLista = false;
+    
+ // === Atraso manual de la generación de notas (en ms) ===
+ // Editá el valor por canción. Si querés que todas se atrasen igual,
+ // devolvé el mismo número en todos los cases o usá el default.
+ private static long obtenerAtrasoSpawn(String rutaAudio) {
+     switch (rutaAudio) {
+         case "GUI/canciones/Cancion1/soda stereo - la historia de soda estereo - de musica ligera.mp3": return 1000;
+         case "GUI/canciones/Cancion2/audio.mp3": return -1500;
+         case "GUI/canciones/Cancion3/audio.mp3": return -1000;
+         case "GUI/canciones/Cancion4/audio.mp3": return 1000;
+         case "GUI/canciones/Cancion5/audio.mp3": return -1700;
+         case "GUI/canciones/Cancion6/audio.mp3": return -1800;
+         case "GUI/canciones/Cancion7/audio.mp3": return -500;
+         case "GUI/canciones/Cancion8/audio.mp3": return -1200;
+         case "GUI/canciones/Cancion9/audio.mp3": return -2800;
+         default: return 0;
+     }
+ }
+
 
     public static boolean estaListaLaPrimeraVez() { return primeraVezLista; }
 
     public static void prepararPrimeraVezAsync(Runnable alTerminar) {
-        if (primeraVezLista) {
+        if (primeraVezLista) {	
             if (alTerminar != null) SwingUtilities.invokeLater(alTerminar);
             return;
         }
@@ -509,7 +536,7 @@ public class Mapeado {
         for (String r : rutas) {
             try {
                 java.net.URL u = Mapeado.class.getResource(r);
-                if (u != null) new javax.swing.ImageIcon(u).getImage(); // fuerza decodificación PNG
+                if (u != null) new javax.swing.ImageIcon(u).getImage();
             } catch (Exception ignorar) {}
         }
     }
@@ -530,22 +557,23 @@ public class Mapeado {
 
     // ===== Iniciar canción / spawner sincronizado al reloj lógico =====
     public void iniciar() {
-        // 1) Música de menú off
         Sonido.detenerMusica();
 
-        // 2) Cargar mapa
-        List<EventoNota> mapaDeNotas = cargarMapaDesdeJson();
-        if (mapaDeNotas == null || mapaDeNotas.isEmpty()) {
+        List<EventoNota> mapaOriginal = cargarMapaDesdeJson();
+        if (mapaOriginal == null || mapaOriginal.isEmpty()) {
             System.err.println("No se pudieron cargar notas del JSON.");
             cancionBase.iniciarMovimientoNotas();
             return;
         }
 
+        // 🧹 Limpieza avanzada de duplicados y solapamientos
+        List<EventoNota> mapaDeNotas = limpiarMapa(mapaOriginal);
+
         // Orden por seguridad
         mapaDeNotas.sort(Comparator.comparingLong(n -> n.tiempo));
         cancionBase.tiempoUltimaNotaMs = mapaDeNotas.get(mapaDeNotas.size() - 1).tiempo;
 
-        // 3) Parámetros de caída
+        // Parámetros de caída
         final int tickMs = 10;
         final int velocidadPxPorTick = resolucion.escalarY(5);
         final double velocidadPxPorMs = velocidadPxPorTick / (double) tickMs;
@@ -555,25 +583,24 @@ public class Mapeado {
         final int distanciaPx = Math.max(1, yImpacto - yAparicion);
         final long anticipacionMs = Math.round(distanciaPx / velocidadPxPorMs);
 
-        // 4) Arrancar caída y audio (una sola vez)
+//        // Offset por canción
+//        switch (rutaAudio) {
+//        case "GUI/canciones/Cancion1/audio.mp3" -> Sonido.setearOffset(-150);
+////        case "GUI/canciones/Cancion2/audio.mp3" -> Sonido.setearOffset(0);
+//        case "GUI/canciones/Cancion4/audio.mp3" -> Sonido.setearOffset(0);
+//        case "GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(0);
+//        default -> Sonido.setearOffset(0);
+//    }
+        Sonido.reproducirCancion(rutaAudio);
 
-        // Offset por canción (ajustá las rutas a tus nombres reales)
-        switch (rutaAudio) {
-            case "GUI/canciones/Cancion4/audio.mp3" -> Sonido.setearOffset(0);
-            case "GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(0);
-            default -> Sonido.setearOffset(0);
-        }
-        Sonido.reproducirCancion(rutaAudio); // respeta offset (+/-)
-
-        // Esperar a que el reloj lógico comience (>0) o el hilo audio muera
-        while (Sonido.cancionActiva() && Sonido.getClockMs() == 0L) {
-            Thread.onSpinWait();
-        }
+        while (Sonido.cancionActiva() && Sonido.getClockMs() == 0L) Thread.onSpinWait();
+       
         
         cancionBase.iniciarMovimientoNotas();
 
+        final long EPS_MS = 3;
+        final Map<Integer, Long> ultimoSpawnMsPorCol = new HashMap<>();
 
-        // 5) Crear notas en hilo, sincronizado al reloj lógico (pausa-friendly)
         hiloCreador = new Thread(() -> {
             try {
                 SwingUtilities.invokeLater(() -> cancionBase.notasGeneradas = false);
@@ -582,65 +609,60 @@ public class Mapeado {
                     if (Thread.currentThread().isInterrupted()) break;
 
                     int columna = Math.max(0, Math.min(3, ev.columna));
-                    long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs);
+                    final long atrasoSpawnMs = obtenerAtrasoSpawn(rutaAudio); // ⟵ una sola vez antes del bucle o fuera
+                    long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs + atrasoSpawnMs);
 
-                    // Esperar usando Sonido.getClockMs() (se congela en pausa)
                     while (true) {
                         if (Thread.currentThread().isInterrupted()) return;
-                        long now = Sonido.getClockMs(); // reloj lógico desde start (ms)
+                        long now = Sonido.getClockMs();
                         long diff = momentoAparicionMs - now;
                         if (diff <= 0) break;
                         if (diff > 3) {
                             try { Thread.sleep(1); } catch (InterruptedException ie) { return; }
-                        } else {
-                            Thread.onSpinWait();
-                        }
+                        } else Thread.onSpinWait();
                     }
 
-                    Nota n = ("hold".equalsIgnoreCase(ev.tipo))
-                            ? new Nota(0, yAparicion, columna, true, ev.duracion, velocidadPxPorMs, resolucion)
-                            : new Nota(0, yAparicion, columna, false, 0L,          velocidadPxPorMs, resolucion);
+                    Long last = ultimoSpawnMsPorCol.get(columna);
+                    if (last != null && Math.abs(last - momentoAparicionMs) <= EPS_MS) continue;
+                    ultimoSpawnMsPorCol.put(columna, momentoAparicionMs);
+
+                    Nota n;
+                    if ("hold".equalsIgnoreCase(ev.tipo)) {
+                        n = new Nota(0, yAparicion, columna, true, ev.duracion, velocidadPxPorMs, resolucion);
+                    } else {
+                        n = new Nota(0, yAparicion, columna, false, 0L, velocidadPxPorMs, resolucion);
+                    }
 
                     int anchoNota = n.getWidth();
                     int xColumna = cancionBase.getColumnXForWidth(columna, anchoNota);
-                    int yInicial = yAparicion - n.getHeight();
+
+                    // 👉 Ajuste clave: para holds, subimos el spawn según el offset de la cabeza
+                    int yInicial;
+                    if (n.esHold) {
+                        int headOffset = n.getHeadOffsetFromTop(); // cola + cuerpo (en px)
+                        yInicial = yAparicion - headOffset;        // spawnear más arriba
+                    } else {
+                        yInicial = yAparicion - 1;                  // como ya tenías
+                    }
+
+                    final int yIni = yInicial;
+                    SwingUtilities.invokeLater(() -> {
+                        n.setLocation(xColumna, yIni);
+                        cancionBase.agregarNota(n);
+                    });
 
                     SwingUtilities.invokeLater(() -> {
                         n.setLocation(xColumna, yInicial);
                         cancionBase.agregarNota(n);
                     });
                 }
-            } catch (Exception ignored) {
-                // salida limpia del hilo
-            }
+            } catch (Exception ignored) {}
         }, "Mapeado-Hilo");
 
         hiloCreador.setDaemon(true);
         hiloCreador.start();
-        
-        System.out.println("[Cancion] Rutas: JSON=" + rutaJson + " | MP3=" + rutaAudio);
 
-        System.out.println("[Cancion] #notas = " + mapaDeNotas.size());
-        mapaDeNotas.stream().limit(12).forEach(ev ->
-            System.out.printf("[Cancion] t=%d  tipo=%s  dur=%d  col=%d%n",
-                ev.tiempo, ev.tipo, ev.duracion, ev.columna)
-        );
-
-        long maxT = mapaDeNotas.stream().mapToLong(n -> n.tiempo).max().orElse(-1);
-        long minDelta = Long.MAX_VALUE;
-        long prev = Long.MIN_VALUE;
-        for (var ev : mapaDeNotas) {
-            if (prev != Long.MIN_VALUE) {
-                long d = ev.tiempo - prev;
-                if (d > 0 && d < minDelta) minDelta = d;
-            }
-            prev = ev.tiempo;
-        }
-        System.out.printf("[Cancion] maxT=%d ms  |  minDelta=%s ms%n",
-            maxT, (minDelta==Long.MAX_VALUE?"NA":String.valueOf(minDelta)));
-        System.out.println("[Cancion] anticipacionMs=" + anticipacionMs);
-        
-        
+        System.out.println("[Cancion] #notas limpias = " + mapaDeNotas.size());
     }
 
     public void detener() {
@@ -649,6 +671,51 @@ public class Mapeado {
             hiloCreador = null;
         }
         Sonido.detenerCancion();
+    }
+
+    // ===== Limpieza avanzada =====
+    private List<EventoNota> limpiarMapa(List<EventoNota> lista) {
+        Map<Integer, List<EventoNota>> porColumna = new HashMap<>();
+        for (EventoNota ev : lista) porColumna.computeIfAbsent(ev.columna, c -> new ArrayList<>()).add(ev);
+
+        List<EventoNota> limpio = new ArrayList<>();
+
+        for (var entry : porColumna.entrySet()) {
+            List<EventoNota> notas = entry.getValue();
+            notas.sort(Comparator.comparingLong(n -> n.tiempo));
+
+            List<EventoNota> filtradas = new ArrayList<>();
+            EventoNota holdActivo = null;
+
+            for (EventoNota ev : notas) {
+                if ("hold".equalsIgnoreCase(ev.tipo)) {
+                    long inicio = ev.tiempo;
+                    long fin = ev.tiempo + ev.duracion;
+
+                    // Elimina hold duplicado o muy solapado con anterior
+                    if (holdActivo != null) {
+                        long anteriorFin = holdActivo.tiempo + holdActivo.duracion;
+                        if (inicio < anteriorFin - 20) {
+                            double solap = (double)(anteriorFin - inicio) / ev.duracion;
+                            if (solap > 0.7) continue; // se superponen demasiado
+                        }
+                    }
+                    filtradas.add(ev);
+                    holdActivo = ev;
+                } else { // tap
+                    if (holdActivo != null) {
+                        long inicioHold = holdActivo.tiempo;
+                        long finHold = holdActivo.tiempo + holdActivo.duracion;
+                        if (ev.tiempo >= inicioHold && ev.tiempo <= finHold) continue;
+                    }
+                    filtradas.add(ev);
+                }
+            }
+            limpio.addAll(filtradas);
+        }
+
+        limpio.sort(Comparator.comparingLong(n -> n.tiempo));
+        return limpio;
     }
 
     // ===== Loader de JSON =====
@@ -663,22 +730,23 @@ public class Mapeado {
             e.printStackTrace();
             return Collections.emptyList();
         }
+        
+        
+        
     }
 
     private static class EventoNota {
-        String tipo;   // "tap" o "hold"
-        int columna;   // 0..3
-        long tiempo;   // ms desde inicio
-        long duracion; // ms (solo hold)
+        String tipo;
+        int columna;
+        long tiempo;
+        long duracion;
     }
 
-    // ===== Pantalla de carga (igual) =====
+    // ===== Pantalla de carga =====
     public static void esperarCarga(int cancion, javax.swing.JFrame ventana, ResolucionManager resolucion) {
         if (ventana == null) return;
-
         GUI.Animaciones.mostrarCargando(ventana);
         ventana.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
-
         final long inicioNs = System.nanoTime();
         final int minimoMs = 5000;
 
@@ -689,18 +757,23 @@ public class Mapeado {
             javax.swing.Timer t = new javax.swing.Timer(faltante, ev -> {
                 javax.swing.JPanel panel = null;
                 switch (cancion) {
-                     case 4 -> panel = new GUI.canciones.Cancion4.Cancion4(resolucion);
+                	case 1 -> panel = new GUI.canciones.Cancion1.Cancion1(resolucion);
+                	case 2 -> panel = new GUI.canciones.Cancion2.Cancion2(resolucion);
+                	case 3 -> panel = new GUI.canciones.Cancion3.Cancion3(resolucion);
+                    case 4 -> panel = new GUI.canciones.Cancion4.Cancion4(resolucion);
                     case 5 -> panel = new GUI.canciones.Cancion5.Cancion5(resolucion);
+                    case 6 -> panel = new GUI.canciones.Cancion6.Cancion6(resolucion);
+                    case 7 -> panel = new GUI.canciones.Cancion7.Cancion7(resolucion);
+                    case 8 -> panel = new GUI.canciones.Cancion8.Cancion8(resolucion);
+                    case 9 -> panel = new GUI.canciones.Cancion9.Cancion9(resolucion);
                     default -> { /* nada */ }
                 }
-
                 if (panel != null) {
                     ventana.setContentPane(panel);
                     ventana.revalidate();
                     ventana.repaint();
                     javax.swing.SwingUtilities.invokeLater(panel::requestFocusInWindow);
                 }
-
                 GUI.Animaciones.ocultarCargando(ventana);
                 ventana.setCursor(java.awt.Cursor.getDefaultCursor());
             });
@@ -709,6 +782,7 @@ public class Mapeado {
         });
     }
 }
+
 ========== FIN: config/Mapeado.java ==========
 
 ========== INICIO: config/Ranking.java ==========
@@ -919,6 +993,8 @@ public class ResolucionManager {
     // Resolución base (para escalado)
     private static final int BASE_WIDTH = 1920;
     private static final int BASE_HEIGHT = 1080;
+    private javax.swing.JFrame ventana;
+
 
     private int ancho;
     private int alto;
@@ -936,22 +1012,22 @@ public class ResolucionManager {
 
     // Devuelve ruta del fondo según resolución
     public String getFondoMenuInicio() {
-        if (ancho == 800 && alto == 600) return "/img/fondo/fondo/1_800x600.jpg";
-        if (ancho == 1280 && alto == 720) return "/img/fondo/fondo/1_1280x720.jpg";
-        if (ancho == 1366 && alto == 768) return "/img/fondo/fondo/1_1366x768.jpg";
-        if (ancho == 1600 && alto == 900) return "/img/fondo/fondo/1_1600x900.jpg";
-        if (ancho == 1920 && alto == 1080) return "/img/fondo/fondo/1_1920x1080.jpg";
+        if (ancho == 800 && alto == 600) return "/img/fondo/imagenFondo1.png";
+        if (ancho == 1280 && alto == 720) return "/img/fondo/imagenFondo1280x720.png";
+        if (ancho == 1366 && alto == 768) return "/img/fondo/imagenFondo1366x768.png";
+        if (ancho == 1600 && alto == 900) return "/img/fondo/imagenFondo1600x900.png";
+        if (ancho == 1920 && alto == 1080) return "/img/fondo/imagenFondo1920x1080.png";
 
         // Por defecto, usar la de mayor calidad
         return "/GUI/img/fondo/1_1920x1080_mejorada.jpg";
     }
     
     public String getFondoOpciones() {
-        if (ancho == 800 && alto == 600) return "/img/fondo/2_800x600.png";
-        if (ancho == 1280 && alto == 720) return "/img/fondo/2_1280x720.png";
-        if (ancho == 1366 && alto == 768) return "/img/fondo/2_1366x768.png";
-        if (ancho == 1600 && alto == 900) return "/img/fondo/2_1600x900.png";
-        if (ancho == 1920 && alto == 1080) return "/img/fondo/2_1920x1080.png";
+        if (ancho == 800 && alto == 600) return "/img/fondo/fondoNar800x600.png";
+        if (ancho == 1280 && alto == 720) return "/img/fondo/fondoNar1280x720.png";
+        if (ancho == 1366 && alto == 768) return "/img/fondo/fondoNar1366x768.png";
+        if (ancho == 1600 && alto == 900) return "/img/fondo/fondoNar1600x900.png";
+        if (ancho == 1920 && alto == 1080) return "/img/fondo/fondoNar1920x1080.png";
 
         // Por defecto, usar la de mayor calidad
         return "/GUI/img/fondo/2_1920x1080.png";
@@ -993,6 +1069,14 @@ public class ResolucionManager {
     public int getAlto() { return alto; }
     public double getScaleX() { return scaleX; }
     public double getScaleY() { return scaleY; }
+    
+    public void setVentana(javax.swing.JFrame ventana) {
+        this.ventana = ventana;
+    }
+
+    public javax.swing.JFrame getVentana() {
+        return ventana;
+    }
 }
 
 ========== FIN: config/ResolucionManager.java ==========
@@ -1228,8 +1312,8 @@ import com.google.gson.GsonBuilder;
 public class TraductorSM {
 
     public static void main(String[] args) {
-        String rutaSM = "src/GUI/canciones/Cancion5/I-Dont-Wanna-Be-Me.sm";
-        String rutaJSON = "src/GUI/canciones/Cancion5/I-Dont-Wanna-Be-Me.json";
+        String rutaSM = "src/GUI/canciones/Cancion2/cancionDuki.sm";
+        String rutaJSON = "src/GUI/canciones/Cancion2/cancionDuki.json";
 
         try {
             Mapa mapa = leerArchivoSM(rutaSM);
@@ -1352,8 +1436,10 @@ public class TraductorSM {
                     n.tiempo = tMs;
                     mapa.notas.add(n);
                 } else if (c == '2' || c == '4') {
-                    holdActivo[col] = true;
-                    inicioHold[col] = tMs;
+                	if (!holdActivo[col]) {
+                        holdActivo[col] = true;
+                        inicioHold[col] = tMs;
+                    }
                 } else if (c == '3') {
                     if (holdActivo[col]) {
                         Nota n = new Nota();
@@ -1567,6 +1653,8 @@ public class BeatG3L extends JFrame {
         } else {
             resolucion = new ResolucionManager(800, 600);
         }
+        
+        resolucion.setVentana(this);
 
         setTitle("BeatG3L");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -1588,6 +1676,128 @@ public class BeatG3L extends JFrame {
 }
 
 ========== FIN: GUI/BeatG3L.java ==========
+
+========== INICIO: GUI/canciones/Cancion1/Cancion1.java ==========
+package GUI.canciones.Cancion1;
+
+import GUI.dialogos2;
+import config.CancionBase;
+import config.Mapeado;
+import config.ResolucionManager;
+
+public class Cancion1 extends CancionBase {
+
+    private static final long serialVersionUID = 1L;
+    private Mapeado mapeado;
+
+    public Cancion1(ResolucionManager resolucion) {
+        super(resolucion);
+    }
+
+    @Override
+    protected void construirCancion(ResolucionManager resolucion) {
+    	
+        mapeado = new Mapeado(this, resolucion,
+            "GUI/canciones/Cancion1/soda stereo - la historia de soda estereo - de musica ligera.mp3",
+            "/GUI/canciones/Cancion1/soda stereo - la historia de soda estereo - de musica ligera.json");
+     // Después (no bloquea el EDT):
+        new Thread(mapeado::iniciar, "inicio-cancion").start();
+
+    }
+
+    @Override
+    protected void finalizarCancion() {
+        config.Sonido.detenerCancion();
+        super.finalizarCancion();
+
+        //  Después de terminar la canción, cambiamos a la escena de diálogos
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            javax.swing.JFrame ventana = resolucion.getVentana(); 
+            if (ventana != null) {
+                ventana.getContentPane().removeAll();
+                ventana.getContentPane().add(new dialogos2(ventana, resolucion));
+                ventana.revalidate();
+                ventana.repaint();
+            } else {
+                System.err.println(" No se encontró la ventana principal para mostrar los diálogos.");
+            }
+        });
+    }
+}
+
+========== FIN: GUI/canciones/Cancion1/Cancion1.java ==========
+
+========== INICIO: GUI/canciones/Cancion2/Cancion2.java ==========
+package GUI.canciones.Cancion2;
+
+import config.CancionBase;
+import config.Mapeado;
+import config.ResolucionManager;
+
+public class Cancion2 extends CancionBase {
+
+    private static final long serialVersionUID = 1L;
+    private Mapeado mapeado;
+
+    public Cancion2(ResolucionManager resolucion) {
+        super(resolucion);
+    }
+
+    @Override
+    protected void construirCancion(ResolucionManager resolucion) {
+    	
+        mapeado = new Mapeado(this, resolucion,
+            "GUI/canciones/Cancion2/audio.mp3",
+            "/GUI/canciones/Cancion2/cancionDuki.json");
+     // Después (no bloquea el EDT):
+        new Thread(mapeado::iniciar, "inicio-cancion").start();
+
+    }
+
+    @Override
+    protected void finalizarCancion() {
+        if (mapeado != null) mapeado.detener();
+        super.finalizarCancion();
+    }
+}
+
+========== FIN: GUI/canciones/Cancion2/Cancion2.java ==========
+
+========== INICIO: GUI/canciones/Cancion3/Cancion3.java ==========
+package GUI.canciones.Cancion3;
+
+import config.CancionBase;
+import config.Mapeado;
+import config.ResolucionManager;
+
+public class Cancion3 extends CancionBase {
+
+    private static final long serialVersionUID = 1L;
+    private Mapeado mapeado;
+
+    public Cancion3(ResolucionManager resolucion) {
+        super(resolucion);
+    }
+
+    @Override
+    protected void construirCancion(ResolucionManager resolucion) {
+    	
+        mapeado = new Mapeado(this, resolucion,
+            "GUI/canciones/Cancion3/audio.mp3",
+            "/GUI/canciones/Cancion3/Coldplay - Viva La Vida (ShoriX).json");
+     // Después (no bloquea el EDT):
+        new Thread(mapeado::iniciar, "inicio-cancion").start();
+
+    }
+
+    @Override
+    protected void finalizarCancion() {
+        if (mapeado != null) mapeado.detener();
+        super.finalizarCancion();
+    }
+}
+
+========== FIN: GUI/canciones/Cancion3/Cancion3.java ==========
 
 ========== INICIO: GUI/canciones/Cancion4/Cancion4.java ==========
 package GUI.canciones.Cancion4;
@@ -1706,6 +1916,143 @@ public class Cancion5 extends CancionBase {
 }
 
 ========== FIN: GUI/canciones/Cancion5/Cancion5.java ==========
+
+========== INICIO: GUI/canciones/Cancion6/Cancion6.java ==========
+package GUI.canciones.Cancion6;
+
+import config.CancionBase;
+import config.Mapeado;
+import config.ResolucionManager;
+
+public class Cancion6 extends CancionBase {
+
+    private static final long serialVersionUID = 1L;
+    private Mapeado mapeado;
+
+    public Cancion6(ResolucionManager resolucion) {
+        super(resolucion);
+    }
+
+    @Override
+    protected void construirCancion(ResolucionManager resolucion) {
+        mapeado = new Mapeado(this, resolucion,
+            "GUI/canciones/Cancion6/audio.mp3",
+            "/GUI/canciones/Cancion6/Artic Monkeys - 505 (aadurite).json");
+        new Thread(mapeado::iniciar, "inicio-cancion").start();
+    }
+
+    @Override
+    protected void finalizarCancion() {
+        if (mapeado != null) mapeado.detener();
+        super.finalizarCancion();
+    }
+}
+
+========== FIN: GUI/canciones/Cancion6/Cancion6.java ==========
+
+========== INICIO: GUI/canciones/Cancion7/Cancion7.java ==========
+package GUI.canciones.Cancion7;
+
+import config.CancionBase;
+import config.Mapeado;
+import config.ResolucionManager;
+
+public class Cancion7 extends CancionBase {
+
+    private static final long serialVersionUID = 1L;
+    private Mapeado mapeado;
+
+    public Cancion7(ResolucionManager resolucion) {
+        super(resolucion);
+    }
+
+    @Override
+    protected void construirCancion(ResolucionManager resolucion) {
+    	
+        mapeado = new Mapeado(this, resolucion,
+            "GUI/canciones/Cancion7/audio.mp3",
+            "/GUI/canciones/Cancion7/Pierce The Veil - A Match Into Water (puxtu).json");
+     // Después (no bloquea el EDT):
+        new Thread(mapeado::iniciar, "inicio-cancion").start();
+
+    }
+
+    @Override
+    protected void finalizarCancion() {
+        if (mapeado != null) mapeado.detener();
+        super.finalizarCancion();
+    }
+}
+
+========== FIN: GUI/canciones/Cancion7/Cancion7.java ==========
+
+========== INICIO: GUI/canciones/Cancion8/Cancion8.java ==========
+package GUI.canciones.Cancion8;
+
+import config.CancionBase;
+import config.Mapeado;
+import config.ResolucionManager;
+
+public class Cancion8 extends CancionBase {
+
+    private static final long serialVersionUID = 1L;
+    private Mapeado mapeado;
+
+    public Cancion8(ResolucionManager resolucion) {
+        super(resolucion);
+    }
+
+    @Override
+    protected void construirCancion(ResolucionManager resolucion) {
+    	
+        mapeado = new Mapeado(this, resolucion,
+            "GUI/canciones/Cancion8/audio.mp3",
+            "/GUI/canciones/Cancion8/Travis Scott feat Kendrick Lamar - Goosebumps (Duparisto).json");
+     // Después (no bloquea el EDT):
+        new Thread(mapeado::iniciar, "inicio-cancion").start();
+
+    }
+
+    @Override
+    protected void finalizarCancion() {
+        if (mapeado != null) mapeado.detener();
+        super.finalizarCancion();
+    }
+}
+
+========== FIN: GUI/canciones/Cancion8/Cancion8.java ==========
+
+========== INICIO: GUI/canciones/Cancion9/Cancion9.java ==========
+package GUI.canciones.Cancion9;
+
+import config.CancionBase;
+import config.Mapeado;
+import config.ResolucionManager;
+
+public class Cancion9 extends CancionBase {
+
+    private static final long serialVersionUID = 1L;
+    private Mapeado mapeado;
+
+    public Cancion9(ResolucionManager resolucion) {
+        super(resolucion);
+    }
+
+    @Override
+    protected void construirCancion(ResolucionManager resolucion) {
+        mapeado = new Mapeado(this, resolucion,
+            "GUI/canciones/Cancion9/audio.mp3",
+            "/GUI/canciones/Cancion9/Evanescence - bring me to life (soap osu).json");
+        new Thread(mapeado::iniciar, "inicio-cancion").start();
+    }
+
+    @Override
+    protected void finalizarCancion() {
+        if (mapeado != null) mapeado.detener();
+        super.finalizarCancion();
+    }
+}
+========== FIN: GUI/canciones/Cancion9/Cancion9.java ==========
 
 ========== INICIO: GUI/Componentes.java ==========
 package GUI;
@@ -1898,6 +2245,98 @@ public class Dialogos extends JPanel implements ActionListener {
 
 ========== FIN: GUI/Dialogos.java ==========
 
+========== INICIO: GUI/dialogos2.java ==========
+package GUI;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import config.ResolucionManager;
+import GUI.menu.MenuJuego;
+
+public class dialogos2 extends JPanel implements ActionListener {
+    private JFrame ventana;
+    private ResolucionManager resolucion;
+    private ArrayList<ImageIcon> imagenes;  
+    private int indice = 0;
+    private JLabel imagenLabel;
+    private Timer timer;
+    private boolean listoParaContinuar = true;
+
+    public dialogos2(JFrame ventana, ResolucionManager resolucion) {
+        this.ventana = ventana;
+        this.resolucion = resolucion; 
+
+        setLayout(null);
+        setBackground(Color.black);
+
+        // Inicialización de los componentes visuales
+        imagenLabel = new JLabel();
+        imagenLabel.setBounds(0, 0, 1366, 768);
+        add(imagenLabel);
+
+        imagenes = new ArrayList<>();
+        cargarDialogos();
+        mostrarDialogo();
+
+        // Detectar tecla o clic para avanzar
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                avanzarDialogo();
+            }
+        });
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                avanzarDialogo();
+            }
+        });
+
+        setFocusable(true);
+        requestFocusInWindow();
+    }
+
+    private void cargarDialogos() {
+        imagenes.add(new ImageIcon("src/img/nicolasDialogo2.jpg"));
+        imagenes.add(new ImageIcon("src/img/fernandoDialogo 2.jpg"));
+    }
+
+    private void mostrarDialogo() {
+        System.out.println("Índice actual: " + indice + " / tamaño: " + imagenes.size());
+
+        if (indice < imagenes.size()) {
+            Image img = imagenes.get(indice).getImage().getScaledInstance(1366, 768, Image.SCALE_SMOOTH);
+            imagenLabel.setIcon(new ImageIcon(img));
+        } else {
+            System.out.println("Fin de los diálogos, iniciando menú...");
+        }
+    }
+
+    private void avanzarDialogo() {
+        if (!listoParaContinuar) return;
+        listoParaContinuar = false;
+
+        indice++;
+        mostrarDialogo();
+
+        Timer pausa = new Timer(200, e -> listoParaContinuar = true);
+        pausa.setRepeats(false);
+        pausa.start();
+    }
+
+    // ACÁ FALTA HACER PARA QUE PASE AL NIVEL2 UNA VEZ QUE TERMINEN LOS DIALOGOS.
+
+
+
+    @Override
+    public void actionPerformed(ActionEvent e) {}
+}
+
+
+========== FIN: GUI/dialogos2.java ==========
+
 ========== INICIO: GUI/Fondo.java ==========
 package GUI;
 
@@ -1971,7 +2410,7 @@ public class MenuInicio extends JPanel {
         panelSuperior.setPreferredSize(new Dimension(0, alturaLogo));
 
         // 1) Cargar el PNG original
-        logoBase = new ImageIcon(getClass().getResource("/img/fondo/fondo/logoG3L.png"));
+        logoBase = new ImageIcon(getClass().getResource("/img/fondo/BEATG3L2.png"));
 
         // 2) Calcular el tamaño máximo que puede ocupar el logo dentro del panel superior
         int anchoMaxLogo = resolucion.escalarX(700);                 // ajustá a gusto
@@ -2003,7 +2442,7 @@ public class MenuInicio extends JPanel {
         panelBotones.setOpaque(false);
         panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.Y_AXIS));
 
-        ImageIcon btnBase = new ImageIcon(getClass().getResource("/img/fondo/btnEscalado.png"));
+        ImageIcon btnBase = new ImageIcon(getClass().getResource("/img/fondo/botonTransparente.png"));
 
         JButton btnJugar = Componentes.crearBotonConImagen("Jugar", btnBase, resolucion);
         JButton btnOpciones = Componentes.crearBotonConImagen("Opciones", btnBase, resolucion);
@@ -2253,6 +2692,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -2275,7 +2715,7 @@ public class MenuJuego extends JPanel {
 
 	public MenuJuego(ResolucionManager resolucion) {
 //<<<<<<< HEAD
-		ImageIcon btnBase = new ImageIcon(getClass().getResource("/img/fondo/btnEscalado.png"));
+		ImageIcon btnBase = new ImageIcon(getClass().getResource("/img/fondo/botonTransparente.png"));
 
 		setLayout(new BorderLayout());
 
@@ -2293,14 +2733,17 @@ public class MenuJuego extends JPanel {
 
 		// Panel superior con título
 		JLabel titulo = new JLabel("Canciones", SwingConstants.CENTER);
-		titulo.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(36), 20)));
+		titulo.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(90), 20)));
 		titulo.setForeground(Color.WHITE);
 
+		/*
 		JButton btnRankings = Componentes.crearBotonConImagen("Rankings", btnBase, resolucion);
+		*/
 
-		panelNorte.add(titulo);
 		panelNorte.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(75))));
-		panelNorte.add(btnRankings);
+		panelNorte.add(titulo);
+		panelNorte.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(25))));
+		/*panelNorte.add(btnRankings);*/
 
 		contenedorJuego.add(panelNorte);
 		contentPane.add(contenedorJuego, BorderLayout.NORTH);
@@ -2308,20 +2751,57 @@ public class MenuJuego extends JPanel {
 		// Panel central con Botones de canciones
 		JPanel panelCentral = new JPanel();
 		panelCentral.setOpaque(false);
-		panelCentral.setLayout(new BoxLayout(panelCentral, BoxLayout.Y_AXIS));
+		panelCentral.setLayout(new GridLayout(0, 3, 5, 5)); // 3 columnas, espacio entre botones
 		contentPane.add(panelCentral, BorderLayout.CENTER);
 
+		JButton btnCancion1 = Componentes.crearBotonConImagen("cancion 1", btnBase, resolucion);
+//		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+//		panelCentral.add(Box.createVerticalGlue());
+		panelCentral.add(btnCancion1);
+//		panelCentral.add(Box.createVerticalGlue());
+		
+		JButton btnCancion2 = Componentes.crearBotonConImagen("cancion 2", btnBase, resolucion);
+		panelCentral.add(btnCancion2);
+		
+		JButton btnCancion3 = Componentes.crearBotonConImagen("cancion 3", btnBase, resolucion);
+		panelCentral.add(btnCancion3);
+		
 		JButton btnCancion4 = Componentes.crearBotonConImagen("cancion 4", btnBase, resolucion);
-		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
-		panelCentral.add(Box.createVerticalGlue());
+//		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+//		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion4);
-		panelCentral.add(Box.createVerticalGlue());
+//		panelCentral.add(Box.createVerticalGlue());
 		
 		JButton btnCancion5 = Componentes.crearBotonConImagen("cancion 5", btnBase, resolucion);
-		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
-		panelCentral.add(Box.createVerticalGlue());
+//		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+//		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion5);
-		panelCentral.add(Box.createVerticalGlue());
+//		panelCentral.add(Box.createVerticalGlue());
+		
+		JButton btnCancion6 = Componentes.crearBotonConImagen("cancion 6", btnBase, resolucion);
+//		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+//		panelCentral.add(Box.createVerticalGlue());
+		panelCentral.add(btnCancion6);
+//		panelCentral.add(Box.createVerticalGlue());
+		
+		JButton btnCancion7 = Componentes.crearBotonConImagen("cancion 7", btnBase, resolucion);
+//		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+//		panelCentral.add(Box.createVerticalGlue());
+		panelCentral.add(btnCancion7);
+//		panelCentral.add(Box.createVerticalGlue());
+		
+		JButton btnCancion8 = Componentes.crearBotonConImagen("cancion 8", btnBase, resolucion);
+//		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+//		panelCentral.add(Box.createVerticalGlue());
+		panelCentral.add(btnCancion8);
+//		panelCentral.add(Box.createVerticalGlue());
+		
+		JButton btnCancion9 = Componentes.crearBotonConImagen("cancion 9", btnBase, resolucion);
+//		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
+//		panelCentral.add(Box.createVerticalGlue());
+		panelCentral.add(btnCancion9);
+//		panelCentral.add(Box.createVerticalGlue());
+
 
 		JPanel panelBotones = new JPanel();
 		panelBotones.setOpaque(false);
@@ -2329,10 +2809,11 @@ public class MenuJuego extends JPanel {
 		contentPane.add(panelBotones, BorderLayout.SOUTH);
 
 		JButton btnVolver = new JButton("Volver");
-		panelBotones.add(Box.createRigidArea(new Dimension(resolucion.escalarX(20), 0)));
+		panelBotones.add(Box.createRigidArea(new Dimension(resolucion.escalarX(20), resolucion.escalarY(200))));
 		panelBotones.add(Box.createHorizontalGlue());
 		panelBotones.add(btnVolver);
 		panelBotones.add(Box.createHorizontalGlue());
+		panelBotones.add(Box.createVerticalGlue());
 
 		Font fuenteBotones = new Font("Arial", Font.BOLD, resolucion.escalarY(22));
 		Dimension tamBoton = new Dimension(resolucion.escalarX(200), resolucion.escalarY(60));
@@ -2347,6 +2828,51 @@ public class MenuJuego extends JPanel {
 			boton.setMaximumSize(tamBoton);
 		}
 
+		btnCancion1.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    // (Opcional) anti-doble click
+		    btnCancion1.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(1, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion1.setEnabled(true)).start();
+		});
+		
+		btnCancion2.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    // (Opcional) anti-doble click
+		    btnCancion2.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(2, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion2.setEnabled(true)).start();
+		});
+		
+		btnCancion3.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    // (Opcional) anti-doble click
+		    btnCancion3.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(3, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion3.setEnabled(true)).start();
+		});
+		
+		
+		
+		
 		btnCancion4.addActionListener(e -> {
 		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
 		    if (ventana == null) return;
@@ -2355,13 +2881,12 @@ public class MenuJuego extends JPanel {
 		    btnCancion4.setEnabled(false);
 
 		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
-//		    Mapeado.esperarCarga(4, ventana, resolucion);
+		    Mapeado.esperarCarga(4, ventana, resolucion);
 
 		    // Rehabilitar el botón un poquito después para evitar spam
 		    new javax.swing.Timer(800, ev2 -> btnCancion4.setEnabled(true)).start();
 		});
 
-		
 		btnCancion5.addActionListener(e -> {
 		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
 		    if (ventana == null) return;
@@ -2375,15 +2900,76 @@ public class MenuJuego extends JPanel {
 		    // Rehabilitar el botón un poquito después para evitar spam
 		    new javax.swing.Timer(800, ev2 -> btnCancion5.setEnabled(true)).start();
 		});
-
 		
-		btnRankings.addActionListener(e -> {
+		btnCancion6.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    // (Opcional) anti-doble click
+		    btnCancion6.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(6, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion6.setEnabled(true)).start();
+		});
+		
+		
+		btnCancion7.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    // (Opcional) anti-doble click
+		    btnCancion7.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(7, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion7.setEnabled(true)).start();
+		});
+		
+		
+		btnCancion8.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    // (Opcional) anti-doble click
+		    btnCancion8.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(8, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion8.setEnabled(true)).start();
+		});
+		
+		
+
+		btnCancion9.addActionListener(e -> {
+		    javax.swing.JFrame ventana = (javax.swing.JFrame) javax.swing.SwingUtilities.getWindowAncestor(MenuJuego.this);
+		    if (ventana == null) return;
+
+		    // (Opcional) anti-doble click
+		    btnCancion9.setEnabled(false);
+
+		    // Lanza la espera con overlay; adentro se oculta y se cambia el content pane
+		    config.Mapeado.esperarCarga(9, ventana, resolucion);
+
+		    // Rehabilitar el botón un poquito después para evitar spam
+		    new javax.swing.Timer(800, ev2 -> btnCancion9.setEnabled(true)).start();
+		});
+		
+		
+		/*
+		 btnRankings.addActionListener(e -> {
 			JFrame ventana = (JFrame) this.getTopLevelAncestor();
 			MenuRankings rankings = new MenuRankings(resolucion);
 			ventana.setContentPane(rankings);
 			ventana.revalidate();
 			ventana.repaint();
-		});
+		});*/
 
 		btnVolver.addActionListener(e -> {
 			JFrame ventana = (JFrame) this.getTopLevelAncestor();
@@ -2582,7 +3168,7 @@ public class Nota extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    // Parámetros básicos (mantengo simple)
+    // Parámetros básicos
     private int columna = 0;             // 0=izq, 1=abajo, 2=arriba, 3=der
     public  boolean esHold = false;      // CancionBase lo lee directo
     private boolean headScored = false;  // evitar doble score de cabeza
@@ -2593,21 +3179,19 @@ public class Nota extends JPanel {
     private Image imgTail;  // cola  (hold)
 
     // Tamaños y cache de proporciones
-    private int lado;       // ancho destino de la nota (cabeza/cuerpo/cola)
-    private int headH;      // alto destino de cabeza (mantiene proporción del PNG)
-    private int tailH;      // alto destino de cola   (mantiene proporción del PNG)
-    private int bodySrcH;   // alto original del body (para “tilear”)
-    private int bodySrcW;   // ancho original del body
+    private int lado;       // ancho destino de la nota
+    private int headH;      // alto destino de cabeza
+    private int tailH;      // alto destino de cola
+    private int bodySrcH;   // alto original de body
+    private int bodySrcW;   // ancho original de body
 
     public Nota(int x, int y, int columna, boolean esHold, long duracionMs, double velocidadPxPorMs, ResolucionManager resolucion) {
         this.columna = Math.max(0, Math.min(3, columna));
         this.esHold = esHold;
 
-        // base ~157px; uso mitad + escalado mínimo que ya venís usando
         int base = 157 / 2;
         this.lado = resolucion.escalarUniformeMin(base, 80);
 
-        // Rutas por columna
         String headPath, bodyPath = null, tailPath = null;
         switch (this.columna) {
             case 0 -> { headPath="/img/notas/izquierda.png";  bodyPath="/img/notas/izquierdaHold.png";  tailPath="/img/notas/izquierdaHoldTermina2.png"; }
@@ -2616,14 +3200,12 @@ public class Nota extends JPanel {
             default -> { headPath="/img/notas/derecha.png";    bodyPath="/img/notas/derechaHold.png";    tailPath="/img/notas/derechaHoldTermina2.png"; }
         }
 
-        // Cargar imágenes
         imgHead = new ImageIcon(getClass().getResource(headPath)).getImage();
         if (esHold) {
             imgBody = new ImageIcon(getClass().getResource(bodyPath)).getImage();
             imgTail = new ImageIcon(getClass().getResource(tailPath)).getImage();
         }
 
-        // Calcular alturas respetando proporciones del PNG
         headH = escalarAltoPorAncho(imgHead, lado);
         if (esHold) {
             tailH = escalarAltoPorAncho(imgTail, lado);
@@ -2632,14 +3214,12 @@ public class Nota extends JPanel {
             if (bodySrcW <= 0 || bodySrcH <= 0) { bodySrcW = 1; bodySrcH = 1; }
         }
 
-        // Altura final del componente
         int altoPx;
         if (esHold) {
-            // altura = cuerpo(según duración) + head + tail
             int cuerpoPx = (int)Math.round(Math.max(0, duracionMs) * velocidadPxPorMs);
             altoPx = cuerpoPx + headH + tailH;
         } else {
-            altoPx = headH; // el tap usa el alto proporcional de su PNG
+            altoPx = headH;
         }
 
         setOpaque(false);
@@ -2649,18 +3229,17 @@ public class Nota extends JPanel {
     private static int escalarAltoPorAncho(Image img, int anchoDestino) {
         int w = img.getWidth(null);
         int h = img.getHeight(null);
-        if (w <= 0 || h <= 0) return anchoDestino; // fallback cuadrado
-        // Mantener proporción: alto = anchoDestino * (h/w)
+        if (w <= 0 || h <= 0) return anchoDestino;
         return Math.max(1, Math.round(anchoDestino * (h / (float) w)));
     }
 
     public int getColumna() { return columna; }
-    
+
     private boolean resuelta = false;
     public boolean fueResuelta() { return resuelta; }
     public void marcarResuelta() { resuelta = true; }
 
-    /** Marca cabeza de hold una sola vez; devuelve true si fue la primera. */
+    /** Marca cabeza de hold una sola vez. */
     public boolean marcarHeadSiNoFue() {
         if (headScored) return false;
         headScored = true;
@@ -2680,36 +3259,30 @@ public class Nota extends JPanel {
         int H = getHeight();
 
         if (!esHold) {
-            // Tap simple
             g.drawImage(imgHead, 0, 0, W, H, this);
             return;
         }
 
-     int y = 0;
+        int y = 0;
 
-        // 1) COLA (arriba) — FLIP VERTICAL
+        // COLA (arriba) — flip vertical
         int tailSrcW = imgTail.getWidth(null);
         int tailSrcH = imgTail.getHeight(null);
-        // Usar un destino exacto: y + tailH, sin el + overlap
         g.drawImage(imgTail,
-                0, y, W, y + tailH, // <-- Cambiar y + tailH + overlap a y + tailH
+                0, y, W, y + tailH,
                 0, tailSrcH, tailSrcW, 0,
                 this);
-        y += tailH; // avanzamos sin restar overlap para mantener alto total
+        y += tailH;
 
-        // 2) CUERPO TILEADO (sin estirar verticalmente)
+        // CUERPO tileado
         int alturaCuerpoDisponible = Math.max(0, H - tailH - headH);
         if (alturaCuerpoDisponible > 0) {
-            // ... (variables bodySrcW, bodySrcH)
-
             int dibujado = 0;
             while (dibujado < alturaCuerpoDisponible) {
                 int chunk = Math.min(bodySrcH, alturaCuerpoDisponible - dibujado);
-                
-                // Usar un destino exacto, sin el - overlap ni + overlap
                 g.drawImage(
                     imgBody,
-                    0, y + dibujado, W, y + dibujado + chunk, // <-- Cambiar a destino exacto: y + dibujado, W, y + dibujado + chunk
+                    0, y + dibujado, W, y + dibujado + chunk,
                     0, 0, bodySrcW, chunk,
                     this
                 );
@@ -2718,17 +3291,23 @@ public class Nota extends JPanel {
             y += alturaCuerpoDisponible;
         }
 
-        // 3) CABEZA (abajo)
-        // Usar un destino exacto: H - headH, sin el - overlap
+        // CABEZA (abajo)
         int headSrcW = imgHead.getWidth(null);
         int headSrcH = imgHead.getHeight(null);
         g.drawImage(imgHead,
-                0, H - headH, W, H, // <-- Cambiar H - headH - overlap a H - headH
+                0, H - headH, W, H,
                 0, 0, headSrcW, headSrcH,
                 this);
     }
+    
+    public int getHeadOffsetFromTop() {
+        // Cantidad de píxeles desde el tope del componente hasta el inicio de la cabeza
+        return getHeight() - headH;
+    }
 
+    
 }
+
 ========== FIN: GUI/Nota.java ==========
 
 ========== INICIO: GUI/NotasUsuario.java ==========
@@ -2910,47 +3489,58 @@ import java.awt.*;
 			this.estado = "";
 		
 		
-			setFont(new Font("SansSerif", Font.PLAIN, Math.max(resolucion.escalarY(20), resolucion.escalarX(14))));
+			setFont(new Font("SansSerif", Font.PLAIN, Math.max(resolucion.escalarY(35), resolucion.escalarX(24))));
 			setForeground(Color.WHITE);
 			setHorizontalAlignment(SwingConstants.LEFT);
 			actualizarTexto();
 		}
 			
-			public void actualizarTexto() {
-				setText(String.format(
-						"Score: %d | Combo: %d | x%d %s | precision %.2f%%", puntos, combo, multiplicador, estado, precision()));
-			}
+		public void actualizarTexto() {
+			setText(String.format(
+					"<html>  Score: %d  <br> <br>  Combo: %d  <br> <br>  Mult. x%d %s  <br> <br>  Precisión %.2f%%</html>", puntos, combo, multiplicador, estado, precision()));
+		}
 		
 		
-			public void Perfect() {
-				combo++;
-				aciertos++;
-				totalNotas++;
-				if(combo > maxCombo) maxCombo = combo;
-				if(combo % 10 == 0) multiplicador++;
-				puntos += 100 * multiplicador;
-				estado = "PERFECT";
-				actualizarTexto();
-			}
-			
-			public void Good() {
-				combo++;
-				aciertos++;
-				totalNotas++;
-				if (combo > maxCombo) maxCombo = combo;
-				if(combo % 10 == 0) multiplicador++;
-				puntos += 50 * multiplicador;
-				estado = "GOOD";
-				actualizarTexto();
-			}
-			
-			public void Miss() {
-				combo = 0;
-				multiplicador = 1;
-				totalNotas++;
-				estado = "MISS";
-				actualizarTexto();
-			}
+		public void Perfect() {
+			combo++;
+			aciertos++;
+			totalNotas++;
+			if(combo > maxCombo) maxCombo = combo;
+			if(combo % 10 == 0 && multiplicador < 8) multiplicador++;
+			puntos += 100 * multiplicador;
+			estado = "PERFECT";
+			actualizarTexto();
+		}
+		
+		public void Good() {
+			combo++;
+			aciertos++;
+			totalNotas++;
+			if (combo > maxCombo) maxCombo = combo;
+			if(combo % 10 == 0 && multiplicador < 8) multiplicador++;
+			puntos += 50 * multiplicador;
+			estado = "GOOD";
+			actualizarTexto();
+		}
+		
+		public void Bad() {
+			combo++;
+			aciertos++;
+			totalNotas++;
+			if (combo > maxCombo) maxCombo = combo;
+			if(combo % 10 == 0 && multiplicador < 8) multiplicador++;
+			puntos += 25 * multiplicador;
+			estado = "BAD";
+			actualizarTexto();
+		}
+		
+		public void Miss() {
+			combo = 0;
+			multiplicador = 1;
+			totalNotas++;
+			estado = "MISS";
+			actualizarTexto();
+		}
 			
 			public double precision() {
 				if (totalNotas == 0) return 0.0;
