@@ -1,5 +1,6 @@
 package GUI.canciones.Cancion8;
 
+import GUI.dialogos9;
 import config.CancionBase;
 import config.Mapeado;
 import config.ResolucionManager;
@@ -28,5 +29,20 @@ public class Cancion8 extends CancionBase {
     protected void finalizarCancion() {
         if (mapeado != null) mapeado.detener();
         super.finalizarCancion();
+        
+        //  Después de terminar la canción, cambiamos a la escena de diálogos
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            javax.swing.JFrame ventana = resolucion.getVentana(); 
+            if (ventana != null) {
+                ventana.getContentPane().removeAll();
+                ventana.getContentPane().add(new dialogos9(ventana, resolucion));
+                ventana.revalidate();
+                ventana.repaint();
+            } else {
+                System.err.println(" No se encontró la ventana principal para mostrar los diálogos.");
+            }
+        });
     }
-}
+
+    }
+
