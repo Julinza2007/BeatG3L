@@ -21,11 +21,30 @@ public class Mapeado {
 
     // ===== Precarga mínima, una sola vez =====
     private static volatile boolean primeraVezLista = false;
+    
+ // === Atraso manual de la generación de notas (en ms) ===
+ // Editá el valor por canción. Si querés que todas se atrasen igual,
+ // devolvé el mismo número en todos los cases o usá el default.
+ private static long obtenerAtrasoSpawn(String rutaAudio) {
+     switch (rutaAudio) {
+         case "GUI/canciones/Cancion1/soda stereo - la historia de soda estereo - de musica ligera.mp3": return 1000;
+         case "GUI/canciones/Cancion2/audio.mp3": return -1500;
+         case "GUI/canciones/Cancion3/audio.mp3": return 0;
+         case "GUI/canciones/Cancion4/audio.mp3": return 1000;
+         case "GUI/canciones/Cancion5/audio.mp3": return -2300;
+         case "GUI/canciones/Cancion6/audio.mp3": return 0;
+         case "GUI/canciones/Cancion7/audio.mp3": return 0;
+         case "GUI/canciones/Cancion8/audio.mp3": return 0;
+         case "GUI/canciones/Cancion9/audio.mp3": return 0;
+         default: return 0;
+     }
+ }
+
 
     public static boolean estaListaLaPrimeraVez() { return primeraVezLista; }
 
     public static void prepararPrimeraVezAsync(Runnable alTerminar) {
-        if (primeraVezLista) {
+        if (primeraVezLista) {	
             if (alTerminar != null) SwingUtilities.invokeLater(alTerminar);
             return;
         }
@@ -113,18 +132,19 @@ public class Mapeado {
         final int distanciaPx = Math.max(1, yImpacto - yAparicion);
         final long anticipacionMs = Math.round(distanciaPx / velocidadPxPorMs);
 
-        // Offset por canción
-        switch (rutaAudio) {
-        case "GUI/canciones/Cancion1/audio.mp3" -> Sonido.setearOffset(-150);
-//        case "GUI/canciones/Cancion2/audio.mp3" -> Sonido.setearOffset(0);
-        case "GUI/canciones/Cancion4/audio.mp3" -> Sonido.setearOffset(0);
-        case "GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(0);
-        default -> Sonido.setearOffset(0);
-    }
+//        // Offset por canción
+//        switch (rutaAudio) {
+//        case "GUI/canciones/Cancion1/audio.mp3" -> Sonido.setearOffset(-150);
+////        case "GUI/canciones/Cancion2/audio.mp3" -> Sonido.setearOffset(0);
+//        case "GUI/canciones/Cancion4/audio.mp3" -> Sonido.setearOffset(0);
+//        case "GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(0);
+//        default -> Sonido.setearOffset(0);
+//    }
         Sonido.reproducirCancion(rutaAudio);
 
         while (Sonido.cancionActiva() && Sonido.getClockMs() == 0L) Thread.onSpinWait();
-
+       
+        
         cancionBase.iniciarMovimientoNotas();
 
         final long EPS_MS = 3;
@@ -138,7 +158,8 @@ public class Mapeado {
                     if (Thread.currentThread().isInterrupted()) break;
 
                     int columna = Math.max(0, Math.min(3, ev.columna));
-                    long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs);
+                    final long atrasoSpawnMs = obtenerAtrasoSpawn(rutaAudio); // ⟵ una sola vez antes del bucle o fuera
+                    long momentoAparicionMs = Math.max(0, ev.tiempo - anticipacionMs + atrasoSpawnMs);
 
                     while (true) {
                         if (Thread.currentThread().isInterrupted()) return;
