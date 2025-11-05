@@ -44,7 +44,7 @@ public class MenuInicio extends JPanel {
         panelSuperior.setPreferredSize(new Dimension(0, alturaLogo));
 
         // 1) Cargar el PNG original
-        logoBase = new ImageIcon(getClass().getResource("/img/fondo/fondo/logoG3L.png"));
+        logoBase = new ImageIcon(getClass().getResource("/img/fondo/BEATG3L2.png"));
 
         // 2) Calcular el tamaño máximo que puede ocupar el logo dentro del panel superior
         int anchoMaxLogo = resolucion.escalarX(700);                 // ajustá a gusto
@@ -76,7 +76,7 @@ public class MenuInicio extends JPanel {
         panelBotones.setOpaque(false);
         panelBotones.setLayout(new BoxLayout(panelBotones, BoxLayout.Y_AXIS));
 
-        ImageIcon btnBase = new ImageIcon(getClass().getResource("/img/fondo/btnEscalado.png"));
+        ImageIcon btnBase = new ImageIcon(getClass().getResource("/img/fondo/botonTransparente.png"));
 
         JButton btnJugar = Componentes.crearBotonConImagen("Jugar", btnBase, resolucion);
         JButton btnOpciones = Componentes.crearBotonConImagen("Opciones", btnBase, resolucion);

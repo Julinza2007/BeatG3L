@@ -40,6 +40,8 @@ public class BeatG3L extends JFrame {
         } else {
             resolucion = new ResolucionManager(800, 600);
         }
+        
+        resolucion.setVentana(this);
 
         setTitle("BeatG3L");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
