@@ -46,7 +46,7 @@ public class MenuJuego extends JPanel {
 
 		// Panel superior con título
 		JLabel titulo = new JLabel("Canciones", SwingConstants.CENTER);
-		titulo.setFont(new Font("Arial", Font.BOLD, Math.max(resolucion.escalarY(90), 20)));
+		titulo.setFont(new Font("Verdana", Font.BOLD, Math.max(resolucion.escalarY(90), 20)));
 		titulo.setForeground(Color.WHITE);
 
 		/*
@@ -64,52 +64,53 @@ public class MenuJuego extends JPanel {
 		// Panel central con Botones de canciones
 		JPanel panelCentral = new JPanel();
 		panelCentral.setOpaque(false);
-		panelCentral.setLayout(new GridLayout(0, 3, 5, 5)); // 3 columnas, espacio entre botones
+		panelCentral.setLayout(new GridLayout(0, 3, 0, 5)); // 3 columnas, espacio entre botones
+		panelCentral.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 		contentPane.add(panelCentral, BorderLayout.CENTER);
 
-		JButton btnCancion1 = Componentes.crearBotonConImagen("cancion 1", btnBase, resolucion);
+		JButton btnCancion1 = Componentes.crearBotonConImagen("De Música Ligera", btnBase, resolucion);
 //		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
 //		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion1);
 //		panelCentral.add(Box.createVerticalGlue());
 		
-		JButton btnCancion2 = Componentes.crearBotonConImagen("cancion 2", btnBase, resolucion);
+		JButton btnCancion2 = Componentes.crearBotonConImagen("Si Te Sentis Sola", btnBase, resolucion);
 		panelCentral.add(btnCancion2);
 		
-		JButton btnCancion3 = Componentes.crearBotonConImagen("cancion 3", btnBase, resolucion);
+		JButton btnCancion3 = Componentes.crearBotonConImagen("Viva La Vida", btnBase, resolucion);
 		panelCentral.add(btnCancion3);
 		
-		JButton btnCancion4 = Componentes.crearBotonConImagen("cancion 4", btnBase, resolucion);
+		JButton btnCancion4 = Componentes.crearBotonConImagen("8 Bits", btnBase, resolucion);
 //		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
 //		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion4);
 //		panelCentral.add(Box.createVerticalGlue());
 		
-		JButton btnCancion5 = Componentes.crearBotonConImagen("cancion 5", btnBase, resolucion);
+		JButton btnCancion5 = Componentes.crearBotonConImagen("I Don´t Wanna...", btnBase, resolucion);
 //		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
 //		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion5);
 //		panelCentral.add(Box.createVerticalGlue());
 		
-		JButton btnCancion6 = Componentes.crearBotonConImagen("cancion 6", btnBase, resolucion);
+		JButton btnCancion6 = Componentes.crearBotonConImagen("505", btnBase, resolucion);
 //		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
 //		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion6);
 //		panelCentral.add(Box.createVerticalGlue());
 		
-		JButton btnCancion7 = Componentes.crearBotonConImagen("cancion 7", btnBase, resolucion);
+		JButton btnCancion7 = Componentes.crearBotonConImagen("A Match In Water", btnBase, resolucion);
 //		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
 //		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion7);
 //		panelCentral.add(Box.createVerticalGlue());
 		
-		JButton btnCancion8 = Componentes.crearBotonConImagen("cancion 8", btnBase, resolucion);
+		JButton btnCancion8 = Componentes.crearBotonConImagen("GooseBumps", btnBase, resolucion);
 //		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
 //		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion8);
 //		panelCentral.add(Box.createVerticalGlue());
 		
-		JButton btnCancion9 = Componentes.crearBotonConImagen("cancion 9", btnBase, resolucion);
+		JButton btnCancion9 = Componentes.crearBotonConImagen("Bring Me To Life", btnBase, resolucion);
 //		panelCentral.add(Box.createRigidArea(new Dimension(0, resolucion.escalarY(30))));
 //		panelCentral.add(Box.createVerticalGlue());
 		panelCentral.add(btnCancion9);
