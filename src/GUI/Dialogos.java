@@ -8,9 +8,6 @@ import config.ResolucionManager;
 import GUI.menu.MenuJuego;
 
 public class Dialogos extends JPanel implements ActionListener {
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private ResolucionManager resolucion;
     private ArrayList<ImageIcon> imagenes;  
@@ -24,7 +21,6 @@ public class Dialogos extends JPanel implements ActionListener {
         setLayout(null);
         setBackground(Color.black);
 
-        // Inicialización de los componentes visuales
         imagenLabel = new JLabel();
         imagenLabel.setBounds(0, 0, 1366, 768);
         add(imagenLabel);

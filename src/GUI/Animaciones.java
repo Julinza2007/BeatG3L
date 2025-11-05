@@ -42,7 +42,7 @@ public class Animaciones {
  
  public static void precargarIconoCargando() {
 	    if (iconoCargando != null) return;
-	    java.net.URL u = Animaciones.class.getResource("/img/Cargando.png");
+	    java.net.URL u = Animaciones.class.getResource("/img/cargandoNar.png");
 	    if (u != null) iconoCargando = new ImageIcon(u);
 	}
  

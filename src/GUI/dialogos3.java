@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import config.ResolucionManager;
 import GUI.menu.MenuJuego;
 
-public class dialogos2 extends JPanel implements ActionListener {
+public class dialogos3 extends JPanel implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private ResolucionManager resolucion;
     private ArrayList<ImageIcon> imagenes;  
@@ -15,7 +15,7 @@ public class dialogos2 extends JPanel implements ActionListener {
     private JLabel imagenLabel;
     private boolean listoParaContinuar = true;
 
-    public dialogos2(JFrame ventana, ResolucionManager resolucion) {
+    public dialogos3(JFrame ventana, ResolucionManager resolucion) {
         this.resolucion = resolucion; 
 
         setLayout(null);
@@ -48,7 +48,8 @@ public class dialogos2 extends JPanel implements ActionListener {
     }
 
     private void cargarDialogos() {
-    	imagenes.add(new ImageIcon("src/img/fernandoDialogo2.jpg"));
+    	imagenes.add(new ImageIcon("src/img/lucasDialogo2 (1).jpg"));
+        imagenes.add(new ImageIcon("src/img/nicolasDialogo2.jpg"));
     }
 
     private void mostrarDialogo() {
@@ -94,5 +95,4 @@ public class dialogos2 extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {}
 }
-
 
