@@ -17,8 +17,8 @@ public class Cancion2 extends CancionBase {
     protected void construirCancion(ResolucionManager resolucion) {
     	
         mapeado = new Mapeado(this, resolucion,
-            "GUI/canciones/Cancion1/soda stereo - la historia de soda estereo - de musica ligera.mp3",
-            "/GUI/canciones/Cancion3/soda stereo - la historia de soda estereo - de musica ligera.json");
+            "GUI/canciones/Cancion2/audio.mp3",
+            "/GUI/canciones/Cancion2/cancionDuki.json");
      // Después (no bloquea el EDT):
         new Thread(mapeado::iniciar, "inicio-cancion").start();
 

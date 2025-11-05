@@ -115,6 +115,8 @@ public class Mapeado {
 
         // Offset por canción
         switch (rutaAudio) {
+        case "GUI/canciones/Cancion1/audio.mp3" -> Sonido.setearOffset(-150);
+//        case "GUI/canciones/Cancion2/audio.mp3" -> Sonido.setearOffset(0);
         case "GUI/canciones/Cancion4/audio.mp3" -> Sonido.setearOffset(0);
         case "GUI/canciones/Cancion5/audio.mp3" -> Sonido.setearOffset(0);
         default -> Sonido.setearOffset(0);
