@@ -12,6 +12,7 @@ public class Cancion7 extends CancionBase {
 
     public Cancion7(ResolucionManager resolucion) {
         super(resolucion);
+        this.numeroCancion = 7;
     }
 
     @Override
@@ -30,6 +31,8 @@ public class Cancion7 extends CancionBase {
         if (mapeado != null) mapeado.detener();
         super.finalizarCancion();
         
+        
+        /*
         //  Después de terminar la canción, cambiamos a la escena de diálogos
         javax.swing.SwingUtilities.invokeLater(() -> {
             javax.swing.JFrame ventana = resolucion.getVentana(); 
@@ -42,6 +45,7 @@ public class Cancion7 extends CancionBase {
                 System.err.println(" No se encontró la ventana principal para mostrar los diálogos.");
             }
         });
+        */
     }
 
     }
