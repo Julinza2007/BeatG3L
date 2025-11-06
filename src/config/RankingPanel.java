@@ -6,18 +6,34 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 
-import GUI.menu.MenuInicio;
-
-
 public class RankingPanel extends JPanel {
     private static final long serialVersionUID = 1L;
-    private static final String FILE_NAME = "ranking.txt";
     private JPanel listaPanel;
-    public RankingPanel(ResolucionManager resolucion) {
+    private int numeroCancion;
+    
+    
+    private static final String[] nombres_canciones = {
+            "",  // índice 0 vacío
+            "De Música Ligera - Soda Stereo",      // Canción 1
+            "Givenchy - Duki",                      // Canción 2
+            "Viva La Vida - Coldplay",             // Canción 3
+            "My 8 Bit Hero",                        // Canción 4
+            "I Don't Wanna Be Me",                  // Canción 5
+            "505 - Arctic Monkeys",                 // Canción 6
+            "A Match Into Water - Pierce The Veil", // Canción 7
+            "Goosebumps - Travis Scott",            // Canción 8
+            "Bring Me To Life - Evanescence"        // Canción 9
+        };
+    
+    
+    public RankingPanel(ResolucionManager resolucion, int numeroCancion) {
+        this.numeroCancion = numeroCancion;
+        
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
 
-        JLabel titulo = new JLabel("RANKING DE JUGADORES", SwingConstants.CENTER);
+        String nombreCancion = obtenerNombreCancion(numeroCancion);
+        JLabel titulo = new JLabel(nombreCancion, SwingConstants.CENTER);
         titulo.setFont(new Font("Arial", Font.BOLD, 18));
         titulo.setOpaque(true);
         titulo.setBackground(Color.YELLOW);
@@ -35,33 +51,33 @@ public class RankingPanel extends JPanel {
 
         add(titulo, BorderLayout.NORTH);
         add(scroll, BorderLayout.CENTER);
-
+        	
         cargarRanking();
 
-        JButton btnVolver = new JButton("Volver");
-        btnVolver.setFont(new Font("Arial", Font.BOLD, 14));
-        add(btnVolver, BorderLayout.SOUTH);
-        btnVolver.setFocusPainted(false);
+        JButton btnContinuar = new JButton("Continuar");
+        btnContinuar.setFont(new Font("Arial", Font.BOLD, 14));
+        add(btnContinuar, BorderLayout.SOUTH);
+        btnContinuar.setFocusPainted(false);
 
-        btnVolver.addActionListener(e -> {
+        btnContinuar.addActionListener(e -> {
             JFrame ventana = (JFrame) SwingUtilities.getWindowAncestor(this);
-            ventana.setContentPane(new MenuInicio(resolucion));
-            ventana.revalidate();
-            ventana.repaint();
+            mostrarDialogoSegunCancion(ventana, resolucion);
         });
+    }
+    
+    private String obtenerNombreCancion(int numero) {
+    	if(numero >= 1 && numero < nombres_canciones.length) {
+    		return "RANKING DE JUGADORES - " + nombres_canciones[numero];
+    	}
+    	return "RANKING DE JUGADORES - CANCION " + numero;
     }
 
     private void cargarRanking() {
         listaPanel.removeAll();
-        java.util.List<String[]> lista = new ArrayList<>();
+        java.util.List<String[]> lista = Ranking.obtenerRanking(numeroCancion);
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))) {
-            String linea;
-            while ((linea = reader.readLine()) != null) {
-                lista.add(linea.split(","));
-            }
-        } catch (IOException e) {
-            JLabel sinDatos = new JLabel("No hay rankings, ¡sé el primero!", SwingConstants.CENTER);
+        if (lista.isEmpty()) {
+            JLabel sinDatos = new JLabel("¡Felicitaciones! Sos el primero en esta canción", SwingConstants.CENTER);
             sinDatos.setForeground(Color.GRAY);
             sinDatos.setFont(new Font("Arial", Font.PLAIN, 14));
             listaPanel.add(sinDatos);
@@ -70,7 +86,6 @@ public class RankingPanel extends JPanel {
             return;
         }
 
-        lista.sort((a, b) -> Integer.parseInt(b[1]) - Integer.parseInt(a[1]));
         int limite = Math.min(10, lista.size());
         for (int i = 0; i < limite; i++) {
             String nombre = lista.get(i)[0];
@@ -119,5 +134,24 @@ public class RankingPanel extends JPanel {
         });
 
         return caja;
+    }
+
+    private void mostrarDialogoSegunCancion(JFrame ventana, ResolucionManager resolucion) {
+        if (ventana == null) return;
+
+        switch (numeroCancion) {
+            case 1 -> ventana.setContentPane(new GUI.dialogos2(ventana, resolucion));
+            case 2 -> ventana.setContentPane(new GUI.dialogos3(ventana, resolucion));
+            case 3 -> ventana.setContentPane(new GUI.dialogos4(ventana, resolucion));
+            case 4 -> ventana.setContentPane(new GUI.dialogos5(ventana, resolucion));
+            case 5 -> ventana.setContentPane(new GUI.dialogos6(ventana, resolucion));
+            case 6 -> ventana.setContentPane(new GUI.dialogos7(ventana, resolucion));
+            case 7 -> ventana.setContentPane(new GUI.dialogos8(ventana, resolucion));
+            case 8 -> ventana.setContentPane(new GUI.dialogos9(ventana, resolucion));
+            default -> ventana.setContentPane(new GUI.menu.MenuJuego(resolucion));
+        }
+        
+        ventana.revalidate();
+        ventana.repaint();
     }
 }

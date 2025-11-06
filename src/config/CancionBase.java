@@ -9,7 +9,9 @@ import javax.swing.*;
 import GUI.Fondo;
 import GUI.Nota;
 import GUI.NotasUsuario;
+import GUI.PantallaFinCancion;
 import GUI.PrecisionPuntaje;
+import GUI.dialogos2;
 
 public abstract class CancionBase extends JPanel {
 
@@ -20,7 +22,7 @@ public abstract class CancionBase extends JPanel {
     protected JPanel panelJuego;
     protected PrecisionPuntaje precision;
     protected ResolucionManager resolucion;
-
+    protected int numeroCancion = 0;
     protected final List<Nota> notasActivas = new ArrayList<>();
     protected boolean nivelSuperado = false;
     protected boolean notasGeneradas = true;
@@ -46,7 +48,7 @@ public abstract class CancionBase extends JPanel {
     private final long[] ultimoTickHoldMs = new long[4];
 
     private boolean columnasListas = false; // dispara construirCancion una sola vez
-
+    
     public CancionBase(ResolucionManager resolucion) {
         this.resolucion = resolucion;
         setLayout(new BorderLayout());
@@ -59,7 +61,7 @@ public abstract class CancionBase extends JPanel {
         panelJuego = new JPanel(null);
         panelJuego.setOpaque(false);
         fondo.add(panelJuego, BorderLayout.CENTER);
-
+ 
         precision = new PrecisionPuntaje(0, resolucion);
         precision.setBounds(resolucion.escalarX(1375), resolucion.escalarY(250), 600, 500);
         panelJuego.add(precision);
@@ -357,15 +359,18 @@ public abstract class CancionBase extends JPanel {
         repaint();
     }
 
+    
     protected void finalizarCancion() {
         detenerMovimientoNotas();
         nivelSuperado = true;
-        precision.getPuntos();
+
+        int puntajeFinal = precision.getPuntos(); // guarda el puntaje correcto
 
         SwingUtilities.invokeLater(() -> {
             JFrame ventana = (JFrame) SwingUtilities.getWindowAncestor(CancionBase.this);
             if (ventana != null) {
-                ventana.setContentPane(new RankingPanel(resolucion));
+                // ⭐ CAMBIAR ESTA LÍNEA para pasar numeroCancion:
+                ventana.setContentPane(new GUI.PantallaFinCancion(puntajeFinal, resolucion, numeroCancion));
                 ventana.revalidate();
                 ventana.repaint();
             }
