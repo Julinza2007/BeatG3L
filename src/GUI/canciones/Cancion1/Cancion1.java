@@ -12,6 +12,7 @@ public class Cancion1 extends CancionBase {
 
     public Cancion1(ResolucionManager resolucion) {
         super(resolucion);
+        this.numeroCancion = 1;
     }
 
     @Override
@@ -29,6 +30,8 @@ public class Cancion1 extends CancionBase {
     protected void finalizarCancion() {
         config.Sonido.detenerCancion();
         super.finalizarCancion();
+        
+        /*
 
         //  Después de terminar la canción, cambiamos a la escena de diálogos
         javax.swing.SwingUtilities.invokeLater(() -> {
@@ -42,5 +45,6 @@ public class Cancion1 extends CancionBase {
                 System.err.println(" No se encontró la ventana principal para mostrar los diálogos.");
             }
         });
+        */
     }
 }
