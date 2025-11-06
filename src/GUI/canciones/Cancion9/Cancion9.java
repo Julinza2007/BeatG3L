@@ -11,6 +11,7 @@ public class Cancion9 extends CancionBase {
 
     public Cancion9(ResolucionManager resolucion) {
         super(resolucion);
+        this.numeroCancion = 9;
     }
 
     @Override
