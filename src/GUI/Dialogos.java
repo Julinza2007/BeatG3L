@@ -22,18 +22,8 @@ public class Dialogos extends JPanel implements ActionListener {
         setBackground(Color.black);
 
         imagenLabel = new JLabel();
+        imagenLabel.setBounds(0, 0, 1366, 768);
         add(imagenLabel);
-
-     // Centrar automáticamente la imagen una vez que el panel tenga tamaño
-     addComponentListener(new ComponentAdapter() {
-         @Override
-         public void componentResized(ComponentEvent e) {
-             int x = (getWidth() - 1366) / 2;
-             int y = (getHeight() - 768) / 2;
-             imagenLabel.setBounds(x, y, 1366, 768);
-         }
-     });
-
 
         imagenes = new ArrayList<>();
         cargarDialogos();
@@ -60,6 +50,7 @@ public class Dialogos extends JPanel implements ActionListener {
     private void cargarDialogos() {
         imagenes.add(new ImageIcon("src/img/lucasDialogo1.jpg"));
         imagenes.add(new ImageIcon("src/img/nicolasDialogo1.jpg"));
+        imagenes.add(new ImageIcon("src/img/dialogoTransicion1.jpg"));
         imagenes.add(new ImageIcon("src/img/fernandoDialogo1.jpg"));
     }
 

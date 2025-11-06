@@ -6,13 +6,16 @@ import javax.swing.*;
 import config.Ranking;
 import config.RankingPanel;
 import config.ResolucionManager;
-import GUI.menu.MenuInicio;
+import GUI.menu.MenuJuego;
 
 public class PantallaFinCancion extends JPanel {
 
     private static final long serialVersionUID = 1L;
-
-    public PantallaFinCancion(int puntajeFinal, ResolucionManager resolucion) {
+    private int numeroCancion;
+    
+    public PantallaFinCancion(int puntajeFinal, ResolucionManager resolucion, int numeroCancion) {
+        this.numeroCancion = numeroCancion;
+        
         setLayout(new BorderLayout());
         setBackground(Color.BLACK);
 
@@ -20,7 +23,7 @@ public class PantallaFinCancion extends JPanel {
         JLabel titulo = new JLabel("CANCION COMPLETADA!", SwingConstants.CENTER);
         titulo.setFont(new Font("Arial", Font.BOLD, 32));
         titulo.setForeground(Color.YELLOW);
-        titulo.setBorder(BorderFactory.createEmptyBorder(50, 10, 10 ,10));
+        titulo.setBorder(BorderFactory.createEmptyBorder(50, 10, 10, 10));
         add(titulo, BorderLayout.NORTH);
 
         // Panel central
@@ -56,11 +59,11 @@ public class PantallaFinCancion extends JPanel {
         JPanel botones = new JPanel();
         botones.setBackground(Color.BLACK);
 
-        JButton btnGuardar = new JButton("Guardar y ver Ranking");
+        JButton btnGuardar = new JButton("Guardar y Ver Ranking");
         btnGuardar.setFont(new Font("Arial", Font.PLAIN, 14));
         btnGuardar.setFocusPainted(false);
 
-        JButton btnMenu = new JButton("Volver al Menú");
+        JButton btnMenu = new JButton("Saltar al Menú");
         btnMenu.setFont(new Font("Arial", Font.PLAIN, 14));
         btnMenu.setFocusPainted(false);
 
@@ -70,7 +73,7 @@ public class PantallaFinCancion extends JPanel {
 
         add(botones, BorderLayout.SOUTH);
 
-        // Acción para guardar y mostrar ranking
+        // ⭐ Acción para guardar y ver ranking
         btnGuardar.addActionListener((ActionEvent e) -> {
             String nombre = campoNombre.getText().trim();
             if (nombre.isEmpty()) {
@@ -78,19 +81,20 @@ public class PantallaFinCancion extends JPanel {
                 return;
             }
 
-            Ranking.guardarPuntuacion(nombre, puntajeFinal);
+            // Guardar con el número de canción
+            Ranking.guardarPuntuacion(nombre, puntajeFinal, numeroCancion);
 
-            // Cambiar a RankingPanel
+            // Ir a RankingPanel que mostrará el ranking de esta canción
             JFrame ventana = (JFrame) SwingUtilities.getWindowAncestor(this);
-            ventana.setContentPane(new RankingPanel(resolucion));
+            ventana.setContentPane(new RankingPanel(resolucion, numeroCancion));
             ventana.revalidate();
             ventana.repaint();
         });
 
-        // Volver al menú principal
+        // Saltar directo al menú sin guardar
         btnMenu.addActionListener(e -> {
             JFrame ventana = (JFrame) SwingUtilities.getWindowAncestor(this);
-            ventana.setContentPane(new MenuInicio(resolucion));
+            ventana.setContentPane(new MenuJuego(resolucion));
             ventana.revalidate();
             ventana.repaint();
         });
