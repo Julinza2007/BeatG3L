@@ -1,7 +1,7 @@
 # Documentos Y Otros:
 * [Apuntes del juego rítmico](https://docs.google.com/document/d/1US-6ZuuhtqOqAollgCZGReUf3tH43h60ep1V6vuwbzo/edit?tab=t.0)
 * [Kanban (usando Trello)](https://trello.com/invite/b/68d864c5f7d4b21e78a46a6c/ATTI83d295f0308514990a8013ed19cbeab9FFBF1A74/juego-final)
-* [Diagrama UML `(Que falta Corregir)`](https://drive.google.com/file/d/1s2VtOSkYeySqIvIi99r8uEb3DcrSBI5m/view)
+* [Diagrama UML](https://drive.google.com/file/d/1s2VtOSkYeySqIvIi99r8uEb3DcrSBI5m/view)
 
 # Esto nos va a servir para el mapeo de la música y otras cosas:
 * ### Para saber el `BPM` de las canciones: [¿Cuántos BPM tiene mi canción?](https://audioalter.com/bpm-detector?) (hay que transferir un archivo de audio .wav, .mp3, etc. Prefereblemente .wav)
